@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
+import Loader from "../components/Loader";
 import axios from "axios";
 const categories = [
   {
@@ -40,6 +42,7 @@ const categories = [
 ];
 
 const BookingForm = ({ service, onClose }) => {
+  
   const [personName, setPersonName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState("");
@@ -163,7 +166,20 @@ const handleSubmit = async (e) => {
 
 const HelpPage = () => {
   const [selectedService, setSelectedService] = useState(null);
+const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    // Simulate a loading delay (you can replace this with real data fetching)
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500); // 1.5 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <div className="px-4 py-10 sm:px-8 md:px-16 lg:px-24 bg-gradient-to-br from-gray-50 to-white min-h-screen">
       <h1 className="text-4xl font-mono font-extrabold text-center text-gray-800 m-12 mb-12">

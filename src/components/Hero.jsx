@@ -20,19 +20,27 @@ const Hero = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between min-h-screen bg-gradient-to-r from-fuchsia-50 to-purple-300 px-6 md:px-16 py-24 ">
+    <div className="flex flex-col md:flex-row items-center justify-between min-h-screen bg-gradient-to-r from-fuchsia-50 via-purple-200 to-purple-300
+ px-6 md:px-16 py-24 ">
       {/* Left Text Section */}
       <div className="w-full md:w-1/2 mb-10 md:mb-0 p-8 ">
-        <h1 className="text-4xl md:text-5xl font-roboto font-bold text-gray-800 mb-6">
+        <h1 className="text-6xl md:text-5xl font-roboto font-bold text-purple-900 mb-6">
           Welcome to HelpNest
         </h1>
-        <p className="text-lg text-gray-700 mb-6">
-          A community support and wellbeing platform that connects you with trusted helpers for health, daily tasks, and more. Simple, safe, and personalized to your needs.
+        <p className="text-lg text-gray-700 mb-6 mr-4">
+         A trusted platform for health, independence, and everyday support.
+        
+Designed to help elders manage medicines, track wellness, and connect with reliable helpers—while staying safe, confident, and connected to their community.
         </p>
+        
+        <div className='flex gap-4 py-4'>
         <button className="px-6 py-3 bg-purple-600 text-white rounded-2xl shadow-md hover:bg-purple-800 transition">
           Get Started
         </button>
-       
+        <button className="px-6 py-3 text-black bg-white border-2 border-purple-300 rounded-2xl shadow-md hover:bg-purple-800 transition">
+          Explore
+        </button>
+       </div>
       </div>
 
       {/* Right Video Section */}

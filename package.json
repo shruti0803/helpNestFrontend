@@ -21,6 +21,7 @@
     "he": "^1.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.15.1",
+    "nprogress": "^0.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hot-toast": "^2.5.2",
