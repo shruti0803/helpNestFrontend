@@ -25,12 +25,12 @@ const Home = () => {
 
   return (
     <div>
-      <Navbar />
+     
       <Hero />
       <Services />
       <Past />
       <Contact />
-      <Footer />
+      
     </div>
   );
 };

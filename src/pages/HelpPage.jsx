@@ -153,7 +153,7 @@ const handleSubmit = async (e) => {
           </select>
           <button
             type="submit"
-            className="w-full bg-orange-600 text-white py-2 rounded hover:bg-orange-700"
+            className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
           >
             Confirm Booking
           </button>

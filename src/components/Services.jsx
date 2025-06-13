@@ -38,7 +38,7 @@ const helper = useSelector((state) => state.helper.helperData);
       navigate("/helpers");
     }
      if(title=== "Health Reminders"){
-      navigate("/health");
+      navigate("/dashboard");
     }
   };
 

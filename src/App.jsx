@@ -15,6 +15,7 @@ import LoginRegister from "./components/Auth/LoginForm";
 import LoginHelper from "./components/Auth/LoginHelper";
 import Profile from "./pages/Profile";
 import Health from "./pages/Health/Health";
+import Dashboard from "./pages/Health/Dashboard";
 
 export default function App() {
    
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/helper-login-success" element={<LoginHelper/>}/>
           <Route path="/profile" element={<Profile />}/>
           <Route path="/health" element={<Health/>}/>
+          <Route path="/dashboard" element={<Dashboard/>}/>
       </Routes>
       <Footer/>
     </Router>
