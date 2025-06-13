@@ -107,51 +107,126 @@ const Requests = () => {
         ) : (
           <div className="overflow-x-auto shadow rounded bg-white">
             <table className="min-w-full divide-y divide-purple-200">
-              <thead className="bg-purple-100 text-purple-900">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Person Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Helper Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Service
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    City
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-purple-200">
-                {filteredBookings.map((booking) => (
-                  <tr
-                    key={booking._id}
-                    className="hover:bg-purple-50 transition-colors"
-                  >
-                    <td className="px-4 py-2 whitespace-nowrap">{booking.personName}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {typeof booking.helper === "object" && booking.helper !== null
-                        ? booking.helper.name || "N/A"
-                        : booking.helper || "N/A"}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">{booking.service}</td>
-                    <td className={`px-4 py-2 whitespace-nowrap ${getStatusColor(booking.status)}`}>
-                      {booking.status}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap">{booking.city}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      {new Date(booking.date).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+             <thead className="bg-purple-100 text-purple-900">
+  <tr>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      Person Name
+    </th>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      Helper Name
+    </th>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      Service
+    </th>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      Status
+    </th>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      City
+    </th>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      Date
+    </th>
+    <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+      Mark Completed
+    </th>
+  </tr>
+</thead>
+
+            <tbody className="divide-y divide-purple-200">
+  {filteredBookings.map((booking) => {
+    const now = new Date();
+    const bookingDateTime = new Date(booking.date);
+if (booking.time) {
+  const [hours, minutes] = booking.time.split(":").map(Number);
+  bookingDateTime.setHours(hours, minutes, 0, 0);
+}
+
+    const isEligibleToMarkComplete =
+      booking.status === "Scheduled" &&
+      bookingDateTime <= now &&
+      !booking.isCompleted;
+
+   const handleMarkComplete = async (id) => {
+  try {
+    await axios.put(
+      "http://localhost:5000/api/bookings/mark-completed",
+      { bookingId: id },
+      { withCredentials: true }
+    );
+    setBookings((prev) =>
+      prev.map((b) =>
+        b._id === id ? { ...b, isCompleted: true } : b
+      )
+    );
+  } catch (error) {
+    console.error("Error marking booking complete:", error);
+  }
+};
+
+
+    return (
+      <tr
+        key={booking._id}
+        className="hover:bg-purple-50 transition-colors"
+      >
+        <td className="px-4 py-2 whitespace-nowrap">{booking.personName}</td>
+        <td className="px-4 py-2 whitespace-nowrap">
+          {typeof booking.helper === "object" && booking.helper !== null
+            ? booking.helper.name || "N/A"
+            : booking.helper || "N/A"}
+        </td>
+        <td className="px-4 py-2 whitespace-nowrap">{booking.service}</td>
+        <td
+          className={`px-4 py-2 whitespace-nowrap ${getStatusColor(
+            booking.status
+          )}`}
+        >
+          {booking.status}
+        </td>
+        <td className="px-4 py-2 whitespace-nowrap">{booking.city}</td>
+        <td className="px-4 py-2 whitespace-nowrap">
+          {new Date(booking.date).toLocaleDateString()}
+        </td>
+        <td className="px-4 py-2 whitespace-nowrap text-center">
+          {isEligibleToMarkComplete ? (
+            <input
+              type="checkbox"
+              className="h-5 w-5 text-purple-600 rounded focus:ring-purple-500 transition-transform transform hover:scale-110"
+           onChange={() => handleMarkComplete(booking._id)}
+
+              title="Mark as complete"
+            />
+          ) : booking.isCompleted ? (
+           <div className="relative w-6 h-6 mx-auto">
+  <input
+    type="checkbox"
+    checked={true}
+    disabled
+    className="absolute w-6 h-6 opacity-0 cursor-default"
+  />
+  <div className="w-6 h-6 rounded border-2 border-green-500 flex items-center justify-center bg-green-100">
+    <svg
+      className="w-5 h-5 text-green-600 animate-ping-once"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3}
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+</div>
+
+          ) : (
+            "-"
+          )}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
             </table>
           </div>
         )}
