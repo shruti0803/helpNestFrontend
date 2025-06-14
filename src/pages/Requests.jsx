@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import useGetProfile from "../../hooks/useGetProfile";
+import { Dialog } from "@headlessui/react";
+
 import {
   FiCheckCircle,
   FiClock,
@@ -18,10 +20,22 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
+  const [selectedBill, setSelectedBill] = useState(null);
+const [billModalOpen, setBillModalOpen] = useState(false);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState("all");
   const { data: profile, loading, error } = useGetProfile();
+const handleGetBill = async (bookingId) => {
+  try {
+    const res = await axios.get(`http://localhost:5000/api/bills/getbill/${bookingId}`);
+    setSelectedBill(res.data);
+    setBillModalOpen(true);
+  } catch (error) {
+    console.error("Error fetching bill:", error);
+  }
+};
 
   useEffect(() => {
     const fetchBookings = async () => {
@@ -140,7 +154,14 @@ const Requests = () => {
                     <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
                       Mark Completed
                     </th>
+                    
                   )}
+                  {filter === "Completed" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Bill
+  </th>
+)}
+
                 </tr>
               </thead>
 
@@ -177,6 +198,16 @@ const Requests = () => {
                       <td className="px-4 py-2 whitespace-nowrap">
                         {new Date(booking.date).toLocaleDateString()}
                       </td>
+{filter === "Completed" && (
+  <td className="px-4 py-2 whitespace-nowrap">
+    <button
+      onClick={() => handleGetBill(booking._id)}
+      className="text-sm bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded shadow"
+    >
+      Get Bill
+    </button>
+  </td>
+)}
 
                       {filter === "Scheduled" && (
                         <td className="px-4 py-2 whitespace-nowrap text-center">
@@ -223,6 +254,37 @@ const Requests = () => {
             </table>
           </div>
         )}
+        <Dialog open={billModalOpen} onClose={() => setBillModalOpen(false)} className="relative z-50">
+  <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+  <div className="fixed inset-0 flex items-center justify-center p-4">
+    <Dialog.Panel className="w-full max-w-md rounded bg-white p-6 shadow-xl space-y-4">
+      <Dialog.Title className="text-lg font-bold text-purple-800">Bill Details</Dialog.Title>
+      {selectedBill ? (
+        <div className="space-y-2 text-sm text-gray-700">
+          <p><strong>Description:</strong> {selectedBill.description}</p>
+          <p><strong>Total Hours:</strong> {selectedBill.totalHours}</p>
+          <p><strong>Rate per Hour:</strong> ₹{selectedBill.ratePerHour}</p>
+          <p><strong>Base Amount:</strong> ₹{selectedBill.baseAmount}</p>
+          <p><strong>Platform Fee:</strong> ₹{selectedBill.userPlatformFee}</p>
+          <p><strong>Total Paid:</strong> ₹{selectedBill.totalAmountPaid}</p>
+          <p><strong>Payment Mode:</strong> {selectedBill.paymentMode}</p>
+          <p><strong>Payment Status:</strong> {selectedBill.paymentStatus}</p>
+        </div>
+      ) : (
+        <p className="text-gray-500">Loading bill...</p>
+      )}
+      <div className="pt-4 text-right">
+        <button
+          onClick={() => setBillModalOpen(false)}
+          className="bg-purple-500 text-white px-4 py-1 rounded hover:bg-purple-600"
+        >
+          Close
+        </button>
+      </div>
+    </Dialog.Panel>
+  </div>
+</Dialog>
+
       </main>
     </div>
   );
