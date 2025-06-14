@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import useGetProfile from "../../hooks/useGetProfile";
 import { Dialog } from "@headlessui/react";
-
+import { launchRazorpay } from "./Bill/RazorpayPayment";
 import {
   FiCheckCircle,
   FiClock,
@@ -11,6 +11,10 @@ import {
   FiMenu,
   FiX,
 } from "react-icons/fi";
+const razorpayKey = "rzp_test_8DZW71KgzJGwuY";
+
+
+
 
 const STATUS_FILTERS = [
   { label: "Overview", value: "all", icon: FiHome },
@@ -280,6 +284,36 @@ const handleGetBill = async (bookingId) => {
         >
           Close
         </button>
+<button
+  onClick={async () => {
+    try {
+      const res = await axios.post("http://localhost:5000/api/payment/create-order", {
+        bookingId: selectedBill.bookingId,
+      });
+
+      const { order } = res.data;
+
+      launchRazorpay({
+        order_id: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        bookingId: selectedBill.bookingId, // needed to update payment later
+        name: profile?.name || "HelpNest User",
+        description: selectedBill.description || "HelpNest Service",
+      });
+    } catch (err) {
+      console.error("Payment failed", err);
+      alert("Could not start Razorpay");
+    }
+  }}
+  className="ml-2 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
+>
+  Pay
+</button>
+
+
+
+
       </div>
     </Dialog.Panel>
   </div>
