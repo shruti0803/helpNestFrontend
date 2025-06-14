@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import useGetHelperProfile from "../../hooks/useGetHelperProfile";
+import BillModal from "./Bill/BillModal";
 import {
   FiCheckCircle,
   FiClock,
@@ -18,6 +19,9 @@ const STATUS_FILTERS = [
 ];
 
 const TasksPage = () => {
+   const [showBillModal, setShowBillModal] = useState(false);
+const [selectedBooking, setSelectedBooking] = useState(null);
+
   const { helper } = useGetHelperProfile();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tasks, setTasks] = useState([]);
@@ -30,7 +34,7 @@ const TasksPage = () => {
           ? "http://localhost:5000/api/bookings/tasks"
           : activeTab === "scheduled"
           ? "http://localhost:5000/api/bookings/scheduled"
-          : "http://localhost:5000/api/bookings/scheduled";
+          : "http://localhost:5000/api/bookings/completed";
 
       const response = await axios.get(endpoint, {
         headers: {
@@ -179,20 +183,41 @@ const now = new Date();
           </td>
         )}
 {activeTab === "scheduled" && (
-        <td className="p-2">
-          {bookingDateTime <= now && (
-            <button className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700">
-              Generate Bill
-            </button>
-          )}
-        </td>
-        )}
+  <td className="p-2">
+    {task.isCompleted && (
+      <button
+        className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+        onClick={() => {
+          setShowBillModal(true);
+          setSelectedBooking(task); // Track which task was clicked
+        }}
+      >
+        Generate Bill
+      </button>
+    )}
+  </td>
+)}
+
       </tr>
     );
   })}
 </tbody>
 
             </table>
+
+            {showBillModal && selectedBooking && (
+<BillModal
+  isOpen={showBillModal}
+  booking={selectedBooking} // ✅ pass as booking
+  onClose={() => {
+    setShowBillModal(false);
+    setSelectedBooking(null);
+  }}
+/>
+
+
+)}
+
           </div>
         )}
       </main>
