@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import Loader from "../components/Loader";
 import axios from "axios";
+import Swal from 'sweetalert2';
 const categories = [
   {
     title: 'Tech Support',
@@ -64,19 +65,37 @@ const handleSubmit = async (e) => {
     city,
   };
 
-  try {
-    const response = await axios.post("http://localhost:5000/api/bookings/", bookingData, {
-      withCredentials: true, // Important to send the JWT cookie
-    });
-    console.log("Booking successful:", response.data);
-    onClose();
-  } catch (error) {
-    console.error("Booking failed:", error.response?.data || error.message);
-    alert(error.response?.data?.message || "Failed to book. Please login.");
-  }
-};
+try {
+  const response = await axios.post("http://localhost:5000/api/bookings/", bookingData, {
+    withCredentials: true, // Important to send the JWT cookie
+  });
 
+  console.log("Booking successful:", response.data);
+  
+  // ✅ Show a beautiful confirmation popup
+  Swal.fire({
+    title: '🎉 Booking Confirmed!',
+    text: 'Your booking was successful. Thank you!',
+    icon: 'success',
+    confirmButtonText: 'OK',
+    confirmButtonColor: '#6b46c1', // purple theme
+    background: '#f9f7fd',
+  });
 
+  onClose(); // close modal or form
+} catch (error) {
+  console.error("Booking failed:", error.response?.data || error.message);
+
+  Swal.fire({
+    title: 'Booking Failed',
+    text: error.response?.data?.message || "Failed to book. Please login.",
+    icon: 'error',
+    confirmButtonText: 'Retry',
+    confirmButtonColor: '#e53e3e', // red theme
+  });
+}
+
+}
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
