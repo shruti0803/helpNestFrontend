@@ -27,10 +27,11 @@ export const launchRazorpay = async (options) => {
     ...options,
     handler: async function (response) {
       try {
-        await axios.post("http://localhost:5000/api/payment/update-status", {
-          bookingId: options.bookingId,
-          paymentId: response.razorpay_payment_id,
-        });
+        await axios.put("http://localhost:5000/api/payment/update-payment", {
+  bookingId: options.bookingId,
+  paymentId: response.razorpay_payment_id,
+});
+
         alert("Payment successful!");
       } catch (err) {
         console.error("Payment update failed", err);
