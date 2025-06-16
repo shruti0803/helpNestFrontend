@@ -16,6 +16,7 @@ import LoginHelper from "./components/Auth/LoginHelper";
 import Profile from "./pages/Profile";
 import Health from "./pages/Health/Health";
 import Dashboard from "./pages/Health/Dashboard";
+import BillSummary from "./pages/Bill/BillSummary";
 
 export default function App() {
    
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />}/>
           <Route path="/health" element={<Health/>}/>
           <Route path="/dashboard" element={<Dashboard/>}/>
+          <Route path="/bill-summary" element={<BillSummary />} />
       </Routes>
       <Footer/>
     </Router>

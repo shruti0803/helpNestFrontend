@@ -3,6 +3,8 @@ import axios from "axios";
 import useGetProfile from "../../hooks/useGetProfile";
 import { Dialog } from "@headlessui/react";
 import { launchRazorpay } from "./Bill/RazorpayPayment";
+import { useNavigate } from "react-router-dom";
+
 import {
   FiCheckCircle,
   FiClock,
@@ -25,6 +27,7 @@ const STATUS_FILTERS = [
 
 const Requests = () => {
   const [billsMap, setBillsMap] = useState({});
+const navigate = useNavigate();
 
   const [selectedBill, setSelectedBill] = useState(null);
 const [billModalOpen, setBillModalOpen] = useState(false);
@@ -326,9 +329,16 @@ useEffect(() => {
         order_id: order.id,
         amount: order.amount,
         currency: order.currency,
-        bookingId: selectedBill.bookingId, // needed to update payment later
+        bookingId: selectedBill.bookingId,
         name: profile?.name || "HelpNest User",
         description: selectedBill.description || "HelpNest Service",
+       onSuccess: (updatedBill) => {
+  console.log("✅ Payment succeeded, navigating to summary with bill:", updatedBill);
+  navigate("/bill-summary", { state: { bill: updatedBill } });
+}
+
+          
+       
       });
     } catch (err) {
       console.error("Payment failed", err);
@@ -339,6 +349,7 @@ useEffect(() => {
 >
   Pay
 </button>
+
 
 
 
