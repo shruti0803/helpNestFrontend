@@ -24,6 +24,8 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
+  const [billsMap, setBillsMap] = useState({});
+
   const [selectedBill, setSelectedBill] = useState(null);
 const [billModalOpen, setBillModalOpen] = useState(false);
 
@@ -41,19 +43,41 @@ const handleGetBill = async (bookingId) => {
   }
 };
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/api/bookings/requests", {
-          withCredentials: true,
-        });
-        setBookings(res.data);
-      } catch (err) {
-        console.error("Error fetching bookings:", err);
-      }
-    };
-    fetchBookings();
-  }, []);
+useEffect(() => {
+  const fetchBookings = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/bookings/requests", {
+        withCredentials: true,
+      });
+      setBookings(res.data);
+    } catch (err) {
+      console.error("Error fetching bookings:", err);
+    }
+  };
+
+  const fetchBills = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/bills/allBills", {
+        withCredentials: true,
+      });
+
+      const billsArray = res.data;
+      const billMap = {};
+
+      billsArray.forEach((bill) => {
+        billMap[bill.bookingId] = bill;
+      });
+
+      setBillsMap(billMap);
+    } catch (err) {
+      console.error("Error fetching bills:", err);
+    }
+  };
+
+  fetchBookings();
+  fetchBills(); // <- new call
+}, []);
+
 
   const filteredBookings =
     filter === "all" ? bookings : bookings.filter((b) => b.status === filter);
@@ -204,14 +228,19 @@ const handleGetBill = async (bookingId) => {
                       </td>
 {filter === "Completed" && (
   <td className="px-4 py-2 whitespace-nowrap">
-    <button
-      onClick={() => handleGetBill(booking._id)}
-      className="text-sm bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded shadow"
-    >
-      Get Bill
-    </button>
+    {billsMap[booking._id]?.paymentStatus === "Paid" ? (
+      <span className="text-green-600 font-semibold p-2">Paid</span>
+    ) : (
+      <button
+        onClick={() => handleGetBill(booking._id)}
+        className="text-sm bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded shadow"
+      >
+        Get Bill
+      </button>
+    )}
   </td>
 )}
+
 
                       {filter === "Scheduled" && (
                         <td className="px-4 py-2 whitespace-nowrap text-center">
