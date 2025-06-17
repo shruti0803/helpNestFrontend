@@ -3,16 +3,37 @@ import axios from "axios";
 import { FaPills, FaCalendarCheck } from "react-icons/fa";
 
 const Today = () => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
+
+  const getFormattedDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  };
 
   const fetchToday = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/health/today", {
-        withCredentials: true,
-      });
-      setData(res.data);
+      const res = await axios.get(
+        `http://localhost:5000/api/health/meds-for-date?date=${getFormattedDate()}`,
+        {
+          withCredentials: true,
+        }
+      );
+      setData(res.data.tasks || []);
     } catch (err) {
       console.error("❌ Error fetching today's data", err);
+    }
+  };
+
+  const markTask = async (scheduleId) => {
+    try {
+      await axios.patch(
+        "http://localhost:5000/api/health/markTaken",
+        { scheduleId, status: "taken" },
+        { withCredentials: true }
+      );
+      fetchToday(); // Refresh
+    } catch (err) {
+      console.error("❌ Failed to mark task", err);
     }
   };
 
@@ -20,57 +41,40 @@ const Today = () => {
     fetchToday();
   }, []);
 
-  const markMedicineTaken = async (name) => {
-    try {
-      await axios.put(
-        "http://localhost:5000/api/health/medicine/taken",
-        { name },
-        { withCredentials: true }
-      );
-      fetchToday(); // refresh data
-    } catch (err) {
-      console.error("❌ Failed to mark medicine taken", err);
-    }
-  };
+  const medicines = data.filter((item) =>
+  ["tablet", "syrup", "capsule", "injection"].includes(item.type)
+);
 
-  const markAppointmentDone = async (title) => {
-    try {
-      await axios.put(
-        "http://localhost:5000/api/health/appointment/done",
-        { title },
-        { withCredentials: true }
-      );
-      fetchToday(); // refresh data
-    } catch (err) {
-      console.error("❌ Failed to mark appointment done", err);
-    }
-  };
-
-  if (!data) return <div className="p-10 text-purple-600">Loading today’s tasks...</div>;
+  const appointments = data.filter((item) => item.type === "appointment");
 
   return (
-    <div className="p-10 max-w-2xl mx-auto bg-purple-50 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-purple-700">📆 Today's Health Summary</h2>
+    <div className="p-8 max-w-3xl mx-auto bg-purple-50 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-purple-700">
+        📅 Today's Health Summary
+      </h2>
 
       {/* Medicines */}
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2 text-purple-800 flex items-center gap-2">
+      <section className="mb-8">
+        <h3 className="text-xl font-semibold mb-3 text-purple-800 flex items-center gap-2">
           <FaPills /> Medicines
         </h3>
-        {data.medicine.length === 0 ? (
+        {medicines.length === 0 ? (
           <p className="text-gray-600">No medicines scheduled for today.</p>
         ) : (
-          <ul className="list-disc list-inside space-y-2">
-            {data.medicine.map((med, i) => (
-              <li key={i} className="text-purple-900 flex items-center justify-between bg-white rounded px-3 py-2 shadow">
+          <ul className="space-y-3">
+            {medicines.map((med, i) => (
+              <li
+                key={i}
+                className="flex justify-between items-center bg-white rounded px-4 py-2 shadow"
+              >
                 <span>
-                  💊 <strong>{med.name}</strong> at {med.time}
+                  💊 <strong>{med.name}</strong> at {med.timeSlot}
                 </span>
-                {med.taken ? (
+                {med.status === "taken" ? (
                   <span className="text-green-600 font-medium">✅ Taken</span>
                 ) : (
                   <button
-                    onClick={() => markMedicineTaken(med.name)}
+                    onClick={() => markTask(med.scheduleId)}
                     className="bg-purple-500 text-white text-sm px-2 py-1 rounded hover:bg-purple-600"
                   >
                     Mark Taken
@@ -80,27 +84,30 @@ const Today = () => {
             ))}
           </ul>
         )}
-      </div>
+      </section>
 
       {/* Appointments */}
-      <div>
-        <h3 className="text-xl font-semibold mb-2 text-purple-800 flex items-center gap-2">
+      <section>
+        <h3 className="text-xl font-semibold mb-3 text-purple-800 flex items-center gap-2">
           <FaCalendarCheck /> Appointments
         </h3>
-        {data.appointments.length === 0 ? (
-          <p className="text-gray-600">No appointments today.</p>
+        {appointments.length === 0 ? (
+          <p className="text-gray-600">No appointments scheduled for today.</p>
         ) : (
-          <ul className="list-disc list-inside space-y-2">
-            {data.appointments.map((app, i) => (
-              <li key={i} className="text-purple-900 flex items-center justify-between bg-white rounded px-3 py-2 shadow">
+          <ul className="space-y-3">
+            {appointments.map((app, i) => (
+              <li
+                key={i}
+                className="flex justify-between items-center bg-white rounded px-4 py-2 shadow"
+              >
                 <span>
-                  📅 <strong>{app.title}</strong> at {app.time}
+                  📅 <strong>{app.title}</strong> at {app.timeSlot}
                 </span>
-                {app.done ? (
+                {app.status === "taken" ? (
                   <span className="text-green-600 font-medium">✅ Done</span>
                 ) : (
                   <button
-                    onClick={() => markAppointmentDone(app.title)}
+                    onClick={() => markTask(app.scheduleId)}
                     className="bg-purple-500 text-white text-sm px-2 py-1 rounded hover:bg-purple-600"
                   >
                     Mark Done
@@ -110,7 +117,7 @@ const Today = () => {
             ))}
           </ul>
         )}
-      </div>
+      </section>
     </div>
   );
 };

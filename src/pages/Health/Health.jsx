@@ -1,224 +1,140 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const timesOfDay = [
-  { label: "🌅", name: "morning" },
-  { label: "🌞", name: "afternoon" },
-  { label: "🌇", name: "evening" },
-  { label: "🌙", name: "night" },
-];
-
-const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import { FaPills, FaClock, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import AddMedicineModal from "./AddMedicineModal";
 
 export default function Health() {
-  const [weeklyData, setWeeklyData] = useState({});
-  const [reminders, setReminders] = useState({}); // Local add
+  const [open, setOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [medicines, setMedicines] = useState([]);
+
+  const getDateRange = () => {
+    const range = [];
+    const today = new Date();
+    for (let i = -5; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      range.push(d);
+    }
+    return range;
+  };
+
+  const isSameDay = (d1, d2) => {
+    return (
+      d1.getDate() === d2.getDate() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getFullYear() === d2.getFullYear()
+    );
+  };
+
+  const formatDate = (date) => {
+    return date.toISOString().split("T")[0]; // "YYYY-MM-DD"
+  };
+
+  const fetchMedicines = async (date) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/health/meds-for-date?date=${formatDate(date)}`,
+        { withCredentials: true }
+      );
+      setMedicines(res.data.tasks || []);
+    } catch (err) {
+      console.error("❌ Error fetching medicines for date:", err);
+      setMedicines([]);
+    }
+  };
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/health/weekly-summary", {
-        withCredentials: true,
-      })
-      .then((res) => {
-        console.log("📅 Weekly summary:", res.data);
-        setWeeklyData(res.data);
-      })
-      .catch((err) => {
-        console.error("❌ Weekly summary fetch failed:", err);
-      });
-  }, []);
-
-const handleAdd = async (day, timeOfDay) => {
-  const type = prompt("Add 'med' for medicine or 'app' for appointment:");
-  if (!type || !["med", "app"].includes(type)) return;
-
-  const name = prompt(type === "med" ? "Enter medicine name:" : "Enter appointment title:");
-  if (!name) return;
-
-  // Define default time based on time of day
-  const defaultTimes = {
-    morning: "08:00",
-    afternoon: "14:00",
-    evening: "18:00",
-    night: "21:00",
-  };
-  const time = defaultTimes[timeOfDay] || "08:00";
-
-  const key = `${day}_${timeOfDay}`;
-  setReminders((prev) => ({
-    ...prev,
-    [key]: [...(prev[key] || []), name],
-  }));
-
-  const payload =
-    type === "med"
-      ? {
-          name,
-          time,
-          days: [day], // e.g. ["Wed"]
-        }
-      : {
-          title: name,
-          time,
-          day, // e.g. "Wed"
-        };
-
-  try {
-    const url =
-      type === "med"
-        ? "http://localhost:5000/api/health/medicine"
-        : "http://localhost:5000/api/health/appointment";
-
-    await axios.post(url, payload, { withCredentials: true });
-
-    // ✅ Re-fetch updated weekly summary
-    const res = await axios.get("http://localhost:5000/api/health/weekly-summary", {
-      withCredentials: true,
-    });
-    setWeeklyData(res.data);
-    console.log("✅ Updated weekly summary after add.");
-  } catch (err) {
-    console.error("❌ Failed to add reminder:", err);
-  }
-};
-
-const handleDelete = async (item) => {
-  const confirmDelete = window.confirm(`Delete ${item.type === "med" ? item.name : item.title}?`);
-  if (!confirmDelete) return;
-
-  try {
-    const endpoint =
-      item.type === "med"
-        ? `http://localhost:5000/api/health/medicine/${encodeURIComponent(item.name)}`
-        : `http://localhost:5000/api/health/appointment/${encodeURIComponent(item.title)}`;
-
-    await axios.delete(endpoint, { withCredentials: true });
-
-    const res = await axios.get("http://localhost:5000/api/health/weekly-summary", {
-      withCredentials: true,
-    });
-    setWeeklyData(res.data);
-    console.log("🗑️ Item deleted and summary refreshed");
-  } catch (err) {
-    console.error("❌ Delete failed:", err);
-  }
-};
-
-
-  const getItemsForCell = (day, timeName) => {
-    const dayData = weeklyData[day] || {};
-    const { medicines = [], appointments = [] } = dayData;
-
-    const filteredMeds = medicines.filter((med) => {
-      const medTime = med.time?.toLowerCase();
-      if (!medTime) return false;
-      const hour = parseInt(medTime.split(":")[0]);
-      const slot =
-        hour < 12
-          ? "morning"
-          : hour < 16
-          ? "afternoon"
-          : hour < 20
-          ? "evening"
-          : "night";
-      return slot === timeName;
-    });
-
-    const filteredAppointments = appointments.filter((app) => {
-      const appTime = app.time?.toLowerCase();
-      if (!appTime) return false;
-      const hour = parseInt(appTime.split(":")[0]);
-      const slot =
-        hour < 12
-          ? "morning"
-          : hour < 16
-          ? "afternoon"
-          : hour < 20
-          ? "evening"
-          : "night";
-      return slot === timeName;
-    });
-
-    return [...filteredMeds.map((m) => ({ ...m, type: "med" })), ...filteredAppointments.map((a) => ({ ...a, type: "app" }))];
-  };
+    fetchMedicines(selectedDate);
+  }, [selectedDate]);
 
   return (
-    <div className="p-40 overflow-x-auto">
-      <table className="table-auto border-collapse w-full">
-        <thead>
-          <tr>
-            <th className="border px-4 py-2">Time/Day</th>
-            {daysOfWeek.map((day) => (
-              <th key={day} className="border px-4 py-2 text-center">
-                {day}
-              </th>
+    <div className="p-20 overflow-x-auto">
+      <h2 className="text-2xl font-bold text-center mb-6">🩺 Health Schedule</h2>
+
+      {/* Date timeline */}
+      <div className="flex overflow-x-auto items-center gap-6 justify-start mb-8 relative pb-6 border-b border-purple-300">
+        <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-purple-300 via-purple-400 to-purple-300 transform -translate-y-1/2 z-0 rounded-full"></div>
+
+        {getDateRange().map((date, index) => {
+          const isToday = isSameDay(date, new Date());
+          const isSelected = isSameDay(date, selectedDate);
+
+          return (
+            <div
+              key={index}
+              onClick={() => setSelectedDate(date)}
+              className="relative z-10 flex flex-col items-center min-w-[80px] cursor-pointer group"
+            >
+              <div
+                className={`rounded-full w-12 h-12 flex items-center justify-center text-sm font-semibold shadow-md border transition ${
+                  isSelected
+                    ? "bg-purple-600 text-white border-purple-700 scale-110"
+                    : isToday
+                    ? "bg-white text-purple-800 border-purple-500"
+                    : "bg-white text-gray-700 border-gray-300"
+                }`}
+              >
+                {date.getDate()}
+              </div>
+              <div className="text-xs mt-1 text-purple-600 font-medium">
+                {date.toLocaleDateString("en-US", { month: "short" })}
+              </div>
+              {isToday && (
+                <div className="text-[10px] mt-1 text-green-600 font-bold">Today</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Medicine Cards */}
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold mb-4 text-purple-700">💊 Medicines</h3>
+        {medicines.length === 0 ? (
+          <p className="text-gray-500">No medicines scheduled for this day.</p>
+        ) : (
+          <div className="flex overflow-x-auto space-x-4 pb-4">
+            {medicines.map((med, idx) => (
+              <div
+                key={idx}
+                className="min-w-[250px] bg-white border border-purple-200 shadow-md rounded-xl p-4 flex flex-col justify-between"
+              >
+                <div className="flex items-center gap-2 mb-2 text-purple-700 font-bold text-lg">
+                  <FaPills /> {med.name}
+                </div>
+                <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                  <FaClock className="text-purple-500" /> Time:{" "}
+                  <span className="font-medium text-purple-700">{med.timeSlot}</span>
+                </div>
+                <div className="text-sm text-gray-600 mb-1">Dosage: {med.dosage}</div>
+                <div className="text-sm mt-2 font-medium">
+                  Status:{" "}
+                  {med.status === "taken" ? (
+                    <span className="text-green-600 flex items-center gap-1">
+                      <FaCheckCircle /> Taken
+                    </span>
+                  ) : (
+                    <span className="text-red-500 flex items-center gap-1">
+                      <FaTimesCircle /> Missed
+                    </span>
+                  )}
+                </div>
+              </div>
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {timesOfDay.map((time) => (
-            <tr key={time.name}>
-              <td className="border px-4 py-2 text-center font-bold">
-                {time.label}
-              </td>
-              {daysOfWeek.map((day) => {
-                const key = `${day}_${time.name}`;
-                const items = getItemsForCell(day, time.name);
+          </div>
+        )}
+      </div>
 
-                return (
-                  <td
-                    key={key}
-                    className="border px-2 py-2 hover:bg-blue-50 cursor-pointer align-top"
-                    onClick={() => handleAdd(day, time.name)}
-                  >
-                    <ul className="text-sm space-y-1 mb-1">
-                    {items.map((item, i) => (
-  <li
-    key={`item-${i}`}
-    className={`flex justify-between items-center px-2 py-1 rounded group ${
-      item.type === "med"
-        ? item.taken
-          ? "bg-green-200"
-          : "bg-red-200"
-        : item.done
-        ? "bg-green-100"
-        : "bg-red-100"
-    }`}
-  >
-    <span>
-      {item.type === "med" ? `💊 ${item.name}` : `📅 ${item.title}`}
-    </span>
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        handleDelete(item);
-      }}
-      className="ml-2 text-red-600 opacity-0 group-hover:opacity-100 hover:scale-110 transition"
-      title="Delete"
-    >
-      🗑️
-    </button>
-  </li>
-))}
+      {/* Add medicine button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-6 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 shadow-md"
+      >
+        ➕ Add Medicine
+      </button>
 
-
-                      {(reminders[key] || []).map((local, idx) => (
-                        <li
-                          key={`local-${idx}`}
-                          className="bg-blue-100 px-2 py-1 rounded"
-                        >
-                          {local}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="text-xs text-blue-500">+ </div>
-                  </td>
-                );
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <AddMedicineModal isOpen={open} onClose={() => setOpen(false)} />
     </div>
   );
 }

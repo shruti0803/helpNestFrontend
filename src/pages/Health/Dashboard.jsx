@@ -30,7 +30,7 @@ const handle=()=>{
         {/* Bottom Row */}
         <div className="bg-white rounded-xl shadow-md p-4">
           <h2 className="text-xl font-semibold text-purple-700 mb-2">Bottom Row Content</h2>
-         <WeeklyAnalysis/>
+          {/* <WeeklyAnalysis/>  */}
         </div>
       </div>
 
