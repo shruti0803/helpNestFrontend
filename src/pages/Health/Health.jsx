@@ -6,15 +6,17 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaCalendarAlt,
+  FaUserMd,
 } from "react-icons/fa";
 import AddMedicineModal from "./AddMedicineModal";
 import AddAppointmentModal from "./AddAppointmentModal";
 
 export default function Health() {
   const [open, setOpen] = useState(false);
-  const [openA, setOpenA]=useState(false);
+  const [openA, setOpenA] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [medicines, setMedicines] = useState([]);
+  const [appointments, setAppointments] = useState([]);
 
   const getDateRange = () => {
     const range = [];
@@ -47,8 +49,22 @@ export default function Health() {
     }
   };
 
+  const fetchAppointments = async (date) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/api/health/appts-for-date?date=${formatDate(date)}`,
+        { withCredentials: true }
+      );
+      setAppointments(res.data.tasks || []);
+    } catch (err) {
+      console.error("❌ Error fetching appointments for date:", err);
+      setAppointments([]);
+    }
+  };
+
   useEffect(() => {
     fetchMedicines(selectedDate);
+    fetchAppointments(selectedDate);
   }, [selectedDate]);
 
   return (
@@ -84,9 +100,7 @@ export default function Health() {
                 {date.toLocaleDateString("en-US", { month: "short" })}
               </div>
               {isToday && (
-                <div className="text-[10px] mt-1 text-green-600 font-bold">
-                  Today
-                </div>
+                <div className="text-[10px] mt-1 text-green-600 font-bold">Today</div>
               )}
             </div>
           );
@@ -112,9 +126,7 @@ export default function Health() {
                   <FaClock className="text-purple-500" /> Time:{" "}
                   <span className="font-medium text-purple-700">{med.timeSlot}</span>
                 </div>
-                <div className="text-sm text-gray-600 mb-1">
-                  Dosage: {med.dosage}
-                </div>
+                <div className="text-sm text-gray-600 mb-1">Dosage: {med.dosage}</div>
                 <div className="text-sm mt-2 font-medium">
                   Status:{" "}
                   {med.status === "taken" ? (
@@ -141,25 +153,63 @@ export default function Health() {
         </button>
       </div>
 
-      {/* Appointments Section Placeholder */}
+      {/* Appointments Section */}
       <div className="mt-12">
         <h3 className="text-xl font-semibold mb-4 text-purple-700 flex items-center gap-2">
           <FaCalendarAlt /> Appointments
         </h3>
-        <div className="text-gray-400 italic mb-4">
-          Appointments will appear here soon...
-        </div>
+        {appointments.length === 0 ? (
+          <p className="text-gray-500">No appointments scheduled for this day.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            {appointments.map((appt, idx) => (
+              <div
+                key={idx}
+                className="bg-white border border-purple-200 shadow-md rounded-xl p-4"
+              >
+                <div className="flex items-center gap-2 mb-2 text-purple-700 font-bold text-lg">
+                  <FaUserMd /> {appt.title}
+                </div>
+                <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                  <FaClock className="text-purple-500" /> Time:{" "}
+                  <span className="font-medium text-purple-700">{appt.timeSlot}</span>
+                </div>
+                <div className="text-sm text-gray-600 mb-1">
+                  Location: {appt.location}
+                </div>
+                <div className="text-sm mt-2 font-medium">
+                  Status:{" "}
+                  {appt.status === "done" ? (
+                    <span className="text-green-600 flex items-center gap-1">
+                      <FaCheckCircle /> Done
+                    </span>
+                  ) : (
+                    <span className="text-red-500 flex items-center gap-1">
+                      <FaTimesCircle /> Missed
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* ➕ Add Appointment Button */}
-        <button   onClick={() => setOpenA(true)} className="bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500 shadow-md">
+        <button
+          onClick={() => setOpenA(true)}
+          className="mt-6 bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500 shadow-md"
+        >
           ➕ Add Appointment
         </button>
       </div>
 
-      {/* Add Medicine Modal */}
+      {/* Modals */}
       <AddMedicineModal isOpen={open} onClose={() => setOpen(false)} />
-       <AddAppointmentModal isOpen={openA} onClose={() => setOpenA(false)} onSuccess={() => fetchMedicines(selectedDate)} />
-
+      <AddAppointmentModal
+        isOpen={openA}
+        onClose={() => setOpenA(false)}
+        onSuccess={() => fetchAppointments(selectedDate)}
+      />
     </div>
   );
 }
