@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { FaClock, FaVial,FaMapMarkerAlt } from "react-icons/fa"; // or FaFlask for dosage
+import { FaCalendarAlt} from "react-icons/fa";
+
 import { useNavigate } from 'react-router-dom';
 import { FaPills, FaCalendarCheck } from "react-icons/fa";
 const buildDate = (dateStr) => {
@@ -119,25 +122,44 @@ const date = buildDate(dateStr);
         ) : (
           <ul className="space-y-3">
             {medicines.map((med, i) => (
-              <li
-                key={i}
-                className="flex justify-between items-center bg-white rounded px-4 py-2 shadow"
-              >
-                <span>
-                  {typeEmojis[med.type] || "💊"} <strong>{med.name}</strong>{" "}
-                  at  {med.timeSlot}
-                </span>
-                {med.status === "taken" ? (
-                  <span className="text-green-600 font-medium">✅ Taken</span>
-                ) : (
-                  <button
-                    onClick={() => markTask(med)}
-                    className="bg-purple-500 text-white text-sm px-3 py-1 rounded hover:bg-purple-600"
-                  >
-                    Mark Taken
-                  </button>
-                )}
-              </li>
+<li
+  key={i}
+  className="flex justify-between items-start bg-white rounded px-4 py-3 shadow-md"
+>
+  <div>
+    <div className="text-lg font-semibold">
+      {typeEmojis[med.type] || "💊"} 
+      <span className="text-purple-700">{med.name}</span>
+    </div>
+
+    {med.dosage && (
+      <div className="text-sm text-gray-700 font-medium mt-1">
+       <FaVial className="inline text-purple-700 mr-1" /> Dosage:{" "}
+        <span >{med.dosage}</span>
+      </div>
+    )}
+
+    <div className="text-sm text-gray-700 font-medium">
+     <FaClock className="inline text-purple-700 mr-1" /> Time:{" "}
+      <span className=" capitalize">{med.timeSlot}</span>
+    </div>
+  </div>
+
+  {med.status === "taken" ? (
+    <span className="text-green-600 font-medium self-center">✅ Taken</span>
+  ) : (
+    <button
+      onClick={() => markTask(med)}
+      className="bg-purple-500 text-white text-sm px-3 py-1 rounded hover:bg-purple-600 self-center"
+    >
+      Mark Taken
+    </button>
+  )}
+</li>
+
+
+
+
             ))}
           </ul>
         )}
@@ -153,25 +175,39 @@ const date = buildDate(dateStr);
         ) : (
           <ul className="space-y-3">
             {appointments.map((app, i) => (
-              <li
-                key={i}
-                className="flex justify-between items-center bg-white rounded px-4 py-2 shadow"
-              >
-                <span>
-                  📅 <strong>{app.title}</strong> at{" "}
-                   {app.timeSlot}
-                </span>
-                {app.status === "done" ? (
-                  <span className="text-green-600 font-medium">✅ Done</span>
-                ) : (
-                  <button
-                    onClick={() => markTask({ ...app, type: "appointment" })}
-                    className="bg-purple-500 text-white text-sm px-3 py-1 rounded hover:bg-purple-600"
-                  >
-                    Mark Done
-                  </button>
-                )}
-              </li>
+             <li
+  key={i}
+  className="flex justify-between items-start bg-white rounded px-4 py-3 shadow-md"
+>
+  <div>
+    <div className="text-lg font-semibold">
+      <FaCalendarAlt className="inline text-purple-600 mr-1" />
+      <span className="text-purple-700">{app.title}</span>
+    </div>
+    <div className="text-sm text-gray-700 mt-1">
+      <FaClock className="inline text-purple-600 mr-1" />
+      Time: <span className=" capitalize">{app.timeSlot}</span>
+    </div>
+    {app.location && (
+      <div className="text-sm text-gray-700 mt-1">
+        <FaMapMarkerAlt className="inline text-purple-600 mr-1" />
+        Location: <span >{app.location}</span>
+      </div>
+    )}
+  </div>
+
+  {app.status === "done" ? (
+    <span className="text-green-600 font-medium self-center">✅ Done</span>
+  ) : (
+    <button
+      onClick={() => markTask({ ...app, type: "appointment" })}
+      className="bg-purple-500 text-white text-sm px-3 py-1 rounded hover:bg-purple-600 self-center"
+    >
+      Mark Done
+    </button>
+  )}
+</li>
+
             ))}
           </ul>
         )}
