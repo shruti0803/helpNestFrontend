@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 import { FaPills, FaCalendarCheck } from "react-icons/fa";
 const buildDate = (dateStr) => {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -21,6 +22,10 @@ const typeEmojis = {
 };
 
 const Today = () => {
+     const navigate=useNavigate();
+const handle=()=>{
+  navigate("/health");
+}
   const [medicines, setMedicines] = useState([]);
   const [appointments, setAppointments] = useState([]);
 
@@ -99,7 +104,7 @@ const date = buildDate(dateStr);
   }, []);
 
   return (
-    <div className="p-8 max-w-3xl mx-auto bg-purple-50 rounded-lg shadow-md">
+    <div className="p-4 max-w-3xl mx-auto bg-purple-100 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-purple-700 text-center">
         📅 Today's Health Summary
       </h2>
@@ -120,7 +125,7 @@ const date = buildDate(dateStr);
               >
                 <span>
                   {typeEmojis[med.type] || "💊"} <strong>{med.name}</strong>{" "}
-                  at {timeEmojis[med.timeSlot] || ""} {med.timeSlot}
+                  at  {med.timeSlot}
                 </span>
                 {med.status === "taken" ? (
                   <span className="text-green-600 font-medium">✅ Taken</span>
@@ -154,7 +159,7 @@ const date = buildDate(dateStr);
               >
                 <span>
                   📅 <strong>{app.title}</strong> at{" "}
-                  {timeEmojis[app.timeSlot] || ""} {app.timeSlot}
+                   {app.timeSlot}
                 </span>
                 {app.status === "done" ? (
                   <span className="text-green-600 font-medium">✅ Done</span>
@@ -171,6 +176,15 @@ const date = buildDate(dateStr);
           </ul>
         )}
       </section>
+     <div className="flex justify-center p-4">
+  <button
+    onClick={handle}
+    className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-lg font-medium px-6 py-3 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition duration-300"
+  >
+    ➕ Add Entry
+  </button>
+</div>
+
     </div>
   );
 };
