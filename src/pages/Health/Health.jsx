@@ -7,6 +7,8 @@ import {
   FaTimesCircle,
   FaCalendarAlt,
   FaUserMd,
+  FaMapMarkerAlt,
+  FaVial,
 } from "react-icons/fa";
 import AddMedicineModal from "./AddMedicineModal";
 import AddAppointmentModal from "./AddAppointmentModal";
@@ -69,13 +71,11 @@ export default function Health() {
 
   return (
     <div className="pt-20 md:pt-20 md:px-12 md:pb-12 px-4 pb-4">
-
       <h2 className="text-2xl font-bold text-center mb-8">🩺 Health Schedule</h2>
 
       {/* Date timeline */}
       <div className="flex overflow-x-auto items-center gap-6 justify-start mb-10 relative pb-6 border-b border-purple-300">
         <div className="absolute top-1/2 left-0 w-full h-2 bg-gradient-to-r from-purple-300 via-purple-400 to-purple-300 transform -translate-y-1/2 z-0 rounded-full"></div>
-
         {getDateRange().map((date, index) => {
           const isToday = isSameDay(date, new Date());
           const isSelected = isSameDay(date, selectedDate);
@@ -127,8 +127,10 @@ export default function Health() {
                   <FaClock className="text-purple-500" /> Time:{" "}
                   <span className="font-medium text-purple-700">{med.timeSlot}</span>
                 </div>
-                <div className="text-sm text-gray-600 mb-1">Dosage: {med.dosage}</div>
-                <div className="text-sm mt-2 font-medium">
+                <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                  <FaVial className="text-purple-500" /> Dosage: {med.dosage || "N/A"}
+                </div>
+                <div className="text-sm mt-2 font-medium flex items-center gap-2">
                   Status:{" "}
                   {med.status === "taken" ? (
                     <span className="text-green-600 flex items-center gap-1">
@@ -145,17 +147,22 @@ export default function Health() {
           </div>
         )}
 
-        {/* ➕ Add Medicine Button */}
-        <button
-          onClick={() => setOpen(true)}
-          className="mt-6 bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 shadow-md"
-        >
-          ➕ Add Medicine
-        </button>
+        {/* Centered Add Button */}
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setOpen(true)}
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 shadow-md"
+          >
+            ➕ Add Medicine
+          </button>
+        </div>
       </div>
 
+      {/* Section Divider */}
+      <hr className="my-12 border-t-2 border-purple-300" />
+
       {/* Appointments Section */}
-      <div className="mt-12">
+      <div className="mt-6">
         <h3 className="text-xl font-semibold mb-4 text-purple-700 flex items-center gap-2">
           <FaCalendarAlt /> Appointments
         </h3>
@@ -175,10 +182,11 @@ export default function Health() {
                   <FaClock className="text-purple-500" /> Time:{" "}
                   <span className="font-medium text-purple-700">{appt.timeSlot}</span>
                 </div>
-                <div className="text-sm text-gray-600 mb-1">
-                  Location: {appt.location}
+                <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                  <FaMapMarkerAlt className="text-purple-500" /> Location:{" "}
+                  {appt.location || "N/A"}
                 </div>
-                <div className="text-sm mt-2 font-medium">
+                <div className="text-sm mt-2 font-medium flex items-center gap-2">
                   Status:{" "}
                   {appt.status === "done" ? (
                     <span className="text-green-600 flex items-center gap-1">
@@ -195,13 +203,15 @@ export default function Health() {
           </div>
         )}
 
-        {/* ➕ Add Appointment Button */}
-        <button
-          onClick={() => setOpenA(true)}
-          className="mt-6 bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-500 shadow-md"
-        >
-          ➕ Add Appointment
-        </button>
+        {/* Centered Add Button */}
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => setOpenA(true)}
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-500 shadow-md"
+          >
+            ➕ Add Appointment
+          </button>
+        </div>
       </div>
 
       {/* Modals */}
