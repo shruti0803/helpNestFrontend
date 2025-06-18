@@ -24,18 +24,37 @@ const Today = () => {
     }
   };
 
-  const markTask = async (scheduleId) => {
-    try {
+ const markTask = async (item) => {
+  const date = getFormattedDate();
+  try {
+    if (item.type === "appointment") {
       await axios.patch(
-        "http://localhost:5000/api/health/markTaken",
-        { scheduleId, status: "taken" },
+        "http://localhost:5000/api/health/markDone",
+        {
+          title: item.title,
+          date,
+          timeSlot: item.timeSlot,
+        },
         { withCredentials: true }
       );
-      fetchToday(); // Refresh
-    } catch (err) {
-      console.error("❌ Failed to mark task", err);
+    } else {
+      await axios.patch(
+        "http://localhost:5000/api/health/markTaken",
+        {
+          name: item.name,
+          date,
+          timeSlot: item.timeSlot,
+        },
+        { withCredentials: true }
+      );
     }
-  };
+
+    fetchToday(); // Refresh list after marking
+  } catch (err) {
+    console.error("❌ Failed to mark task", err);
+  }
+};
+
 
   useEffect(() => {
     fetchToday();
@@ -74,7 +93,8 @@ const Today = () => {
                   <span className="text-green-600 font-medium">✅ Taken</span>
                 ) : (
                   <button
-                    onClick={() => markTask(med.scheduleId)}
+                    onClick={() => markTask(med)}
+
                     className="bg-purple-500 text-white text-sm px-2 py-1 rounded hover:bg-purple-600"
                   >
                     Mark Taken
@@ -107,7 +127,8 @@ const Today = () => {
                   <span className="text-green-600 font-medium">✅ Done</span>
                 ) : (
                   <button
-                    onClick={() => markTask(app.scheduleId)}
+                   onClick={() => markTask(app)}
+
                     className="bg-purple-500 text-white text-sm px-2 py-1 rounded hover:bg-purple-600"
                   >
                     Mark Done

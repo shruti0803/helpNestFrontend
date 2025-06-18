@@ -68,7 +68,8 @@ export default function Health() {
   }, [selectedDate]);
 
   return (
-    <div className="p-6 md:p-12">
+    <div className="pt-20 md:pt-20 md:px-12 md:pb-12 px-4 pb-4">
+
       <h2 className="text-2xl font-bold text-center mb-8">🩺 Health Schedule</h2>
 
       {/* Date timeline */}

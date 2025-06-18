@@ -74,7 +74,9 @@ const AddMedicineModal = ({ isOpen, onClose, onSuccess }) => {
       );
 
       Swal.fire({ icon: "success", title: "Medicine added successfully" });
-      onSuccess();
+     if (typeof onSuccess === "function") {
+  onSuccess();
+}
       onClose();
     } catch (err) {
       console.error("❌ Error adding medicine:", err);
