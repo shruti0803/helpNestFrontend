@@ -41,11 +41,11 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
     e.preventDefault();
     try {
       const schedule = [];
-      const buildDate = (dateStr) => {
-        const date = new Date(dateStr);
-        date.setHours(0, 0, 0, 0);
-        return date;
-      };
+    const buildDate = (dateStr) => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  // Note: month is 0-indexed
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+};
 
       if (formData.isRange) {
         let current = buildDate(formData.startDate);
@@ -78,7 +78,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   if (!isOpen) return null;
-
+const today = new Date().toISOString().split("T")[0];
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-xl w-full max-w-2xl">
@@ -153,6 +153,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
           {!formData.isRange ? (
             <input
               type="date"
+               min={today}
               className="w-full border px-2 py-2 rounded"
               value={formData.singleDate}
               onChange={(e) => setFormData({ ...formData, singleDate: e.target.value })}
@@ -162,6 +163,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
             <div className="flex gap-2">
               <input
                 type="date"
+                 min={today}
                 className="w-full border px-2 py-2 rounded"
                 value={formData.startDate}
                 onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
@@ -169,6 +171,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
               />
               <input
                 type="date"
+                min={formData.startDate || today}
                 className="w-full border px-2 py-2 rounded"
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}

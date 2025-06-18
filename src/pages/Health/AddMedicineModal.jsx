@@ -42,16 +42,22 @@ const AddMedicineModal = ({ isOpen, onClose, onSuccess }) => {
     e.preventDefault();
     try {
       const schedule = [];
+const buildDate = (dateStr) => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  // Note: month is 0-indexed
+  return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+};
 
-      const buildDate = (dateStr) => {
-        const date = new Date(dateStr);
-        date.setHours(0, 0, 0, 0);
-        return date;
-      };
+
+
+
+
+
 
       if (formData.isRange) {
-        let current = buildDate(formData.startDate);
-        const end = buildDate(formData.endDate);
+       let current = buildDate(formData.startDate);
+const end = buildDate(formData.endDate);
+
         while (current <= end) {
           formData.selectedSlots.forEach((slot) => {
             schedule.push({ date: new Date(current), timeSlot: slot });
@@ -63,6 +69,10 @@ const AddMedicineModal = ({ isOpen, onClose, onSuccess }) => {
           schedule.push({ date: buildDate(formData.singleDate), timeSlot: slot });
         });
       }
+console.log("📅 Schedule being sent:", schedule.map(s => ({
+  date: s.date.toISOString(),
+  timeSlot: s.timeSlot
+})));
 
       await axios.post(
         "http://localhost:5000/api/health/addMed",
@@ -85,6 +95,7 @@ const AddMedicineModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   if (!isOpen) return null;
+const today = new Date().toISOString().split("T")[0];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -155,29 +166,35 @@ const AddMedicineModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
 
           {!formData.isRange ? (
-            <input
-              type="date"
-              className="w-full border px-2 py-2 rounded"
-              value={formData.singleDate}
-              onChange={(e) => setFormData({ ...formData, singleDate: e.target.value })}
-              required
-            />
+           <input
+  type="date"
+  min={today}
+  className="w-full border px-2 py-2 rounded"
+  value={formData.singleDate}
+  onChange={(e) => setFormData({ ...formData, singleDate: e.target.value })}
+  required
+/>
+
           ) : (
             <div className="flex gap-2">
-              <input
-                type="date"
-                className="w-full border px-2 py-2 rounded"
-                value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                required
-              />
-              <input
-                type="date"
-                className="w-full border px-2 py-2 rounded"
-                value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                required
-              />
+             <input
+  type="date"
+  min={today}
+  className="w-full border px-2 py-2 rounded"
+  value={formData.startDate}
+  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+  required
+/>
+
+             <input
+  type="date"
+  min={formData.startDate || today}
+  className="w-full border px-2 py-2 rounded"
+  value={formData.endDate}
+  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+  required
+/>
+
             </div>
           )}
 
