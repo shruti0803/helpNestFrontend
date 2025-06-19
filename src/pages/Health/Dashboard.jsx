@@ -1,42 +1,37 @@
 import React from 'react';
 import Badges from './Badges';
-
 import Today from './Today';
 import WeekAnalysis from './WeekAnalysis';
-
+import WeeklyDonutChart from '../../components/Donut';
+import AreaGraph from './Area';
 
 const Dashboard = () => {
- 
   return (
-    <div className="min-h-screen pt-16 bg-purple-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen pt-16 bg-purple-50 flex flex-col lg:flex-row overflow-hidden">
 
       {/* Left Sidebar */}
-      <div className="w-full lg:w-96 bg-purple-200 p-4">
-       
-         <Today/>
+      <div className="w-full lg:w-96 bg-purple-200 p-4 shrink-0">
+        <Today />
       </div>
 
-      {/* Middle Section */}
-      <div className="flex-1 flex flex-col  gap-4">
-        {/* Top Row */}
-        <div className="bg-white rounded-xl shadow-md p-4">
-          
-         
-         
-     
+      {/* Right Content */}
+      <div className="flex-1 flex flex-col gap-4 p-4">
 
-       
-       
-          <WeekAnalysis/> 
+        {/* Top Row */}
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          <div className="flex-1">
+            <WeeklyDonutChart />
+          </div>
+          <div className="flex-1">
+            <Badges />
+          </div>
+        </div>
+
+        {/* Area Chart */}
+        <div className="w-full">
+          <AreaGraph />
         </div>
       </div>
-
-      {/* Right Sidebar */}
-      <div className="w-full lg:w-72 bg-purple-200 p-4 overflow-y-auto">
-       
-        <Badges />
-      </div>
-  
     </div>
   );
 };

@@ -17,6 +17,9 @@ export default {
         mont: ['Montserrat', 'sans-serif'],
         roboto: ['Roboto', 'sans-serif'],
       },
+       animation: {
+    'spin-slow': 'spin 3s linear infinite',
+  },
     },
   },
   plugins: [],

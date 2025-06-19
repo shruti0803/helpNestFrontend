@@ -109,7 +109,7 @@ const date = buildDate(dateStr);
   return (
     <div className="p-4 max-w-3xl mx-auto bg-purple-50 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-purple-700 text-center">
-        📅 Today's Health Summary
+        📅 Today's Tasks
       </h2>
 
       {/* Medicines */}

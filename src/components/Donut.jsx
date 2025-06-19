@@ -1,20 +1,12 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
-import { motion, AnimatePresence } from "framer-motion";
-
-const COLORS = ["#4ade80", "#f87171"]; // green, red
+import { motion } from "framer-motion";
 
 const WeeklyDonutChart = () => {
   const [summary, setSummary] = useState({ taken: 0, missed: 0, total: 0 });
   const [loading, setLoading] = useState(true);
   const [animatedPercent, setAnimatedPercent] = useState(0);
+  const [celebrate, setCelebrate] = useState(false);
 
   const buildDate = (dateStr) => {
     const [year, month, day] = dateStr.split("-").map(Number);
@@ -31,8 +23,6 @@ const WeeklyDonutChart = () => {
       const dateStr = date.toISOString().split("T")[0];
       const builtDate = buildDate(dateStr);
 
-      console.log("📅 Fetching for:", dateStr);
-
       try {
         const [medsRes, apptRes] = await Promise.all([
           axios.get(
@@ -45,13 +35,7 @@ const WeeklyDonutChart = () => {
           ),
         ]);
 
-        const meds = medsRes.data.tasks || [];
-        const appts = apptRes.data.tasks || [];
-
-        console.log(`🟣 Day ${dateStr} meds:`, meds);
-        console.log(`🔵 Day ${dateStr} appts:`, appts);
-
-        allLogs.push(...meds, ...appts);
+        allLogs.push(...(medsRes.data.tasks || []), ...(apptRes.data.tasks || []));
       } catch (err) {
         console.error("❌ Error fetching data for", dateStr, err.message);
       }
@@ -62,9 +46,6 @@ const WeeklyDonutChart = () => {
     ).length;
     const missed = allLogs.filter((item) => item.status === "missed").length;
     const total = taken + missed;
-
-    console.log("✅ Total logs:", allLogs);
-    console.log("✅ Taken:", taken, "Missed:", missed, "Total:", total);
 
     setSummary({ taken, missed, total });
     setLoading(false);
@@ -86,6 +67,7 @@ const WeeklyDonutChart = () => {
         current += step;
         if (current >= target) {
           setAnimatedPercent(target);
+          if (target === 100) setCelebrate(true);
           clearInterval(interval);
         } else {
           setAnimatedPercent(current);
@@ -94,19 +76,18 @@ const WeeklyDonutChart = () => {
     }
   }, [summary, loading]);
 
-  const chartData = [
-    { name: "Completed", value: summary.taken },
-    { name: "Missed", value: summary.missed },
-  ];
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - animatedPercent / 100);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7 }}
-      className="w-full h-80 bg-gradient-to-br from-purple-100 to-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-all duration-500"
+      className="w-full h-80 bg-gradient-to-br from-purple-100 to-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-all duration-500 relative"
     >
-      <h3 className="text-lg font-semibold mb-3 text-center text-purple-800">
+      <h3 className="text-lg font-semibold mb-4 text-center text-purple-800">
         Weekly Health Completion
       </h3>
 
@@ -115,46 +96,67 @@ const WeeklyDonutChart = () => {
       ) : summary.total === 0 ? (
         <p className="text-center text-gray-500">No tasks scheduled last week.</p>
       ) : (
-        <ResponsiveContainer>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={90}
-              paddingAngle={4}
-              dataKey="value"
-              isAnimationActive={true}
-              animationDuration={800}
-            >
-              {chartData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index]}
-                  className="transition-transform duration-300 ease-in-out hover:scale-105"
+        <div className="flex flex-col items-center justify-center w-full h-60 relative">
+          {/* Circle container */}
+          <svg
+            className={`w-40 h-40 ${
+              animatedPercent === 100 ? "animate-spin-slow" : ""
+            } rotate-[-90deg]`}
+          >
+            {/* Base black circle */}
+            <circle
+              cx="80"
+              cy="80"
+              r={radius}
+              stroke="#000"
+              strokeWidth="10"
+              fill="#111827" // dark background inside
+            />
+            {/* Progress purple ring */}
+            <circle
+              cx="80"
+              cy="80"
+              r={radius}
+              stroke="#a855f7"
+              strokeWidth="10"
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={offset}
+              strokeLinecap="round"
+              className="transition-all duration-1000 ease-out"
+            />
+          </svg>
+
+          {/* Center content */}
+          <div className="absolute text-center">
+            <p className="text-3xl font-bold text-white drop-shadow-md">{animatedPercent}%</p>
+            <p className="text-sm text-gray-300 mt-1">Completed</p>
+          </div>
+
+          {/* 🎉 Confetti on 100% */}
+          {celebrate && (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              {[...Array(20)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 0 }}
+                  animate={{ opacity: 1, y: 120 }}
+                  transition={{
+                    duration: 1.5,
+                    delay: Math.random(),
+                    ease: "easeOut"
+                  }}
+                  className="absolute w-2 h-2 rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 50}%`,
+                    backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`
+                  }}
                 />
               ))}
-            </Pie>
-            <Tooltip
-              contentStyle={{ borderRadius: "10px", fontSize: "0.9rem" }}
-            />
-            <text
-              x="50%"
-              y="50%"
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize={22}
-              fontWeight={700}
-              fill="#4b5563"
-              style={{
-                filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.15))",
-              }}
-            >
-              {animatedPercent}%
-            </text>
-          </PieChart>
-        </ResponsiveContainer>
+            </div>
+          )}
+        </div>
       )}
     </motion.div>
   );
