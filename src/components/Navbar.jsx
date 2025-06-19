@@ -8,6 +8,8 @@ import { FaUser, FaHandsHelping, FaUserShield } from 'react-icons/fa';
 import useGetHelperProfile from '../../hooks/useGetHelperProfile';
 import { logoutHelper } from '../../redux/helperSlice';
 import { useNavigate } from "react-router-dom";
+import AdminLogin from './Auth/LoginAdmin';
+import { logoutAdmin } from '../../redux/adminSlice';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -17,6 +19,7 @@ const Navbar = () => {
   const helperData = useSelector((state) => state.helper.helper);
 
   const user = useSelector((state) => state.user.user);
+  const admin=useSelector((state)=> state.admin.admin);
   const dispatch = useDispatch();
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -41,6 +44,14 @@ const Navbar = () => {
   localStorage.removeItem("helperToken");
   dispatch(logoutHelper());
 
+
+  if (admin) {
+        await fetch('/api/admin/logout', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        dispatch(logoutAdmin());
+      }
   // 🧹 Clear persisted data
   // persistor.purge();
 }
@@ -51,7 +62,7 @@ const Navbar = () => {
     }
   };
 
-  const displayName = user?.name || helperData?.name;
+  const displayName = user?.name || helperData?.name || admin?.name;
   const userInitial = displayName ? displayName.charAt(0).toUpperCase() : null;
 
   const openLogin = () => {
@@ -208,9 +219,9 @@ const Navbar = () => {
         </button>
 
         <button
-          disabled
+          onClick={() => setAuthRole('admin')}
           className="flex flex-col items-center justify-center bg-purple-300 text-white w-24 h-24 rounded-lg cursor-not-allowed shadow-md"
-          title="Coming soon"
+          title="Admin"
         >
           <FaUserShield size={32} />
           <span className="mt-2 font-semibold">Admin</span>
@@ -256,6 +267,20 @@ const Navbar = () => {
               &times;
             </button>
             <LoginHelper onLoginSuccess={() => closeAuth()} />
+          </div>
+        </div>
+      )}
+       {showAuth && authRole === 'admin' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-purple-50 p-6 rounded-lg shadow-lg  relative w-[700px] max-w-[90vw]">
+            <button
+              onClick={closeAuth}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 font-bold text-xl"
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <AdminLogin onLoginSuccess={() => closeAuth()} />
           </div>
         </div>
       )}

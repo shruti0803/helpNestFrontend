@@ -107,7 +107,7 @@ const date = buildDate(dateStr);
   }, []);
 
   return (
-    <div className="p-4 max-w-3xl mx-auto bg-purple-100 rounded-lg shadow-md">
+    <div className="p-4 max-w-3xl mx-auto bg-purple-50 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-purple-700 text-center">
         📅 Today's Health Summary
       </h2>
@@ -184,12 +184,12 @@ const date = buildDate(dateStr);
       <FaCalendarAlt className="inline text-purple-600 mr-1" />
       <span className="text-purple-700">{app.title}</span>
     </div>
-    <div className="text-sm text-gray-700 mt-1">
+    <div className="text-sm  mt-1 font-medium">
       <FaClock className="inline text-purple-600 mr-1" />
       Time: <span className=" capitalize">{app.timeSlot}</span>
     </div>
     {app.location && (
-      <div className="text-sm text-gray-700 mt-1">
+      <div className="text-sm  mt-1 font-medium">
         <FaMapMarkerAlt className="inline text-purple-600 mr-1" />
         Location: <span >{app.location}</span>
       </div>

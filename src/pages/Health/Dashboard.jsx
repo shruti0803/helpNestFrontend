@@ -33,7 +33,7 @@ const Dashboard = () => {
 
       {/* Right Sidebar */}
       <div className="w-full lg:w-72 bg-purple-200 p-4 overflow-y-auto">
-        <h2 className="text-lg font-bold mb-4">Right Sidebar</h2>
+       
         <Badges />
       </div>
   

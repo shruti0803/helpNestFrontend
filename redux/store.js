@@ -1,6 +1,8 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import userSlice from "./userSlice";
 import helperSlice from "./helperSlice";
+import adminSlice from "./adminSlice"; // ✅ import admin slice
+
 import {
   persistStore,
   persistReducer,
@@ -10,20 +12,21 @@ import {
   PERSIST,
   PURGE,
   REGISTER,
-} from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+} from "redux-persist";
+import storage from "redux-persist/lib/storage";
 
 // redux-persist config
 const persistConfig = {
-  key: 'root',
+  key: "root",
   version: 1,
   storage,
 };
 
-// Combine reducers (even if only one now, helps with scalability)
+// Combine reducers
 const rootReducer = combineReducers({
   user: userSlice,
   helper: helperSlice,
+  admin: adminSlice, // ✅ added admin
 });
 
 // Wrap with persistReducer
@@ -40,5 +43,5 @@ const store = configureStore({
     }),
 });
 
-export const persistor = persistStore(store); // this is required for <PersistGate>
+export const persistor = persistStore(store);
 export default store;
