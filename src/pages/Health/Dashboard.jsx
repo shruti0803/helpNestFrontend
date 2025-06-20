@@ -7,7 +7,7 @@ import AreaGraph from './Area';
 
 const Dashboard = () => {
   return (
-    <div className="min-h-screen pt-16 bg-purple-50 flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen pt-16 bg-purple-200 flex flex-col lg:flex-row overflow-hidden">
 
       {/* Left Sidebar */}
       <div className="w-full lg:w-96 bg-purple-200 p-4 shrink-0">
