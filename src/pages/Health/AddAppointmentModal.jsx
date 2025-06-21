@@ -20,6 +20,7 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
     singleDate: "",
     startDate: "",
     endDate: "",
+       phone:"",
     selectedSlots: [],
     isRange: false,
   });
@@ -46,7 +47,14 @@ const AddAppointmentModal = ({ isOpen, onClose, onSuccess }) => {
   // Note: month is 0-indexed
   return new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
 };
-
+if (formData.reminder && !formData.phone) {
+  Swal.fire({ icon: "warning", title: "Phone number is required for reminders" });
+  return;
+}
+if (formData.reminder && !/^[6-9]\d{9}$/.test(formData.phone)) {
+  Swal.fire({ icon: "warning", title: "Invalid phone number" });
+  return;
+}
       if (formData.isRange) {
         let current = buildDate(formData.startDate);
         const end = buildDate(formData.endDate);
@@ -135,6 +143,15 @@ const today = new Date().toISOString().split("T")[0];
               <span className="ml-2 text-sm">Enable Reminder</span>
             </label>
           </div>
+                  {formData.reminder && (
+  <input
+    className="w-full border px-2 py-2 rounded placeholder-gray-500"
+    placeholder="Phone number for reminder"
+    value={formData.phone}
+    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+    required={formData.reminder}
+  />
+)}
           <div className="flex items-center gap-2">
             <label className="inline-flex items-center cursor-pointer">
               <input

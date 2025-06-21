@@ -18,6 +18,7 @@ const AddMedicineModal = ({ isOpen, onClose, onSuccess }) => {
     dosage: "",
     notes: "",
     reminder: false,
+    phone:"",
     singleDate: "",
     startDate: "",
     endDate: "",
@@ -51,6 +52,14 @@ const buildDate = (dateStr) => {
 
 
 
+if (formData.reminder && !formData.phone) {
+  Swal.fire({ icon: "warning", title: "Phone number is required for reminders" });
+  return;
+}
+if (formData.reminder && !/^[6-9]\d{9}$/.test(formData.phone)) {
+  Swal.fire({ icon: "warning", title: "Invalid phone number" });
+  return;
+}
 
 
 
@@ -143,12 +152,23 @@ const today = new Date().toISOString().split("T")[0];
                 onChange={(e) => setFormData({ ...formData, reminder: e.target.checked })}
                 className="sr-only peer"
               />
+              
               <div className="w-11 h-6 bg-gray-300 peer-checked:bg-purple-500 rounded-full peer relative transition-all">
                 <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all peer-checked:translate-x-full" />
               </div>
               <span className="ml-2 text-sm">Enable Reminder</span>
             </label>
           </div>
+          {formData.reminder && (
+  <input
+    className="w-full border px-2 py-2 rounded placeholder-gray-500"
+    placeholder="Phone number for reminder"
+    value={formData.phone}
+    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+    required={formData.reminder}
+  />
+)}
+
 
           <div className="flex items-center gap-2">
             <label className="inline-flex items-center cursor-pointer">

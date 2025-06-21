@@ -1,7 +1,7 @@
 import React from 'react';
 import Badges from './Badges';
 import Today from './Today';
-import WeekAnalysis from './WeekAnalysis';
+
 import WeeklyDonutChart from '../../components/Donut';
 import AreaGraph from './Area';
 
