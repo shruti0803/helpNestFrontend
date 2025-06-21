@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import VoiceSearch from './VoiceSearch';
 
 const videos = [
   'https://videos.pexels.com/video-files/7516770/7516770-uhd_1440_2560_25fps.mp4',
@@ -32,7 +33,7 @@ const Hero = () => {
         
 Designed to help elders manage medicines, track wellness, and connect with reliable helpers—while staying safe, confident, and connected to their community.
         </p>
-        
+          <VoiceSearch/>
         <div className='flex gap-4 py-4'>
         <button className="px-6 py-3 bg-purple-600 text-white rounded-2xl shadow-md hover:bg-purple-800 transition">
           Get Started
@@ -41,6 +42,7 @@ Designed to help elders manage medicines, track wellness, and connect with relia
           Explore
         </button>
        </div>
+     
       </div>
 
       {/* Right Video Section */}
