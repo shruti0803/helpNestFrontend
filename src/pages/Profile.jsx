@@ -17,6 +17,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
+  const [pendingAmount, setPendingAmount] = useState(null);
+
   const role = localStorage.getItem('role');
 
   useEffect(() => {
@@ -37,6 +39,18 @@ const Profile = () => {
         setLoading(false);
       }
     };
+const fetchSalary = async () => {
+  try {
+    const { data } = await axios.get("http://localhost:5000/api/payment/getSalary", {
+      withCredentials: true,
+    });
+    setPendingAmount(data.pendingAmount);
+  } catch (err) {
+    console.error("Failed to fetch pending amount:", err);
+  }
+};
+
+fetchSalary();
 
     fetchProfile();
   }, [role]);
@@ -148,6 +162,13 @@ const Profile = () => {
           </div>
         </div>
       </div>
+      <div className="max-w-3xl mx-auto mt-10 bg-white shadow-md rounded-2xl p-6">
+  <h2 className="text-xl font-semibold text-purple-800 mb-2">💰 Wallet</h2>
+  <div className="text-purple-700 text-lg">
+    Pending Amount: ₹{pendingAmount !== null ? pendingAmount.toFixed(2) : '...'}
+  </div>
+</div>
+
     </div>
   );
 };
