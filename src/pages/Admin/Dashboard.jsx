@@ -43,8 +43,8 @@ const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
 
   const [newCustomers, setNewCustomers] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
-  const [newServiceProviders, setNewServiceProviders] = useState(0);
-  const [totalServiceProviders, setTotalServiceProviders] = useState(0);
+  const [newHelpers, setNewHelpers] = useState(0);
+  const [totalHelpers, setTotalHelpers] = useState(0);
 
   const [dailyRevenueData, setDailyRevenueData] = useState({
    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5']
@@ -71,15 +71,25 @@ useEffect(() => {
 
       const data = response.data;
 
-      // Sort data to ensure proper x-axis order
-      const sorted = data.sort((a, b) => new Date(a._id) - new Date(b._id));
-
-      const labels = sorted.map(item => {
-        const date = new Date(item._id);
-        return `${date.getDate()}`; // Optional: you can return full label like `${date.getDate()} ${monthNames[date.getMonth()]}`
+      // Map the backend result into a dictionary for quick access
+      const bookingMap = {};
+      data.forEach(item => {
+        const date = new Date(item._id).getDate(); // only get day
+        bookingMap[date] = item.count;
       });
 
-      const counts = sorted.map(item => item.count);
+      const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+      const labels = [];
+      const counts = [];
+     const today = new Date();
+const isCurrentMonth = selectedMonth === today.getMonth() && selectedYear === today.getFullYear();
+const limitDay = isCurrentMonth ? today.getDate() : daysInMonth;
+
+for (let day = 1; day <= limitDay; day++) {
+  labels.push(day.toString());
+  counts.push(bookingMap[day] || 0);
+}
+
 
       setDailyRevenueData({
         labels,
@@ -103,6 +113,7 @@ useEffect(() => {
 
   fetchBookingPerDate();
 }, [selectedMonth, selectedYear]);
+
 
   
 
@@ -197,8 +208,8 @@ const [waveData, setWaveData] = useState({
   // Fetch new and total helpers
   axios.get('http://localhost:5000/api/admin/helpers/summary')
     .then(response => {
-      setNewServiceProviders(response.data.newHelpersLastWeek || 0);
-      setTotalServiceProviders(response.data.totalHelpers || 0);
+      setNewHelpers(response.data.newHelpersLastWeek || 0);
+      setTotalHelpers(response.data.totalHelpers || 0);
     })
     .catch(error => console.error('Error fetching helper summary:', error));
 }, []);
@@ -218,11 +229,11 @@ const [waveData, setWaveData] = useState({
     ],
   };
 
-  const newServiceProvidersData = {
+  const newHelpersData = {
     labels: ['Existing Helpers', 'Helpers'],
     datasets: [
       {
-        data: [totalServiceProviders - newServiceProviders, newServiceProviders],
+        data: [totalHelpers - newHelpers, newHelpers],
         backgroundColor: ['#FFCE56', '#4BC0C0'],
         hoverBackgroundColor: ['#FFCE56', '#4BC0C0'],
       },
@@ -242,53 +253,59 @@ const [waveData, setWaveData] = useState({
   ));
 
 
-    const [servicesData, setServicesData] = useState({
-      labels: [
-        'Childcare', 'Errand', 'Tech'
-        
+  const serviceLabels = [
+  "Tech Support",
+  "Medical Assistance",
+  "Companionship",
+  "Disability Support",
+  "Errand Services",
+  "Childcare"
+];
+
+const [servicesData, setServicesData] = useState({
+  labels: serviceLabels,
+  datasets: [
+    {
+      data: new Array(serviceLabels.length).fill(0), // exactly 6 items
+      backgroundColor: [
+        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F'
       ],
-      datasets: [
-        {
-          data: new Array(11).fill(0), // Initialize with zeros
-          backgroundColor: [
-            '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F',
-            '#581845', '#DAF7A6', '#FFC300', '#FF6F61', '#FAD02E'
-          ],
-          hoverBackgroundColor: [
-            '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F',
-            '#581845', '#DAF7A6', '#FFC300', '#FF6F61', '#FAD02E'
-          ],
-        },
+      hoverBackgroundColor: [
+        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F'
       ],
-    });
+    },
+  ],
+});
+
   
-    useEffect(() => {
-      const fetchBookingCounts = async () => {
-        try {
-          const response = await axios.get('http://localhost:4002/booking-count-by-service');
-          const apiData = response.data;
-          const data = servicesData.labels.map((label, index) => {
-            const service = apiData.find((item) => item.Service_Name === label);
-            return service ? service.booking_count : 0;
-          });
-  
-          // Update the servicesData state
-          setServicesData({
-            ...servicesData,
-            datasets: [
-              {
-                ...servicesData.datasets[0],
-                data, // Set the updated data
-              },
-            ],
-          });
-        } catch (error) {
-          console.error('Error fetching booking counts:', error);
-        }
-      };
-  
-      fetchBookingCounts();
-    }, []); 
+  useEffect(() => {
+  const fetchBookingCounts = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/admin/bookings-by-category');
+      const apiData = response.data; // [{ Service_Name: "Tech Support", booking_count: 12 }, ...]
+console.log("booking by category", apiData);
+      const updatedData = serviceLabels.map(label => {
+        const match = apiData.find(item => item.Service_Name === label);
+        return match ? match.booking_count : 0;
+      });
+
+      setServicesData(prev => ({
+        ...prev,
+        datasets: [
+          {
+            ...prev.datasets[0],
+            data: updatedData,
+          },
+        ],
+      }));
+    } catch (error) {
+      console.error('Error fetching booking counts:', error);
+    }
+  };
+
+  fetchBookingCounts();
+}, []);
+
 
 
 
@@ -350,7 +367,7 @@ setWaveData({
 }, [selectedMonth, selectedYear]);
 
 
-//new  
+
 
 
     const cityCoordinates = {
@@ -395,15 +412,18 @@ setWaveData({
   useEffect(() => {
     const fetchCityBookingsData = async () => {
       try {
-        const response = await axios.get('http://localhost:4002/booking-count-by-city');
+        const response = await axios.get('http://localhost:5000/api/admin/bookings-by-city');
         const data = response.data;
+console.log('City Bookings Data:', data);
 
         // Map the API response to include coordinates and booking counts
-        const updatedCityBookingsData = data.map(item => ({
-          city: item.Book_City,
-          bookings: item.booking_count,
-          coordinates: cityCoordinates[item.Book_City] || [20.5937, 78.9629], // Default to India center if not found
-        }));
+      const updatedCityBookingsData = data.map(item => ({
+  city: item.city,
+  bookings: item.count,
+  coordinates: cityCoordinates[item.city] || [20.5937, 78.9629],
+}));
+
+console.log('Updated City Booking Markers:', updatedCityBookingsData);
 
         setCityBookingsData(updatedCityBookingsData);
       } catch (error) {
@@ -436,7 +456,7 @@ setWaveData({
 
         {/* New Customers */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Customers Analytics for <strong>{monthNames[currentMonth - 1]}</strong></h2>
+          <h2 className="text-2xl font-semibold">Users Analytics </h2>
           <div className="mt-4 flex items-center justify-between">
             {/* Pie Chart */}
             <div className="w-40 h-40">
@@ -458,21 +478,21 @@ setWaveData({
 
         {/* New Service Providers */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Helpers Analytics for <strong>{monthNames[currentMonth - 1]}</strong></h2>
+          <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
           <div className="mt-4 flex items-center justify-between">
             {/* Pie Chart */}
             <div className="w-40 h-40">
-              <Pie data={newServiceProvidersData} options={{ responsive: true }} />
+              <Pie data={newHelpersData} options={{ responsive: true }} />
             </div>
             {/* Stats */}
             <div className="ml-6">
               <div className="mb-4">
                 <p className="font-semibold">New Helpers</p>
-                <p className="text-green-500 font-bold">{newServiceProviders}</p>
+                <p className="text-green-500 font-bold">{newHelpers}</p>
               </div>
               <div>
                 <p className="font-semibold">Total Helpers</p>
-                <p className="text-blue-500 font-bold">{totalServiceProviders}</p>
+                <p className="text-blue-500 font-bold">{totalHelpers}</p>
               </div>
             </div>
           </div>
@@ -512,17 +532,17 @@ setWaveData({
       </div>
       {/* Services Booked and geography graph  */}
       <div className='flex flex-col md:flex-row'>
-  {/* <div className="bg-white p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
-    <h2 className="text-2xl font-semibold">Services Booked</h2>
+  <div className="bg-white p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
+    <h2 className="text-2xl font-semibold">Requests Booked</h2>
     <div className="mt-4 flex justify-center">
       <div className="w-80 h-80">
         <Pie data={servicesData} options={{ responsive: true }} />
       </div>
     </div>
-  </div> */}
+  </div>
 
   {/* Geography Chart (India map) with city markers */}
-  {/* <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
+  <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
       <h2 className="text-2xl font-semibold">Bookings by City</h2>
       <div className="mt-4" style={{ height: '400px' }}>
         <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
@@ -549,7 +569,7 @@ setWaveData({
           ))}
         </MapContainer>
       </div>
-    </div> */}
+    </div>
 </div>
 
     </div>
