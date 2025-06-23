@@ -152,6 +152,7 @@ try {
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
+             min={new Date().toISOString().split("T")[0]} // today's date in YYYY-MM-DD
             className="w-full border px-3 py-2 rounded"
           />
           <input
@@ -159,9 +160,12 @@ try {
             value={time}
             onChange={(e) => setTime(e.target.value)}
             required
+            min={date === new Date().toISOString().split("T")[0]
+    ? new Date().toTimeString().slice(0, 5)
+    : undefined} // min time only if today's date is selected
             className="w-full border px-3 py-2 rounded"
           />
-          <select
+          {/* <select
             value={genderPreference}
             onChange={(e) => setGenderPreference(e.target.value)}
             className="w-full border px-3 py-2 rounded"
@@ -169,7 +173,7 @@ try {
             <option value="Any">Any</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
-          </select>
+          </select> */}
           <button
             type="submit"
             className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
@@ -187,18 +191,18 @@ const HelpPage = () => {
   const [selectedService, setSelectedService] = useState(null);
 const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate a loading delay (you can replace this with real data fetching)
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500); // 1.5 seconds
+  // useEffect(() => {
+  //   // Simulate a loading delay (you can replace this with real data fetching)
+  //   const timer = setTimeout(() => {
+  //     setLoading(false);
+  //   }, 1500); // 1.5 seconds
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
-  if (loading) {
-    return <Loader />;
-  }
+  // if (loading) {
+  //   return <Loader />;
+  // }
   return (
     <div className="px-4 py-10 sm:px-8 md:px-16 lg:px-24 bg-gradient-to-br from-gray-50 to-white min-h-screen">
       <h1 className="text-4xl font-mono font-extrabold text-center text-gray-800 m-12 mb-12">

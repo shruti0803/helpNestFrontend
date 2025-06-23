@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import VoiceSearch from './VoiceSearch';
-
+import { useSelector } from 'react-redux';
 const videos = [
   'https://videos.pexels.com/video-files/7516770/7516770-uhd_1440_2560_25fps.mp4',
   'https://videos.pexels.com/video-files/7172888/7172888-sd_640_360_25fps.mp4',
@@ -9,6 +9,11 @@ const videos = [
 ];
 
 const Hero = () => {
+
+
+   const user = useSelector((state) => state.user.user);
+    const helperData = useSelector((state) => state.helper.helper);
+     const displayName = user?.name || helperData?.name 
   const videoRefs = useRef([]);
 
   const handleMouseEnter = (index) => {
@@ -26,7 +31,7 @@ const Hero = () => {
       {/* Left Text Section */}
       <div className="w-full md:w-1/2 mb-10 md:mb-0 p-8 ">
         <h1 className="text-6xl md:text-5xl font-roboto font-bold text-purple-900 mb-6">
-          Welcome to HelpNest
+          Welcome  {displayName || "to HelpNest" }
         </h1>
         <p className="text-lg text-gray-700 mb-6 mr-4">
          A trusted platform for health, independence, and everyday support.

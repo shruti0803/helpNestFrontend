@@ -220,7 +220,7 @@ const Navbar = () => {
 
         <button
           onClick={() => setAuthRole('admin')}
-          className="flex flex-col items-center justify-center bg-purple-300 text-white w-24 h-24 rounded-lg cursor-not-allowed shadow-md"
+          className="flex flex-col items-center justify-center bg-purple-600 hover:bg-purple-700 text-white w-24 h-24 rounded-lg shadow-md transition"
           title="Admin"
         >
           <FaUserShield size={32} />

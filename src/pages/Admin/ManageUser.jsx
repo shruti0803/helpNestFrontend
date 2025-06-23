@@ -28,16 +28,16 @@ function ManageUser() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:4002/customers')
+    fetch('http://localhost:5000/api/admin/allUsers')
       .then((response) => response.json())
       .then((data) => {
         const formattedData = data.map((user, index) => ({
           id: index + 1,
-          name: user.U_Name,
-          email: user.U_Email,
-          phone: user.U_Phone,
-          role: user.is_SP === 1 ? 'Service Provider' : 'User',
-          status: user.Active==1?'Active': 'Not Active',
+          name: user.name,
+          email: user.email,
+        
+         
+          
         }));
         setUsersData(formattedData);
       })
@@ -46,140 +46,68 @@ function ManageUser() {
       });
   }, []);
 
-  const columns = [
-    { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'name', headerName: 'Name', width: 150 },
-    { field: 'email', headerName: 'Email', width: 180 },
-    { field: 'phone', headerName: 'Phone', width: 150 },
-    {
-      field: 'role',
-      headerName: 'Role',
-      width: 250,
-      renderCell: (params) => (
-        <div className="flex items-center">
-          {params.value === 'Service Provider' ? (
-            <>
-              <WorkIcon style={{ color: 'green', marginRight: 4 }} />
-              <span>Service Provider</span>
-            </>
-          ) : (
-            <>
-              <PersonIcon style={{ color: 'blue', marginRight: 4 }} />
-              <span>User</span>
-            </>
-          )}
-        </div>
-      ),
-    },
-    {
-      field: 'status',
-      headerName: 'Status',
-      width: 120,
-      renderCell: (params) => (
-        <div
-          style={{
-            color: params.value === 'Active' ? 'green' : 'gray',
-            fontWeight: 'bold',
-            padding: '5px 10px',
-            textAlign: 'center',
-            borderRadius: '5px',
-          }}
-        >
-          {params.value}
-        </div>
-      ),
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 180,
-      renderCell: (params) => (
-        <div className="flex justify-around">
-          <IconButton style={{ color: 'blue' }} onClick={() => handleViewClick(params)}>
-            <VisibilityIcon />
-          </IconButton>
-          <IconButton style={{ color: 'red' }} onClick={() => console.log(`Deleting user ${params.row.id}`)}>
-            <DeleteIcon />
-          </IconButton>
-          <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
-            <MoreVertIcon />
-          </IconButton>
-        </div>
-      ),
-    },
-  ];
+const columns = [
+  { field: 'id', headerName: 'ID', flex: 0.5 },
+  { field: 'name', headerName: 'Name', flex: 1 },
+  { field: 'email', headerName: 'Email', flex: 1.5 },
+  {
+    field: 'actions',
+    headerName: 'Actions',
+    flex: 1,
+    renderCell: (params) => (
+      <div className="flex justify-around w-full">
+        <IconButton style={{ color: 'blue' }} onClick={() => handleViewClick(params)}>
+          <VisibilityIcon />
+        </IconButton>
+        <IconButton style={{ color: 'red' }} onClick={() => console.log(`Deleting user ${params.row.id}`)}>
+          <DeleteIcon />
+        </IconButton>
+        <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+          <MoreVertIcon />
+        </IconButton>
+      </div>
+    ),
+  },
+];
+
 
   return (
-    <div className="w-full">
-      
-      <Typography variant="h4" gutterBottom>
-        Manage Users
-      </Typography>
-      <div style={{ height: 400 }}>
-         {/* Filter section */}
-      
-      
-      <Box  p={2} sx={{ border: '1px solid #ccc', borderRadius: 1, backgroundColor: '#f9f9f9' }}>
-      <h1 className='text-xl font-bold mb-2'>Filter</h1>
-      <div className=" flex">
-      
-        
-      <FormControl style={{ width: 150, marginRight: 10 }}>
-  <Select
-    value={filteredRole}
-    onChange={(e) => setFilteredRole(e.target.value)}
-    displayEmpty
-    renderValue={(selected) => {
-      return selected === '' ? <span style={{ color: 'gray' }}>Select Role</span> : selected;
-    }}
-  >
-    <MuiMenuItem value="" sx={{ color: 'gray' }}>Select Role</MuiMenuItem>
-    <MuiMenuItem value="User">User</MuiMenuItem>
-    <MuiMenuItem value="Service Provider">Service Provider</MuiMenuItem>
-  </Select>
-</FormControl>
+ <div className="w-full px-4">
+  <Typography variant="h4" gutterBottom>
+    Manage Users
+  </Typography>
 
-<FormControl style={{ width: 150 }}>
-  <Select
-    value={filteredStatus}
-    onChange={(e) => setFilteredStatus(e.target.value)}
-    displayEmpty
-    renderValue={(selected) => {
-      return selected === '' ? <span style={{ color: 'gray' }}>Select Status</span> : selected;
-    }}
-  >
-    <MuiMenuItem value="" sx={{ color: 'gray' }}>Select Status</MuiMenuItem>
-    <MuiMenuItem value="Active">Active</MuiMenuItem>
-    <MuiMenuItem value="Inactive">Inactive</MuiMenuItem>
-  </Select>
-</FormControl>
+  <div style={{ height: 600, width: '100%' }}>
+    <DataGrid
+      rows={usersData}
+      columns={columns}
+      pageSize={10}
+      rowsPerPageOptions={[10, 20]}
+      disableSelectionOnClick
+      autoHeight={false}
+      sx={{
+        '& .MuiDataGrid-columnHeaders': {
+          backgroundColor: '#3f51b5',
+          color: 'black',
+          fontWeight: 'bold',
+          fontSize: '16px',
+        },
+        '& .MuiDataGrid-cell': {
+          fontSize: '15px',
+          padding: '12px',
+        },
+        '& .MuiDataGrid-cell:hover': {
+          backgroundColor: '#e3f2fd',
+        },
+        '& .MuiDataGrid-footerContainer': {
+          backgroundColor: '#e0e0e0',
+        },
+      }}
+    />
+  </div>
+</div>
 
-      </div>
-      </Box>
-      
-        <DataGrid
-          rows={usersData}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
-          disableSelectionOnClick
-          sx={{
-            '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: '#3f51b5',
-              color: 'black',
-              fontWeight: 'bold',
-      fontSize: '16px',
-            },
-            '& .MuiDataGrid-cell:hover': {
-              backgroundColor: '#e3f2fd',
-            },
-            '& .MuiDataGrid-footerContainer': {
-              backgroundColor: '#e0e0e0',
-            },
-          }}
-        />
-      </div>
-    </div>
+
   );
 }
 
