@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
+ import { FaClipboardList } from 'react-icons/fa'; // make sure this is imported at top
 import {
   Chart as ChartJS,
   ArcElement,
@@ -18,11 +19,19 @@ import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 
 const AdminDashboard = () => {
+  //new
+
+  const [monthlyProfit, setMonthlyProfit] = useState(0);
+const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
+  labels: [],
+  datasets: [],
+});
+
   // State for selecting month and year
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 0 for January, 11 for December
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [totalSales, setTotalSales] = useState(null);
-  const [totalRevenue,setTotalRevenue]=useState(null);
+ 
+  
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June', 
@@ -36,155 +45,118 @@ const AdminDashboard = () => {
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [newServiceProviders, setNewServiceProviders] = useState(0);
   const [totalServiceProviders, setTotalServiceProviders] = useState(0);
+
   const [dailyRevenueData, setDailyRevenueData] = useState({
-    labels: [],
+   labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5']
+,
     datasets: []
   });
-  useEffect(() => {
-    const fetchTotalSales = async () => {
-      try {
-        // Get current month and year
-        
 
-        // Make the API call with current month and year
-        const response = await axios.get(`http://localhost:4002/sales?month=${currentMonth}&year=${currentYear}`);
 
-        setTotalSales(response.data.totalSales);
-        // console.log("totalSales", totalSales);
-      } catch (error) {
-        console.error('Error fetching sales data:', error);
-      }
-    };
-
-    fetchTotalSales();
-  }, []);
-
-  // Generate data for the selected month dynamically
-  useEffect(() => {
-    const fetchTotalSales = async () => {
-      try {
-        const response = await axios.get(`http://localhost:4002/sales?month=${currentMonth}&year=${currentYear}`);
-        setTotalSales(response.data.totalSales);
-      } catch (error) {
-        console.error('Error fetching sales data:', error);
-      }
-    };
-    fetchTotalSales();
-  }, [currentMonth, currentYear]);
-
-  useEffect(() => {
-    const fetchTotalRevenue = async () => {
-      try {
-        const response = await axios.get(`http://localhost:4002/total-cost`);
-        setTotalRevenue(response.data.totalCost);
-      } catch (error) {
-        console.error('Error fetching sales data:', error);
-      }
-    };
-    fetchTotalRevenue();
-  }, []);
-
-  // Fetch revenue data
-  useEffect(() => {
-    const fetchRevenueData = async () => {
-      try {
-        const response = await axios.get('http://localhost:4002/revenue-data', {
-          params: { month: selectedMonth + 1, year: selectedYear },
-        });
   
-        if (response.data && response.data.length > 0) {
-          // Map over the response data to extract only the day part of the date
-          const labels = response.data.map(item => {
-            const date = new Date(item.date);
-            return date.getDate(); // Extracts only the day part of the date
-          });
-          const data = response.data.map(item => item.revenue);
-  
-          setDailyRevenueData({
-            labels,
-            datasets: [{
-              label: 'Money Obtained (₹)',
-              data,
-              borderColor: 'green',
-              backgroundColor: 'rgba(0, 128, 0, 0.1)',
-              fill: false,
-              tension: 0.4,
-              borderWidth: 2,
-              pointRadius: 4,
-              pointBackgroundColor: 'green',
-            }]
-          });
-        } else {
-          setDailyRevenueData({ labels: [], datasets: [] });
+
+
+ 
+
+ //new for booking
+useEffect(() => {
+  const fetchBookingPerDate = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/admin/bookings-by-date', {
+        params: {
+          month: selectedMonth + 1,
+          year: selectedYear
         }
-      } catch (error) {
-        console.error('Error fetching revenue data:', error);
-      }
-    };
-    fetchRevenueData();
-  }, [selectedMonth, selectedYear]);
+      });
+
+      const data = response.data;
+
+      // Sort data to ensure proper x-axis order
+      const sorted = data.sort((a, b) => new Date(a._id) - new Date(b._id));
+
+      const labels = sorted.map(item => {
+        const date = new Date(item._id);
+        return `${date.getDate()}`; // Optional: you can return full label like `${date.getDate()} ${monthNames[date.getMonth()]}`
+      });
+
+      const counts = sorted.map(item => item.count);
+
+      setDailyRevenueData({
+        labels,
+        datasets: [{
+          label: 'Bookings per Day',
+          data: counts,
+          borderColor: 'green',
+          backgroundColor: 'rgba(0, 128, 0, 0.1)',
+          fill: false,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: 'green',
+        }]
+      });
+    } catch (error) {
+      console.error('Error fetching booking trend:', error);
+      setDailyRevenueData({ labels: [], datasets: [] });
+    }
+  };
+
+  fetchBookingPerDate();
+}, [selectedMonth, selectedYear]);
+
   
 
-  const RevenueChartOptions = {
-    responsive: true,
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Days of the Month',
-        },
-        grid: {
-          display: false,
-        },
-        ticks: {
-          autoSkip: true,
-          maxTicksLimit: 10, // Adjust this value for more/less spacing
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Money Obtained (₹)',
-        },
-        beginAtZero: true,
-        ticks: {
-          callback: function (value) {
-            return `₹ ${value.toLocaleString()}`; // Format the y-axis label as rupees
-          },
-        },
-      },
-    },
-    plugins: {
-      legend: {
+ const RevenueChartOptions = {
+  responsive: true,
+  scales: {
+    x: {
+      title: {
         display: true,
+        text: 'Days of the Month',
       },
-      tooltip: {
-        callbacks: {
-          label: function (context) {
-            return `₹ ${context.raw.toLocaleString()}`; // Format tooltip data as rupees
-          },
+      grid: {
+        display: false,
+      },
+      ticks: {
+        autoSkip: true,
+        maxTicksLimit: 10,
+      },
+    },
+    y: {
+      title: {
+        display: true,
+        text: 'Bookings Count',
+      },
+      beginAtZero: true,
+      ticks: {
+        callback: function (value) {
+          return `${value.toLocaleString()} bookings`;
         },
       },
     },
-  };
+  },
+  plugins: {
+    legend: {
+      display: true,
+    },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          return `${context.raw.toLocaleString()} bookings`;
+        },
+      },
+    },
+  },
+};
+
 
 
   // Data for a smooth mountain-like curve
-  const waveData = {
-    labels: ['1', '2', '3', '4', '5'], // Example x-axis labels
-    datasets: [
-      {
-        label: 'Mountain Curve',
-        data: [0, 1, 0.5, 1.5, 1], // Adjusted data points for a peak and trough shape
-        borderColor: 'green',
-        borderWidth: 2,
-        tension: 0.4, // Smooth curve
-        pointRadius: 0, // No points on the curve
-        fill: true, // Fill area under the curve
-        backgroundColor: 'rgba(0, 128, 0, 0.3)', // Light green with transparency for the shadow area
-      },
-    ],
-  };
+const [waveData, setWaveData] = useState({
+  labels: ['1'], // just a placeholder
+  datasets: [],
+});
+
 
   // Chart options for the curve
   const chartOptions = {
@@ -207,84 +179,36 @@ const AdminDashboard = () => {
     },
   };
 
-  // Data for Line Chart (Sales Obtained)
-  const salesData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], // Example labels
-    datasets: [
-      {
-        label: 'Sales Obtained',
-        data: [10000, 12000, 15000, 20000], // Example data points
-        borderColor: 'green',
-        backgroundColor: 'rgba(0, 128, 0, 0.1)',
-        fill: true,
-        tension: 0.4, // Smooth line
-        borderWidth: 2,
-      },
-    ],
-  };
+ 
 
-  // Line Chart options
-  const salesOptions = {
-    responsive: true,
-    scales: {
-      x: {
-        display: false, // Hide x-axis
-      },
-      y: {
-        display: false, // Hide y-axis
-      },
-    },
-    plugins: {
-      legend: {
-        display: false, // Hide legend
-      },
-    },
-  };
+ 
+  
 
   // Data for Pie Charts
  useEffect(() => {
-    // Fetch new customers data
-    axios.get('http://localhost:4002/new-customers-and-sps?month=12&year=2024&isSP=0')
-      .then(response => {
-        // console.log("response new customer",response);
-        setNewCustomers(response.data.totalCount); // Assuming response.data is the number of new customers
-      })
-      .catch(error => console.error('Error fetching new customers:', error));
+  // Fetch new and total customers
+  axios.get('http://localhost:5000/api/admin/users/summary')
+    .then(response => {
+      setNewCustomers(response.data.newUsersLastWeek || 0);
+      setTotalCustomers(response.data.totalUsers || 0);
+    })
+    .catch(error => console.error('Error fetching user summary:', error));
 
-    // Fetch new service providers data
-    axios.get('http://localhost:4002/new-customers-and-sps?month=12&year=2024&isSP=1')
-      .then(response => {
-        // console.log("response new sp",response);
-        
-        setNewServiceProviders(response.data.totalCount); // Assuming response.data is the number of new service providers
-      })
-      .catch(error => console.error('Error fetching new service providers:', error));
+  // Fetch new and total helpers
+  axios.get('http://localhost:5000/api/admin/helpers/summary')
+    .then(response => {
+      setNewServiceProviders(response.data.newHelpersLastWeek || 0);
+      setTotalServiceProviders(response.data.totalHelpers || 0);
+    })
+    .catch(error => console.error('Error fetching helper summary:', error));
+}, []);
 
-    // Fetch total customers data
-    axios.get('http://localhost:4002/total-customers-and-sps?isSP=0')
-      .then(response => {
-        setTotalCustomers(response.data.totalCount); // Assuming response.data is the total number of customers
-      })
-      .catch(error => console.error('Error fetching total customers:', error));
-
-    // Fetch total service providers data
-    axios.get('http://localhost:4002/total-customers-and-sps?isSP=1')
-      .then(response => {
-        // console.log("response",response);
-        
-        setTotalServiceProviders(response.data.totalCount); // Assuming response.data is the total number of service providers
-      })
-      .catch(error => console.error('Error fetching total service providers:', error));
-  }, []);
-  // console.log("new customer data",newCustomers);
-  // console.log("new sp data",newServiceProviders);
-  // console.log("total customer data",totalCustomers);
-  // console.log("total sp data",totalServiceProviders);
+ 
   
 
   // Prepare data for charts
   const newCustomersData = {
-    labels: ['Existing Customers', 'New Customers'],
+    labels: ['Existing Users', 'New Users'],
     datasets: [
       {
         data: [totalCustomers - newCustomers, newCustomers],
@@ -295,7 +219,7 @@ const AdminDashboard = () => {
   };
 
   const newServiceProvidersData = {
-    labels: ['Existing Providers', 'New Providers'],
+    labels: ['Existing Helpers', 'Helpers'],
     datasets: [
       {
         data: [totalServiceProviders - newServiceProviders, newServiceProviders],
@@ -367,6 +291,68 @@ const AdminDashboard = () => {
     }, []); 
 
 
+
+      // new addying 
+      useEffect(() => {
+  const fetchMonthlyProfit = async () => {
+    const month = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`;
+
+    try {
+      const res = await axios.get(`http://localhost:5000/api/admin/earnings/${month}`);
+ const profit = res.data?.profit || 0;
+setMonthlyProfit(profit);
+// Simulate 5-point mountain-like curve using the profit value
+const simulatedData = [
+  0.2 * profit,  // slow start
+  0.6 * profit,  // sharp rise
+  0.8 * profit,  // near peak
+  0.6 * profit,  // slight dip
+  1.0 * profit,  // final peak
+];
+
+setWaveData({
+  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+  datasets: [
+    {
+      label: 'Profit Earned (₹)',
+      data: simulatedData,
+      borderColor: 'white',
+      borderWidth: 2,
+      tension: 0.4,
+      pointRadius: 0,
+      fill: true,
+      backgroundColor: 'rgba(0, 128, 0, 0.3)',
+    },
+  ],
+});
+
+    } catch (err) {
+      console.error('Error fetching profit for graph:', err);
+      setWaveData({
+        labels: ['1'],
+        datasets: [
+          {
+            label: 'Profit Earned (₹)',
+            data: [0],
+            borderColor: 'gray',
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 0,
+            fill: true,
+            backgroundColor: 'rgba(128, 128, 128, 0.3)',
+          },
+        ],
+      });
+    }
+  };
+
+  fetchMonthlyProfit();
+}, [selectedMonth, selectedYear]);
+
+
+//new  
+
+
     const cityCoordinates = {
       'Delhi': [28.6139, 77.2090],
       'Faridabad': [28.4089, 77.3178],
@@ -434,10 +420,11 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Sales Obtained */}
         <div className="bg-purple-500 text-black p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Sales Obtained</h2>
-          <p>Total Sales for <strong>{monthNames[currentMonth - 1]}</strong></p>
+          <h2 className="text-2xl font-semibold">Net Profit</h2>
+          <p>Total Profit for <strong>{monthNames[currentMonth - 1]}</strong></p>
           <p className="text-3xl font-bold text-white mt-3">
-          ₹{totalSales !== null ?totalSales.toLocaleString() : '0'}
+         ₹{monthlyProfit.toLocaleString()}
+
           </p>
           {/* Line Chart with custom mountain-like curve */}
           <div className="mt-4">
@@ -458,11 +445,11 @@ const AdminDashboard = () => {
             {/* Stats */}
             <div className="ml-6">
               <div className="mb-4">
-                <p className="font-semibold">New Customers</p>
+                <p className="font-semibold">New Users</p>
                 <p className="text-green-500 font-bold">{newCustomers}</p>
               </div>
               <div>
-                <p className="font-semibold">Total Customers</p>
+                <p className="font-semibold">Total Users</p>
                 <p className="text-blue-500 font-bold">{totalCustomers}</p>
               </div>
             </div>
@@ -471,7 +458,7 @@ const AdminDashboard = () => {
 
         {/* New Service Providers */}
         <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Service Providers Analytics for <strong>{monthNames[currentMonth - 1]}</strong></h2>
+          <h2 className="text-2xl font-semibold">Helpers Analytics for <strong>{monthNames[currentMonth - 1]}</strong></h2>
           <div className="mt-4 flex items-center justify-between">
             {/* Pie Chart */}
             <div className="w-40 h-40">
@@ -480,11 +467,11 @@ const AdminDashboard = () => {
             {/* Stats */}
             <div className="ml-6">
               <div className="mb-4">
-                <p className="font-semibold">New Providers</p>
+                <p className="font-semibold">New Helpers</p>
                 <p className="text-green-500 font-bold">{newServiceProviders}</p>
               </div>
               <div>
-                <p className="font-semibold">Total Providers</p>
+                <p className="font-semibold">Total Helpers</p>
                 <p className="text-blue-500 font-bold">{totalServiceProviders}</p>
               </div>
             </div>
@@ -495,12 +482,19 @@ const AdminDashboard = () => {
       {/* Revenue Generated Card with month and year selector */}
       <div className="p-6 rounded-lg shadow-lg mt-6">
         <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-2xl font-semibold">Revenue Generated</h2>
-            <p className="text-3xl font-bold text-green-800">
-            ₹{totalRevenue !== null ?totalRevenue.toLocaleString() : '0'}
-            </p>
-          </div>
+         <div>
+  <h2 className="text-2xl font-semibold">Total Bookings</h2>
+
+
+
+
+<p className="text-3xl font-bold text-green-800 flex items-center gap-2">
+  <FaClipboardList className="text-4xl text-green-700" />
+  {dailyRevenueData?.datasets?.[0]?.data?.reduce((acc, val) => acc + val, 0) || 0}
+</p>
+
+</div>
+
           <div>
             <label className="mr-2">Month:</label>
             <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="p-2 border rounded">
@@ -518,17 +512,17 @@ const AdminDashboard = () => {
       </div>
       {/* Services Booked and geography graph  */}
       <div className='flex flex-col md:flex-row'>
-  <div className="bg-white p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
+  {/* <div className="bg-white p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
     <h2 className="text-2xl font-semibold">Services Booked</h2>
     <div className="mt-4 flex justify-center">
       <div className="w-80 h-80">
         <Pie data={servicesData} options={{ responsive: true }} />
       </div>
     </div>
-  </div>
+  </div> */}
 
   {/* Geography Chart (India map) with city markers */}
-  <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
+  {/* <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
       <h2 className="text-2xl font-semibold">Bookings by City</h2>
       <div className="mt-4" style={{ height: '400px' }}>
         <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
@@ -555,7 +549,7 @@ const AdminDashboard = () => {
           ))}
         </MapContainer>
       </div>
-    </div>
+    </div> */}
 </div>
 
     </div>
