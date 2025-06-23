@@ -11,6 +11,8 @@ import {
   FaFileAlt,
   FaUserTie,
 } from 'react-icons/fa';
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
@@ -18,7 +20,6 @@ const Profile = () => {
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
   const [pendingAmount, setPendingAmount] = useState(null);
-
   const role = localStorage.getItem('role');
 
   useEffect(() => {
@@ -39,20 +40,20 @@ const Profile = () => {
         setLoading(false);
       }
     };
-const fetchSalary = async () => {
-  try {
-    const { data } = await axios.get("http://localhost:5000/api/payment/getSalary", {
-      withCredentials: true,
-    });
-    setPendingAmount(data.pendingAmount);
-  } catch (err) {
-    console.error("Failed to fetch pending amount:", err);
-  }
-};
 
-fetchSalary();
+    const fetchSalary = async () => {
+      try {
+        const { data } = await axios.get("http://localhost:5000/api/payment/getSalary", {
+          withCredentials: true,
+        });
+        setPendingAmount(data.pendingAmount);
+      } catch (err) {
+        console.error("Failed to fetch pending amount:", err);
+      }
+    };
 
     fetchProfile();
+    if (role === 'helper') fetchSalary();
   }, [role]);
 
   const handleChange = (e) => {
@@ -101,74 +102,96 @@ fetchSalary();
 
   return (
     <div className="min-h-screen p-20 bg-gradient-to-br from-purple-100 via-white to-purple-200">
-      <div className="max-w-3xl mx-auto bg-white shadow-xl rounded-3xl p-8 space-y-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-purple-600 text-white flex items-center justify-center text-3xl shadow-md">
-              {role === 'helper' ? <FaUserTie /> : profile.name?.[0]?.toUpperCase() || 'U'}
+      <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
+        <div className="flex-1 bg-white shadow-xl rounded-3xl p-8 space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-purple-600 text-white flex items-center justify-center text-3xl shadow-md">
+                <FaUserTie />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-purple-800">{profile.name}</h1>
+                <p className="text-sm text-gray-600">{profile.email}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-purple-800">{profile.name}</h1>
-              <p className="text-sm text-gray-600">{profile.email}</p>
+            <div className="flex gap-2">
+              {editMode ? (
+                <>
+                  <button onClick={saveProfile} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full"><FaSave /></button>
+                  <button onClick={() => { setEditMode(false); setForm(profile); }} className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-full"><FaTimes /></button>
+                </>
+              ) : (
+                <button onClick={() => setEditMode(true)} className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full"><FaUserEdit /></button>
+              )}
             </div>
           </div>
-          <div className="flex gap-2">
-            {editMode ? (
-              <>
-                <button onClick={saveProfile} className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full"><FaSave /></button>
-                <button onClick={() => { setEditMode(false); setForm(profile); }} className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-full"><FaTimes /></button>
-              </>
-            ) : (
-              <button onClick={() => setEditMode(true)} className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full"><FaUserEdit /></button>
-            )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ProfileField label="Phone" icon={<FaPhoneAlt />} value={form.phone} name="phone" editMode={editMode} handleChange={handleChange} />
+            <div>
+              <label className="text-sm text-purple-700 font-medium flex items-center gap-1"><FaCity /> City</label>
+              {editMode ? (
+                <select name="city" value={form.city || ''} onChange={handleChange} className="w-full border-purple-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                  <option value="">Select City</option>
+                  {cities.map((city) => <option key={city} value={city}>{city}</option>)}
+                </select>
+              ) : (
+                <div className="bg-purple-100 text-purple-800 rounded-lg p-2">{profile.city || 'Not specified'}</div>
+              )}
+            </div>
+            <ProfileField label="Account Number" icon={<FaUniversity />} value={form.accountNumber} name="accountNumber" editMode={editMode} handleChange={handleChange} />
+            <ProfileField label="IFSC Code" icon={<FaUniversity />} value={form.ifscCode} name="ifscCode" editMode={editMode} handleChange={handleChange} />
+            <ProfileField label="Government ID" icon={<FaIdCard />} value={form.governmentId} name="governmentId" editMode={editMode} handleChange={handleChange} />
+            <div>
+              <label className="text-sm text-purple-700 font-medium flex items-center gap-1"><FaFileAlt /> Govt Document</label>
+              {editMode ? (
+                <input type="file" onChange={handleFileChange} className="w-full border-purple-300 rounded-lg p-2" />
+              ) : (
+                <img src={profile.govDocumentUrl} alt="Govt Document" className="rounded-lg border max-h-40" />
+              )}
+            </div>
+            <div className="col-span-2">
+              <label className="text-sm text-purple-700 font-medium">Work Domains</label>
+              <div className="bg-purple-50 text-purple-800 rounded-lg p-2">
+                {profile.services?.join(', ') || 'No services listed'}
+              </div>
+            </div>
+             <NonEditable label="Total Earned" value={<div>{form.totalEarned}</div>}></NonEditable>
+            <div className="col-span-2 grid grid-cols-2 gap-4 mt-4">
+             
+              <NonEditable label="Training Progress" value={<div className="w-20 h-20"><CircularProgressbar value={profile.trainingProgress * 100 / 3} text={`${profile.trainingProgress * 100 / 3 || 0}%`} styles={buildStyles({ pathColor: '#8b5cf6', textColor: '#4b0082' })} /></div>} />
+              <NonEditable label="Test Score" value={<div className="w-20 h-20"><CircularProgressbar value={profile.testScore * 10} text={`${profile.testScore * 10 || 0}%`} styles={buildStyles({ pathColor: '#10b981', textColor: '#065f46' })} /></div>} />
+              <NonEditable label="Verified" value={profile.isVerified ? 'Yes' : 'No'} />
+              <NonEditable label="Active" value={profile.isActive ? 'Yes' : 'No'} />
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ProfileField label="Phone" icon={<FaPhoneAlt />} value={form.phone} name="phone" editMode={editMode} handleChange={handleChange} />
-          <div>
-            <label className="text-sm text-purple-700 font-medium flex items-center gap-1"><FaCity /> City</label>
-            {editMode ? (
-              <select name="city" value={form.city || ''} onChange={handleChange} className="w-full border-purple-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-400">
-                <option value="">Select City</option>
-                {cities.map((city) => <option key={city} value={city}>{city}</option>)}
-              </select>
-            ) : (
-              <div className="bg-purple-100 text-purple-800 rounded-lg p-2">{profile.city || 'Not specified'}</div>
-            )}
-          </div>
-          <ProfileField label="Account Number" icon={<FaUniversity />} value={form.accountNumber} name="accountNumber" editMode={editMode} handleChange={handleChange} />
-          <ProfileField label="IFSC Code" icon={<FaUniversity />} value={form.ifscCode} name="ifscCode" editMode={editMode} handleChange={handleChange} />
-          <ProfileField label="Government ID" icon={<FaIdCard />} value={form.governmentId} name="governmentId" editMode={editMode} handleChange={handleChange} />
-          <div>
-            <label className="text-sm text-purple-700 font-medium flex items-center gap-1"><FaFileAlt /> Govt Document</label>
-            {editMode ? (
-              <input type="file" onChange={handleFileChange} className="w-full border-purple-300 rounded-lg p-2" />
-            ) : (
-              <a href={profile.govDocumentUrl} target="_blank" rel="noreferrer" className="text-blue-500 underline">View Document</a>
-            )}
-          </div>
-          <div className="col-span-2">
-            <label className="text-sm text-purple-700 font-medium">Work Domains</label>
-            <div className="bg-purple-50 text-purple-800 rounded-lg p-2">
-              {profile.services?.join(', ') || 'No services listed'}
-            </div>
-          </div>
-          <div className="col-span-2 grid grid-cols-2 gap-4 mt-4">
-            <NonEditable label="Training Progress" value={profile.trainingProgress} />
-            <NonEditable label="Test Score" value={profile.testScore} />
-            <NonEditable label="Verified" value={profile.isVerified ? 'Yes' : 'No'} />
-            <NonEditable label="Active" value={profile.isActive ? 'Yes' : 'No'} />
-          </div>
-        </div>
-      </div>
-      <div className="max-w-3xl mx-auto mt-10 bg-white shadow-md rounded-2xl p-6">
-  <h2 className="text-xl font-semibold text-purple-800 mb-2">💰 Wallet</h2>
-  <div className="text-purple-700 text-lg">
-    Pending Amount: ₹{pendingAmount !== null ? pendingAmount.toFixed(2) : '...'}
+        {role === 'helper' && (
+<div className="w-full h-72 lg:w-80  text-white rounded-xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden">
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZbc5V_O6fPZA_P1vJoYoD8PeAgYwxU4Wk0g&s" alt="wallet-bg" className="absolute inset-0 w-full h-full object-cover opacity-90 rounded-xl" />
+  <div className="relative z-10 flex flex-col  h-full">
+    <h2 className="text-xl font-semibold flex  gap-2 mb-2">
+      <span className="inline-block bg-white text-purple-700 p-2 rounded-full">
+        💼
+      </span>
+      Wallet
+    </h2>
+    <div className="text-3xl font-bold mb-4">
+      ₹{pendingAmount !== null ? pendingAmount.toFixed(2) : '...'}
+    </div>
+    {/* <button className="bg-white text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg font-medium flex items-center justify-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m9 1a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Request Withdrawal
+    </button> */}
   </div>
 </div>
 
+
+        )}
+      </div>
     </div>
   );
 };
