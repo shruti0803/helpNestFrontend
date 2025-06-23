@@ -32,6 +32,7 @@ import FAQ from "./pages/Admin/FAQ";
 import InvoiceBalance from "./pages/Admin/InvoiceBalance";
 import ViewUser from "./pages/Admin/ViewUser";
 import ManageUser from "./pages/Admin/ManageUser";
+import ManageHelper from "./pages/Admin/ManageHelper";
 
 function AppRoutes() {
   const location = useLocation();
@@ -61,14 +62,16 @@ function AppRoutes() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           {/* 
-          <Route path="manageteam" element={<ManageTeam />} />
+          
          
           <Route path="services" element={<ManageService />} />
           <Route path="salary" element={<ManageSalary />} />
           <Route path="rating" element={<Rating />} />
           <Route path="report" element={<Report />} />
            */}
+           
            <Route path="manageuser" element={<ManageUser/>}/>
+            <Route path="managehelper" element={<ManageHelper/>}/>
            <Route path="/admin/viewUser/:email" element={<ViewUser/>} />
             <Route path="invoices" element={<InvoiceBalance/>} />
           <Route path="faq" element={<FAQ/>} />

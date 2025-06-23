@@ -81,7 +81,7 @@ const Sidebar = () => {
           <Link
             to="/admin"
             className={`flex items-center p-3 m-1  rounded ${
-              activeLink === '/admin' ? 'bg-yellow-500' : 'hover:bg-gray-700 '
+              activeLink === '/admin' ? 'bg-purple-500' : 'hover:bg-gray-700 '
             }`}
             onClick={() => handleLinkClick('/admin')}
           >
@@ -95,7 +95,7 @@ const Sidebar = () => {
           <Link
             to="/admin/manageuser"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/manageuser' ? 'bg-yellow-400' : 'hover:bg-gray-700'
+              activeLink === '/admin/manageuser' ? 'bg-purple-400' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/manageuser')}
           >
@@ -103,14 +103,14 @@ const Sidebar = () => {
             {!collapsed && <span className="ml-3">Manage User</span>}
           </Link>
           <Link
-  to="/admin/manageteam"
+  to="/admin/managehelper"
   className={`flex items-center p-3 m-1 rounded ${
-    activeLink === '/admin/manageteam' ? 'bg-yellow-400' : 'hover:bg-gray-700'
+    activeLink === '/admin/managehelper' ? 'bg-purple-400' : 'hover:bg-gray-700'
   }`}
-  onClick={() => handleLinkClick('/admin/manageteam')}
+  onClick={() => handleLinkClick('/admin/managehelper')}
 >
   <GroupWorkOutlined className="h-6 w-6" /> {/* New icon */}
-  {!collapsed && <span className="ml-3">Manage Team</span>}
+  {!collapsed && <span className="ml-3">Manage Helpers</span>}
 </Link>
 
           {/* <Link
@@ -126,7 +126,7 @@ const Sidebar = () => {
           <Link
             to="/admin/invoices"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/invoices' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/invoices' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/invoices')}
           >
@@ -149,7 +149,7 @@ const Sidebar = () => {
           <Link
             to="/admin/services"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/services' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/services' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/services')}
           >
@@ -159,7 +159,7 @@ const Sidebar = () => {
           <Link
             to="/admin/salary"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/salary' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/salary' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/salary')}
           >
@@ -169,7 +169,7 @@ const Sidebar = () => {
           <Link
             to="/admin/rating"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/rating' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/rating' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/rating')}
           >
@@ -179,7 +179,7 @@ const Sidebar = () => {
           <Link
             to="/admin/report"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/report' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/report' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/report')}
           >
@@ -189,7 +189,7 @@ const Sidebar = () => {
           <Link
             to="/admin/calendar"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/calendar' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/calendar' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/calendar')}
           >
@@ -199,7 +199,7 @@ const Sidebar = () => {
           <Link
             to="/admin/faq"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/faq' ? 'bg-yellow-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/faq' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
             onClick={() => handleLinkClick('/admin/faq')}
           >
