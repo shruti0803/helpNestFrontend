@@ -1,117 +1,128 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import PaymentIcon from '@mui/icons-material/Payment';
-import WorkIcon from '@mui/icons-material/WorkOutline';
-import PersonIcon from '@mui/icons-material/PersonOutlined';
-import HomeIcon from '@mui/icons-material/Home';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import DescriptionIcon from '@mui/icons-material/Description';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import axios from 'axios';
 import { Typography } from '@mui/material';
-
+import {
+  IconButton,
+ 
+  Box,
+  Paper,
+  Chip,
+  Button,
+} from '@mui/material';
 function InvoiceBalance() {
-  const [invoiceData, setInvoiceData] = useState([]);
+  const [billData, setBillData] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBills = async () => {
       try {
-        const response = await axios.get('http://localhost:4002/invoiceBalance');
-        const fetchedData = response.data.map((item, index) => ({
-          id: index + 1, // Unique ID for each row
-          bookId: item.Book_ID || 'N/A',
-          billId: item.Bill_ID || 'N/A',
-          billDate: item.Bill_Date ? new Date(item.Bill_Date).toLocaleDateString() : 'N/A',
-          billMode: item.Bill_Mode || 'N/A',
-          totalCost: item.Total_Cost ? parseFloat(item.Total_Cost).toFixed(2) : '0.00', // Ensure two decimal places
-          paymentId: item.Payment_ID || 'N/A',
-          spEmail: item.SP_Email || 'N/A',
-          uEmail: item.U_Email || 'N/A',
-          serviceName: item.Service_Name || 'N/A',
-          serviceCategory: item.Service_Category || 'N/A',
-          address: [
-            item.Book_HouseNo,
-            item.Book_Area,
-            item.Book_City,
-            item.Book_State,
-            item.Book_City_PIN,
-          ]
-            .filter(Boolean) // Remove null or undefined values
-            .join(', '),
-        }));
-        setInvoiceData(fetchedData);
+        const response = await axios.get('http://localhost:5000/api/admin/allBills');
+        const data = response.data;
+
+        const formatted = Array.isArray(data)
+          ? data.map((bill, index) => ({
+              id: index + 1,
+              bookingId: bill.bookingId || 'N/A',
+              description: bill.description || 'N/A',
+              totalHours: bill.totalHours || 0,
+              ratePerHour: bill.ratePerHour || 0,
+              baseAmount: bill.baseAmount || 0,
+              platformFee: bill.userPlatformFee || 0,
+              totalAmountPaid: bill.totalAmountPaid || 0,
+              paymentMode: bill.paymentMode || 'N/A',
+              paymentStatus: bill.paymentStatus || 'N/A',
+              paymentId: bill.paymentId || 'N/A',
+              createdAt: bill.createdAt ? new Date(bill.createdAt).toLocaleString() : 'N/A',
+            }))
+          : [];
+
+        setBillData(formatted);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching bills:', error);
       }
     };
 
-    fetchData();
+    fetchBills();
   }, []);
 
   const columns = [
-    { field: 'bookId', headerName: 'Book ID', width: 120 },
-    { field: 'billId', headerName: 'Bill ID', width: 150 },
-    { field: 'billDate', headerName: 'Bill Date', width: 150 },
+    { field: 'id', headerName: 'ID', width: 60 },
+    
     {
-      field: 'billMode',
-      headerName: 'Bill Mode',
-      width: 150,
+      field: 'description',
+      headerName: 'Description',
+      width: 220,
       renderCell: (params) => (
         <div className="flex items-center">
-          <PaymentIcon style={{ color: 'green', marginRight: 4 }} />
+          <DescriptionIcon style={{ color: 'gray', marginRight: 4 }} />
           {params.value}
         </div>
       ),
     },
+    { field: 'totalHours', headerName: 'Hours', width: 90 },
+    { field: 'ratePerHour', headerName: 'Rate/hr', width: 100 },
     {
-      field: 'totalCost',
-      headerName: 'Total Cost',
+      field: 'baseAmount',
+      headerName: 'Base ₹',
+      width: 100,
+      renderCell: (params) => `₹${params.value}`,
+    },
+    {
+      field: 'platformFee',
+      headerName: 'Platform Fee',
       width: 120,
-      renderCell: (params) => `₹${params.value}`, // Display cost with rupee symbol
+      renderCell: (params) => `₹${params.value}`,
     },
-    { field: 'paymentId', headerName: 'Payment ID', width: 150 },
     {
-      field: 'spEmail',
-      headerName: 'SP Email',
-      width: 200,
+      field: 'totalAmountPaid',
+      headerName: 'Total Paid',
+      width: 120,
       renderCell: (params) => (
         <div className="flex items-center">
-          <WorkIcon style={{ color: 'purple', marginRight: 4 }} />
+          <MonetizationOnIcon style={{ color: 'green', marginRight: 4 }} />
+          ₹{params.value}
+        </div>
+      ),
+    },
+    {
+      field: 'paymentMode',
+      headerName: 'Mode',
+      width: 120,
+      renderCell: (params) => (
+        <div className="flex items-center">
+          <PaymentIcon style={{ color: 'blue', marginRight: 4 }} />
           {params.value}
         </div>
       ),
     },
     {
-      field: 'uEmail',
-      headerName: 'User Email',
-      width: 200,
+      field: 'paymentStatus',
+      headerName: 'Status',
+      width: 120,
       renderCell: (params) => (
-        <div className="flex items-center">
-          <PersonIcon style={{ color: 'blue', marginRight: 4 }} />
-          {params.value}
-        </div>
+        <Chip
+          label={params.value}
+          color={params.value === 'Paid' ? 'success' : 'warning'}
+          size="small"
+        />
       ),
     },
-    { field: 'serviceName', headerName: 'Service Name', width: 200 },
-    { field: 'serviceCategory', headerName: 'Service Category', width: 250 },
-    {
-      field: 'address',
-      headerName: 'Address',
-      width: 300,
-      renderCell: (params) => (
-        <div className="flex items-center">
-          <HomeIcon style={{ color: 'brown', marginRight: 4 }} />
-          {params.value}
-        </div>
-      ),
-    },
+    { field: 'paymentId', headerName: 'Payment ID', width: 220 },
+    { field: 'createdAt', headerName: 'Created At', width: 180 },
   ];
 
   return (
-    <div style={{ height: 500, width: '100%' }} >
-      
+    <div style={{ height: 600, width: '100%' }}>
       <Typography variant="h4" gutterBottom>
-        Invoice Balance
+        Bill Transactions
       </Typography>
+
       <DataGrid
-        rows={invoiceData}
+        rows={billData}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5, 10, 20]}
@@ -126,7 +137,7 @@ function InvoiceBalance() {
             backgroundColor: '#e3f2fd',
           },
           '& .MuiDataGrid-footerContainer': {
-            backgroundColor: '#e0e0e0',
+            backgroundColor: '#f1f1f1',
           },
         }}
       />
