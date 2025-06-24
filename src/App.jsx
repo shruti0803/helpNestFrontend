@@ -33,6 +33,7 @@ import InvoiceBalance from "./pages/Admin/InvoiceBalance";
 import ViewUser from "./pages/Admin/ViewUser";
 import ManageUser from "./pages/Admin/ManageUser";
 import ManageHelper from "./pages/Admin/ManageHelper";
+import ManageSalary from "./pages/Admin/ManageSalary";
 
 function AppRoutes() {
   const location = useLocation();
@@ -65,11 +66,11 @@ function AppRoutes() {
           
          
           <Route path="services" element={<ManageService />} />
-          <Route path="salary" element={<ManageSalary />} />
+          
           <Route path="rating" element={<Rating />} />
           <Route path="report" element={<Report />} />
            */}
-           
+           <Route path="salary" element={<ManageSalary/>} />
            <Route path="manageuser" element={<ManageUser/>}/>
             <Route path="managehelper" element={<ManageHelper/>}/>
            <Route path="/admin/viewUser/:email" element={<ViewUser/>} />
