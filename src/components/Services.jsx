@@ -40,6 +40,9 @@ const helper = useSelector((state) => state.helper.helperData);
      if(title=== "Health Reminders"){
       navigate("/dashboard");
     }
+      if(title=== "Emergency Support"){
+      navigate("/emergency");
+    }
   };
 
   return (
