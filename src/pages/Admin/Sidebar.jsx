@@ -135,7 +135,7 @@ const Sidebar = () => {
           </Link>
 
           {/* Pages Section */}
-          <h3 className="mt-4 text-gray-400 pl-4">Pages</h3>
+         
           {/* <Link
             to="/form"
             className={`flex items-center p-3 m-1 rounded ${
@@ -207,58 +207,7 @@ const Sidebar = () => {
             {!collapsed && <span className="ml-3">FAQ Page</span>}
           </Link>
 
-          {/* Charts Section */}
-          {/* <h3 className="mt-4 text-gray-400 pl-4">Charts</h3>
-          <Link
-            to="/bar"
-            className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/bar' ? 'bg-yellow-500' : 'hover:bg-gray-700'
-            }`}
-            onClick={() => handleLinkClick('/bar')}
-          >
-            <BarChartOutlined className="h-6 w-6" />
-            {!collapsed && <span className="ml-3">Bar Chart</span>}
-          </Link>
-          <Link
-            to="/pie"
-            className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/pie' ? 'bg-yellow-500' : 'hover:bg-gray-700'
-            }`}
-            onClick={() => handleLinkClick('/pie')}
-          >
-            <DonutLargeOutlined className="h-6 w-6" />
-            {!collapsed && <span className="ml-3">Pie Chart</span>}
-          </Link>
-          <Link
-            to="/line"
-            className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/line' ? 'bg-yellow-500' : 'hover:bg-gray-700'
-            }`}
-            onClick={() => handleLinkClick('/line')}
-          >
-            <TimelineOutlined className="h-6 w-6" />
-            {!collapsed && <span className="ml-3">Line Chart</span>}
-          </Link>
-          <Link
-            to="/geography"
-            className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/geography' ? 'bg-yellow-500' : 'hover:bg-gray-700'
-            }`}
-            onClick={() => handleLinkClick('/geography')}
-          >
-            <MapOutlined className="h-6 w-6" />
-            {!collapsed && <span className="ml-3">Geography Chart</span>}
-          </Link>
-          <Link
-            to="/stream"
-            className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/stream' ? 'bg-yellow-500' : 'hover:bg-gray-700'
-            }`}
-            onClick={() => handleLinkClick('/stream')}
-          >
-            <WavesOutlined className="h-6 w-6" />
-            {!collapsed && <span className="ml-3">Stream Chart</span>}
-          </Link> */}
+          
         </nav>
       </div>
     </div>
