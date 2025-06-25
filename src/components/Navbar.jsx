@@ -19,7 +19,9 @@ import NotificationPopup from './Notification';
 
 const Navbar = () => {
   const location = useLocation();
-  const [showNotifications, setShowNotifications] = useState(false);
+ 
+const [showNotifications, setShowNotifications] = useState(false);
+const [hasUnreadNotification, setHasUnreadNotification] = useState(false);
 
 
   const [isOpen, setIsOpen] = useState(false);
@@ -91,6 +93,56 @@ const Navbar = () => {
     console.log("Navbar helperData changed:", helperData);
   }, [helperData]);
 
+
+
+useEffect(() => {
+  const pollNotifications = async () => {
+    try {
+      const role = localStorage.getItem("role");
+      let hasScheduled = false;
+
+      console.log("🔁 Polling for notifications as:", role);
+
+    if (role === "helper") {
+  const res = await fetch("http://localhost:5000/api/bookings/tasks", {
+    credentials: "include",
+  });
+  const data = await res.json();
+
+  console.log("📦 Helper tasks:", data);
+
+  hasScheduled = (data.bookings || []).length > 0;
+}
+
+
+      if (role === "user") {
+        const res = await fetch("http://localhost:5000/api/bookings/requests", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        console.log("📦 User requests:", data);
+
+        hasScheduled = (data || []).some(
+          (booking) => booking.status === "Scheduled"
+        );
+      }
+
+      console.log("🔔 New scheduled task/request exists?", hasScheduled);
+      setHasUnreadNotification(hasScheduled);
+    } catch (err) {
+      console.error("📛 Error polling for notifications:", err);
+    }
+  };
+
+  pollNotifications();
+  const interval = setInterval(pollNotifications, 5000);
+  return () => clearInterval(interval);
+}, []);
+
+
+
+
+
   return (
     <>
       <nav className="bg-white shadow-md fixed w-full z-50">
@@ -149,18 +201,19 @@ const Navbar = () => {
       onClick={() => setShowNotifications((prev) => !prev)}
     >
       <div className="flex items-center space-x-2 text-sm">
-        <FaBell size={20} />
+        <FaBell size={20} className={hasUnreadNotification ? 'text-yellow-500' : ''} />
         <span>Alerts</span>
       </div>
     </div>
 
     {showNotifications && (
       <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-300 rounded shadow-lg z-50">
-       <NotificationPopup/>
+        <NotificationPopup setHasUnread={setHasUnreadNotification} />
       </div>
     )}
   </div>
 )}
+
 
 
 
