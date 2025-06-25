@@ -13,11 +13,14 @@ import { logoutAdmin } from '../../redux/adminSlice';
 import { FaBell } from 'react-icons/fa';
 import { FaHome, FaClipboardList, FaTasks } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
+import NotificationPopup from './Notification';
 
 
 
 const Navbar = () => {
   const location = useLocation();
+  const [showNotifications, setShowNotifications] = useState(false);
+
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -138,14 +141,27 @@ const Navbar = () => {
 
 
 {(user || helperData || admin) && (
-  <div className={`h-16 flex items-center ${location.pathname === '/alerts' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
-  <Link to="/alerts" className="flex items-center space-x-2 text-sm">
-    <FaBell size={20} />
-    <span>Alerts</span>
-  </Link>
-</div>
+  <div className="relative">
+    <div
+      className={`h-16 flex items-center cursor-pointer ${
+        showNotifications ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'
+      }`}
+      onClick={() => setShowNotifications((prev) => !prev)}
+    >
+      <div className="flex items-center space-x-2 text-sm">
+        <FaBell size={20} />
+        <span>Alerts</span>
+      </div>
+    </div>
 
+    {showNotifications && (
+      <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-300 rounded shadow-lg z-50">
+       <NotificationPopup/>
+      </div>
+    )}
+  </div>
 )}
+
 
 
              
