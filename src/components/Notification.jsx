@@ -83,28 +83,38 @@ if (role === 'user') {
     fetchNotifications();
   }, [setHasUnread]);
 
-  return (
-    <div className="p-4 text-sm text-gray-800 max-h-72 w-72 overflow-y-auto">
-      <p className="font-semibold mb-2">Notifications</p>
+ return (<div className="p-6 text-[15px] text-gray-800 max-h-[520px] w-[580px] overflow-y-auto rounded-2xl bg-white/70">
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : notifications.length === 0 ? (
-        <p className="text-gray-500">No new notifications</p>
-      ) : (
-        <ul className="space-y-2">
-          {notifications.map((notif) => (
-            <li key={notif._id} className="border-b pb-1">
-              🔔 {notif.message}
-              <div className="text-[10px] text-gray-400">
-                {new Date(notif.createdAt).toLocaleString()}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
+    <h2 className="text-lg font-semibold text-purple-700 mb-4 flex items-center gap-2">
+      <span className="text-purple-600">🔔</span> Notifications
+    </h2>
+
+    {loading ? (
+      <p className="text-gray-500 animate-pulse">Fetching latest alerts...</p>
+    ) : notifications.length === 0 ? (
+      <p className="text-gray-500 italic">You’re all caught up!</p>
+    ) : (
+      <ul className="space-y-3">
+        {notifications.map((notif) => (
+          <li
+            key={notif._id}
+            className="bg-white/70 border border-purple-100 shadow-sm p-3 rounded-lg hover:bg-purple-50 transition"
+          >
+            <p className="text-gray-800">
+              <span className="text-purple-600">🔔</span> {notif.message}
+            </p>
+            <div className="text-[11px] text-gray-500 mt-1 text-right">
+              {new Date(notif.createdAt).toLocaleString('en-IN', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              })}
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+);
+}
 
 export default NotificationPopup;

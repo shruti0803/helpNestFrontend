@@ -103,31 +103,42 @@ useEffect(() => {
 
       console.log("🔁 Polling for notifications as:", role);
 
-    if (role === "helper") {
-  const res = await fetch("http://localhost:5000/api/bookings/tasks", {
-    credentials: "include",
-  });
-  const data = await res.json();
-
-  console.log("📦 Helper tasks:", data);
-
-  hasScheduled = (data.bookings || []).length > 0;
-}
-
+      if (role === "helper") {
+        const res = await fetch("http://localhost:5000/api/bookings/tasks", {
+          credentials: "include",
+        });
+        const data = await res.json();
+        console.log("📦 Helper tasks:", data);
+        hasScheduled = (data.bookings || []).length > 0;
+      }
 
       if (role === "user") {
+        // 🧾 Check scheduled bookings
         const res = await fetch("http://localhost:5000/api/bookings/requests", {
           credentials: "include",
         });
         const data = await res.json();
         console.log("📦 User requests:", data);
-
-        hasScheduled = (data || []).some(
+        const hasScheduledBooking = (data || []).some(
           (booking) => booking.status === "Scheduled"
         );
+
+        // 💸 Check pending bills
+        const billsRes = await fetch("http://localhost:5000/api/bookings/allBills", {
+          credentials: "include",
+        });
+        const billsData = await billsRes.json();
+        console.log("💸 User bills:", billsData);
+
+        // Adjust this filter if your field is different like isPaid, paymentStatus etc
+        const hasPendingBills = (billsData || []).some(
+          (bill) => bill.status === "pending"
+        );
+
+        hasScheduled = hasScheduledBooking || hasPendingBills;
       }
 
-      console.log("🔔 New scheduled task/request exists?", hasScheduled);
+      console.log("🔔 New scheduled task/request or pending bill exists?", hasScheduled);
       setHasUnreadNotification(hasScheduled);
     } catch (err) {
       console.error("📛 Error polling for notifications:", err);
@@ -138,6 +149,7 @@ useEffect(() => {
   const interval = setInterval(pollNotifications, 5000);
   return () => clearInterval(interval);
 }, []);
+
 
 
 
@@ -207,7 +219,9 @@ useEffect(() => {
     </div>
 
     {showNotifications && (
-      <div className="absolute right-0 mt-2 w-72 bg-white border border-gray-300 rounded shadow-lg z-50">
+     <div className="absolute right-0 mt-2 w-[580px] bg-gradient-to-br from-purple-200 to-white border border-purple-200 rounded-2xl shadow-xl z-50">
+
+
         <NotificationPopup setHasUnread={setHasUnreadNotification} />
       </div>
     )}
