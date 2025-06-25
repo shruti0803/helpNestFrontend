@@ -10,7 +10,15 @@ import { logoutHelper } from '../../redux/helperSlice';
 import { useNavigate } from "react-router-dom";
 import AdminLogin from './Auth/LoginAdmin';
 import { logoutAdmin } from '../../redux/adminSlice';
+import { FaBell } from 'react-icons/fa';
+import { FaHome, FaClipboardList, FaTasks } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
+
+
+
 const Navbar = () => {
+  const location = useLocation();
+
   const [isOpen, setIsOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [authRole, setAuthRole] = useState(null); // user | helper | null
@@ -89,28 +97,68 @@ const Navbar = () => {
             <div className="text-xl font-bold text-purple-600">HelpNest</div>
 
             {/* For desktop */}
-            <div className="hidden md:flex space-x-6 items-center">
-              <Link to="/" className="text-gray-700 hover:text-purple-600">Home</Link>
+            <div className="hidden md:flex space-x-8 items-center">
+             
 
-              {user && (
-                <Link to="/requests" className="text-gray-700 hover:text-purple-600">Requests</Link>
-              )}
+<div className={`h-16  flex items-center ${location.pathname === '/' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
+  <Link to="/" className="flex items-center space-x-2 text-sm" title="Home">
+    <FaHome size={20} />
+    <span>Home</span>
+  </Link>
+</div>
 
-              {helperData && (
-                <Link to="/tasks" className="text-gray-700 hover:text-purple-600">Tasks</Link>
-              )}
 
-              <a href="#" className="text-gray-700 hover:text-purple-600">Services</a>
+
+
+{user && (
+ <div className={`h-16 flex items-center ${location.pathname === '/requests' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
+  <Link to="/requests" className="flex items-center space-x-2 text-sm" title="Requests">
+    <FaClipboardList size={20} />
+    <span>Requests</span>
+  </Link>
+</div>
+
+
+)}
+
+{helperData && (
+ <div className={`h-16 flex items-center ${location.pathname === '/tasks' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
+  <Link
+    to="/tasks"
+    className="flex items-center space-x-2 text-sm"
+    title="Tasks"
+  >
+    <FaTasks size={20} />
+    <span>Tasks</span>
+  </Link>
+</div>
+
+
+)}
+
+
+{(user || helperData || admin) && (
+  <div className={`h-16 flex items-center ${location.pathname === '/alerts' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
+  <Link to="/alerts" className="flex items-center space-x-2 text-sm">
+    <FaBell size={20} />
+    <span>Alerts</span>
+  </Link>
+</div>
+
+)}
+
+
+             
 
               {(user || helperData) ? (
                 <div className="relative">
-                  <div
-                    className="w-8 h-8 rounded-full bg-purple-600 text-white flex justify-center items-center font-bold cursor-pointer"
-                    title={`Logged in as ${displayName}`}
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                  >
-                    {userInitial}
-                  </div>
+                 <div className="flex flex-col items-center cursor-pointer" onClick={() => setDropdownOpen(!dropdownOpen)} title={`Logged in as ${displayName}`}>
+  <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex justify-center items-center font-bold">
+    {userInitial}
+  </div>
+ 
+</div>
+
                   {dropdownOpen && (
                     <div className="absolute right-0 mt-2 w-36 bg-white border rounded shadow-md z-50">
                       <button
@@ -133,6 +181,7 @@ const Navbar = () => {
                   Login
                 </button>
               )}
+             
             </div>
 
             {/* Mobile menu button */}
