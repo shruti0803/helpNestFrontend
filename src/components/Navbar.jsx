@@ -248,9 +248,10 @@ useEffect(() => {
         <div className="relative">
   <FaBell size={20} className={hasUnreadNotification ? 'text-yellow-500' : ''} />
   {hasUnreadNotification && unreadCount > 0 && (
-    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
-      {unreadCount}
-    </span>
+  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
+  {unreadCount}
+</span>
+
   )}
 </div>
 

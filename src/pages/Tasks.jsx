@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
+
 import useGetHelperProfile from "../../hooks/useGetHelperProfile";
 import BillModal from "./Bill/BillModal";
 import {
@@ -19,6 +21,10 @@ const STATUS_FILTERS = [
 ];
 
 const TasksPage = () => {
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+const [enteredOtp, setEnteredOtp] = useState("");
+const [otpError, setOtpError] = useState("");
+
    const [showBillModal, setShowBillModal] = useState(false);
 const [selectedBooking, setSelectedBooking] = useState(null);
 
@@ -184,19 +190,36 @@ const now = new Date();
         )}
 {activeTab === "scheduled" && (
   <td className="p-2">
-    {task.isCompleted && (
-      <button
-        className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
-        onClick={() => {
-          setShowBillModal(true);
-          setSelectedBooking(task); // Track which task was clicked
-        }}
-      >
-        Generate Bill
-      </button>
+    {task.isCompleted ? (
+      task.otpVerified ? (
+        <button
+          className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+          onClick={() => {
+            setShowBillModal(true);
+            setSelectedBooking(task);
+          }}
+        >
+          Generate Bill
+        </button>
+      ) : (
+        <button
+          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+          onClick={() => {
+            setSelectedBooking(task);
+            setOtpModalOpen(true);
+            setEnteredOtp("");
+            setOtpError("");
+          }}
+        >
+          Verify OTP
+        </button>
+      )
+    ) : (
+      "-"
     )}
   </td>
 )}
+
 
       </tr>
     );
@@ -220,6 +243,74 @@ const now = new Date();
 
           </div>
         )}
+        {otpModalOpen && selectedBooking && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
+      <h2 className="text-lg font-bold mb-4 text-purple-700 text-center">
+        Enter OTP Provided by User
+      </h2>
+      <input
+        type="text"
+        value={enteredOtp}
+        onChange={(e) => setEnteredOtp(e.target.value)}
+        maxLength={6}
+        className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-center text-xl tracking-widest"
+        placeholder="Enter OTP"
+      />
+      {otpError && <p className="text-red-500 text-sm mt-2">{otpError}</p>}
+      <div className="flex justify-end mt-4 space-x-2">
+        <button
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          onClick={() => setOtpModalOpen(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+         onClick={async () => {
+  try {
+    const res = await axios.put(
+      "http://localhost:5000/api/bookings/verify-otp",
+      {
+        bookingId: selectedBooking._id,
+        enteredOtp,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        withCredentials: true,
+      }
+    );
+
+    // ✅ Update task list with verified OTP
+    const updatedTasks = tasks.map((task) =>
+      task._id === selectedBooking._id
+        ? { ...task, otpVerified: true }
+        : task
+    );
+    setTasks(updatedTasks);
+    setOtpModalOpen(false);
+    Swal.fire({
+  icon: "success",
+  title: "OTP Verified ✅",
+  showConfirmButton: false,
+  timer: 1500,
+});
+  } catch (err) {
+    console.error("OTP verification failed:", err);
+    setOtpError("❌ Invalid OTP. Please try again.");
+  }
+}}
+
+        >
+          Verify
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       </main>
     </div>
   );
