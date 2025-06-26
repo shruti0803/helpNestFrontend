@@ -15,6 +15,7 @@ import { FaHome, FaClipboardList, FaTasks } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 import NotificationPopup from './Notification';
 
+import axios from 'axios';
 
 
 const Navbar = () => {
@@ -23,6 +24,7 @@ const Navbar = () => {
 const [showNotifications, setShowNotifications] = useState(false);
 const [hasUnreadNotification, setHasUnreadNotification] = useState(false);
 
+const [unreadCount, setUnreadCount] = useState(0);
 
   const [isOpen, setIsOpen] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
@@ -96,62 +98,92 @@ const [hasUnreadNotification, setHasUnreadNotification] = useState(false);
 
 
 useEffect(() => {
-  const pollNotifications = async () => {
+  const pollUnreadNotifications = async () => {
+    const role = localStorage.getItem('role');
+    if (!role) return;
+
+    console.log("🔁 Polling notifications as role:", role);
+
     try {
-      const role = localStorage.getItem("role");
-      let hasScheduled = false;
+      const dynamic = [];
 
-      console.log("🔁 Polling for notifications as:", role);
+      // Fetch seen notifications
+      const seenRes = await axios.get(`http://localhost:5000/api/notifications/${role}`, {
+        withCredentials: true
+      });
+      const seenList = seenRes.data;
+      console.log("👁️ Seen from DB:", seenList);
 
-      if (role === "helper") {
-        const res = await fetch("http://localhost:5000/api/bookings/tasks", {
-          credentials: "include",
+      const seenMap = new Map();
+      seenList.forEach(n => seenMap.set(`${n.type}_${n.refId}`, true));
+
+      if (role === 'helper') {
+        const res = await axios.get('http://localhost:5000/api/bookings/tasks', { withCredentials: true });
+        const bookings = res.data.bookings || [];
+        console.log("📦 Helper bookings:", bookings);
+
+        bookings.forEach(b => {
+          dynamic.push({
+            _id: b._id,
+            type: 'request',
+          });
         });
-        const data = await res.json();
-        console.log("📦 Helper tasks:", data);
-        hasScheduled = (data.bookings || []).length > 0;
+
+        console.log("🧠 Constructed helper dynamic notifications:", dynamic);
       }
 
-      if (role === "user") {
-        // 🧾 Check scheduled bookings
-        const res = await fetch("http://localhost:5000/api/bookings/requests", {
-          credentials: "include",
+      if (role === 'user') {
+        const res1 = await axios.get('http://localhost:5000/api/bookings/requests', { withCredentials: true });
+        const bookings = res1.data || [];
+        console.log("📦 User bookings:", bookings);
+
+        bookings.forEach(b => {
+          if (b.status === 'Scheduled') {
+            dynamic.push({
+              _id: b._id,
+              type: 'scheduled',
+            });
+          }
         });
-        const data = await res.json();
-        console.log("📦 User requests:", data);
-        const hasScheduledBooking = (data || []).some(
-          (booking) => booking.status === "Scheduled"
-        );
 
-        // 💸 Check pending bills
-        const billsRes = await fetch("http://localhost:5000/api/bills/allBills", {
-          credentials: "include",
+        const res2 = await axios.get('http://localhost:5000/api/bills/allBills', { withCredentials: true });
+        const bills = res2.data || [];
+        console.log("💸 User bills:", bills);
+
+        bills.forEach(bill => {
+          if (bill.paymentStatus === 'Pending') {
+            dynamic.push({
+              _id: bill._id,
+              type: 'bill',
+            });
+          }
         });
-        const billsData = await billsRes.json();
-        console.log("💸 User bills:", billsData);
 
-        // Adjust this filter if your field is different like isPaid, paymentStatus etc
-        const hasPendingBills = (billsData || []).some(
-          (bill) => bill.status === "pending"
-        );
-
-        hasScheduled = hasScheduledBooking || hasPendingBills;
+        console.log("🧠 Constructed user dynamic notifications:", dynamic);
       }
 
-      console.log("🔔 New scheduled task/request or pending bill exists?", hasScheduled);
-      setHasUnreadNotification(hasScheduled);
+      // Match against seen
+      const withSeen = dynamic.map(n => ({
+        ...n,
+        seen: seenMap.has(`${n.type}_${n._id}`)
+      }));
+
+      console.log("📋 With seen info:", withSeen);
+
+      const unseenCount = withSeen.filter(n => !n.seen).length;
+      console.log("🔢 Unseen count:", unseenCount);
+
+      setUnreadCount(unseenCount);
+      setHasUnreadNotification(unseenCount > 0);
     } catch (err) {
-      console.error("📛 Error polling for notifications:", err);
+      console.error('❌ Background notification poll error:', err.message);
     }
   };
 
-  pollNotifications();
-  const interval = setInterval(pollNotifications, 1000);
+  pollUnreadNotifications();
+  const interval = setInterval(pollUnreadNotifications, 5000);
   return () => clearInterval(interval);
 }, []);
-
-
-
 
 
 
@@ -213,7 +245,15 @@ useEffect(() => {
       onClick={() => setShowNotifications((prev) => !prev)}
     >
       <div className="flex items-center space-x-2 text-sm">
-        <FaBell size={20} className={hasUnreadNotification ? 'text-yellow-500' : ''} />
+        <div className="relative">
+  <FaBell size={20} className={hasUnreadNotification ? 'text-yellow-500' : ''} />
+  {hasUnreadNotification && unreadCount > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow">
+      {unreadCount}
+    </span>
+  )}
+</div>
+
         <span>Alerts</span>
       </div>
     </div>
@@ -222,7 +262,13 @@ useEffect(() => {
      <div className="absolute right-0 mt-2 w-[580px] bg-gradient-to-br from-purple-200 to-white border border-purple-200 rounded-2xl shadow-xl z-50">
 
 
-        <NotificationPopup setHasUnread={setHasUnreadNotification} />
+      <NotificationPopup
+  setHasUnread={(hasUnread, count) => {
+    setHasUnreadNotification(hasUnread);
+    setUnreadCount(count);
+  }}
+/>
+
       </div>
     )}
   </div>

@@ -6,75 +6,74 @@ const NotificationPopup = ({ setHasUnread }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const role = localStorage.getItem('role'); // 'helper' or 'user'
     const fetchNotifications = async () => {
+      const role = localStorage.getItem('role');
       try {
-        let combined = [];
+        const dynamic = []; // all current from booking/bills
+        const seen = [];
 
+        // 1. Fetch seen notification records
+        const seenRes = await axios.get(
+          `http://localhost:5000/api/notifications/${role}`,
+          { withCredentials: true }
+        );
+        const seenList = seenRes.data; // [{ type, refId }]
+
+        // 2. Fetch current booking/bills (same as your current logic) → populate `dynamic`
         if (role === 'helper') {
-          const taskRes = await axios.get('http://localhost:5000/api/bookings/tasks', {
-            withCredentials: true,
+          const res = await axios.get('http://localhost:5000/api/bookings/tasks', { withCredentials: true });
+         
+          (res.data.bookings || []).forEach(b => {
+            dynamic.push({
+              _id: b._id,
+              type: 'request',
+              message: `New booking for ${b.service} on ${b.date}`,
+              createdAt: b.createdAt
+            });
           });
-
-          console.log('🧑‍🔧 Helper tasks:', taskRes.data);
-          combined = (taskRes.data.bookings || []).map((booking) => ({
-            _id: booking._id,
-            message: `New booking request for ${booking.service} on ${booking.date} at ${booking.time}`,
-            createdAt: booking.createdAt,
-          }));
         }
 
-if (role === 'user') {
-  // 1. Get scheduled bookings
-  const userRes = await axios.get('http://localhost:5000/api/bookings/requests', {
-    withCredentials: true,
-  });
+        if (role === 'user') {
+          const res1 = await axios.get('http://localhost:5000/api/bookings/requests', { withCredentials: true });
+          res1.data.forEach(b => {
+            if (b.status === 'Scheduled') {
+              dynamic.push({
+                _id: b._id,
+                type: 'scheduled',
+                message: `📅 Scheduled: ${b.service} on ${b.date} at ${b.time}`,
+                createdAt: b.createdAt
+              });
+            }
+          });
 
-  const rawBookings = userRes.data;
-  console.log('👤 Raw user bookings:', rawBookings);
+          const res2 = await axios.get('http://localhost:5000/api/bills/allBills', { withCredentials: true });
+          res2.data.forEach(bill => {
+            if (bill.paymentStatus === 'Pending') {
+              dynamic.push({
+                _id: bill._id,
+                type: 'bill',
+                message: `💸 Pending bill: ₹${bill.totalAmountPaid}`,
+                createdAt: bill.createdAt
+              });
+            }
+          });
+        }
 
-  const scheduled = rawBookings
-    .filter((booking) => booking.status === 'Scheduled')
-    .map((booking) => ({
-      _id: booking._id,
-      message: `📅 Scheduled booking: ${booking.service} on ${booking.date} at ${booking.time}`,
-      createdAt: booking.createdAt,
-    }));
+        // 3. Compare with seen
+        const seenMap = new Map();
+        seenList.forEach(n => seenMap.set(`${n.type}_${n.refId}`, true));
 
-  console.log('👤 Filtered scheduled bookings:', scheduled);
+        const withSeen = dynamic.map(n => ({
+          ...n,
+          seen: seenMap.has(`${n.type}_${n._id}`) ? true : false
+        }));
 
-  // 2. Get pending bills
-  const billRes = await axios.get('http://localhost:5000/api/bills/allBills', {
-    withCredentials: true,
-  });
+        setNotifications(withSeen);
+        const count = withSeen.filter(n => !n.seen).length;
+setHasUnread(count > 0, count);
 
-  console.log("💸 User bills:", billRes.data);
-
-  const pendingBills = billRes.data
-    .filter((bill) => bill.paymentStatus === 'Pending')
-    .map((bill) => ({
-      _id: bill._id,
-      message: `💸 Pending bill: ₹${bill.totalAmountPaid
-}  on ${bill.createdAt
-}`,
-      createdAt: bill.createdAt,
-    }));
-
-  // 3. Combine both types
-  combined = [...combined, ...scheduled, ...pendingBills];
-}
-
-
-
-
-        combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        console.log('🔔 Final combined notifications:', combined);
-
-        setNotifications(combined);
-        setHasUnread(combined.length > 0);
-      } catch (error) {
-        console.error('❌ Error fetching notifications:', error);
+      } catch (err) {
+        console.error('❌ Notification fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -82,6 +81,34 @@ if (role === 'user') {
 
     fetchNotifications();
   }, [setHasUnread]);
+
+  // 🔁 On first load, mark unseen as seen
+  useEffect(() => {
+    const markAsSeen = async () => {
+      const unseen = notifications.filter(n => !n.seen);
+      if (unseen.length === 0) return;
+
+      const grouped = unseen.reduce((acc, n) => {
+        acc[n.type] = acc[n.type] || [];
+        acc[n.type].push(n._id);
+        return acc;
+      }, {});
+
+      const role = localStorage.getItem('role');
+      for (const [type, ids] of Object.entries(grouped)) {
+        await axios.post(
+          `http://localhost:5000/api/notifications/${role}/mark-seen`,
+          { type, ids },
+          { withCredentials: true }
+        );
+      }
+    };
+
+    if (notifications.length > 0) {
+      markAsSeen();
+    }
+  }, [notifications]);
+
 
  return (<div className="p-6 text-[15px] text-gray-800 max-h-[520px] w-[580px] overflow-y-auto rounded-2xl bg-white/70">
 
@@ -94,24 +121,27 @@ if (role === 'user') {
     ) : notifications.length === 0 ? (
       <p className="text-gray-500 italic">You’re all caught up!</p>
     ) : (
-      <ul className="space-y-3">
-        {notifications.map((notif) => (
-          <li
-            key={notif._id}
-            className="bg-white/70 border border-purple-100 shadow-sm p-3 rounded-lg hover:bg-purple-50 transition"
-          >
-            <p className="text-gray-800">
-              <span className="text-purple-600">🔔</span> {notif.message}
-            </p>
-            <div className="text-[11px] text-gray-500 mt-1 text-right">
-              {new Date(notif.createdAt).toLocaleString('en-IN', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-              })}
-            </div>
-          </li>
-        ))}
-      </ul>
+     <ul className="space-y-3">
+  {notifications.map((notif) => (
+    <li
+      key={notif._id}
+      className={`p-3 rounded-lg transition border shadow-sm ${
+        notif.seen ? 'bg-white/70' : 'bg-yellow-100'
+      }`}
+    >
+      <p>
+        <span className="text-purple-600">🔔</span> {notif.message}
+      </p>
+      <div className="text-[11px] text-gray-500 text-right">
+        {new Date(notif.createdAt).toLocaleString('en-IN', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })}
+      </div>
+    </li>
+  ))}
+</ul>
+
     )}
   </div>
 );
