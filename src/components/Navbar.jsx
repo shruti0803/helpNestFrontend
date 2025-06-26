@@ -124,7 +124,7 @@ useEffect(() => {
         );
 
         // 💸 Check pending bills
-        const billsRes = await fetch("http://localhost:5000/api/bookings/allBills", {
+        const billsRes = await fetch("http://localhost:5000/api/bills/allBills", {
           credentials: "include",
         });
         const billsData = await billsRes.json();
@@ -146,7 +146,7 @@ useEffect(() => {
   };
 
   pollNotifications();
-  const interval = setInterval(pollNotifications, 5000);
+  const interval = setInterval(pollNotifications, 1000);
   return () => clearInterval(interval);
 }, []);
 

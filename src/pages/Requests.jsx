@@ -5,6 +5,8 @@ import { Dialog } from "@headlessui/react";
 import { launchRazorpay } from "./Bill/RazorpayPayment";
 import { useNavigate } from "react-router-dom";
 
+import { FaRupeeSign, FaMoneyBillWave, FaClock, FaCheckCircle } from 'react-icons/fa';
+import { MdDescription, MdPayment, MdClose } from 'react-icons/md';
 import {
   FiCheckCircle,
   FiClock,
@@ -290,70 +292,67 @@ useEffect(() => {
             </table>
           </div>
         )}
-        <Dialog open={billModalOpen} onClose={() => setBillModalOpen(false)} className="relative z-50">
+<Dialog open={billModalOpen} onClose={() => setBillModalOpen(false)} className="relative z-50">
   <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
   <div className="fixed inset-0 flex items-center justify-center p-4">
-    <Dialog.Panel className="w-full max-w-md rounded bg-white p-6 shadow-xl space-y-4">
-      <Dialog.Title className="text-lg font-bold text-purple-800">Bill Details</Dialog.Title>
+    <Dialog.Panel className="w-full max-w-lg rounded-2xl bg-gradient-to-br from-white to-purple-50 p-6 shadow-2xl space-y-5">
+      <Dialog.Title className="text-xl font-bold text-purple-800 flex items-center gap-2">
+        <FaMoneyBillWave className="text-purple-600" /> Bill Details
+      </Dialog.Title>
+
       {selectedBill ? (
-        <div className="space-y-2 text-sm text-gray-700">
-          <p><strong>Description:</strong> {selectedBill.description}</p>
-          <p><strong>Total Hours:</strong> {selectedBill.totalHours}</p>
-          <p><strong>Rate per Hour:</strong> ₹{selectedBill.ratePerHour}</p>
-          <p><strong>Base Amount:</strong> ₹{selectedBill.baseAmount}</p>
-          <p><strong>Platform Fee:</strong> ₹{selectedBill.userPlatformFee}</p>
-          <p><strong>Total Paid:</strong> ₹{selectedBill.totalAmountPaid}</p>
-          <p><strong>Payment Mode:</strong> {selectedBill.paymentMode}</p>
-          <p><strong>Payment Status:</strong> {selectedBill.paymentStatus}</p>
+        <div className="space-y-3 text-[15px] text-gray-800">
+          <p className="flex items-center gap-2"><MdDescription className="text-purple-600" /> <strong>Description:</strong> {selectedBill.description}</p>
+          <p className="flex items-center gap-2"><FaClock className="text-purple-600" /> <strong>Total Hours:</strong> {selectedBill.totalHours}</p>
+          <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /> <strong>Rate per Hour:</strong> ₹{selectedBill.ratePerHour}</p>
+          <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /> <strong>Base Amount:</strong> ₹{selectedBill.baseAmount}</p>
+          <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /> <strong>Platform Fee:</strong> ₹{selectedBill.userPlatformFee}</p>
+          <p className="flex items-center gap-2"><FaCheckCircle className="text-green-600" /> <strong>Total Paid:</strong> ₹{selectedBill.totalAmountPaid}</p>
+          <p className="flex items-center gap-2"><MdPayment className="text-purple-600" /> <strong>Payment Mode:</strong> {selectedBill.paymentMode}</p>
+          <p className="flex items-center gap-2"><MdPayment className="text-purple-600" /> <strong>Status:</strong> {selectedBill.paymentStatus}</p>
         </div>
       ) : (
         <p className="text-gray-500">Loading bill...</p>
       )}
-      <div className="pt-4 text-right">
+
+      <div className="pt-4 flex justify-end space-x-3">
         <button
           onClick={() => setBillModalOpen(false)}
-          className="bg-purple-500 text-white px-4 py-1 rounded hover:bg-purple-600"
+          className="flex items-center gap-1 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition"
         >
-          Close
+          <MdClose /> Close
         </button>
-<button
-  onClick={async () => {
-    try {
-      const res = await axios.post("http://localhost:5000/api/payment/create-order", {
-        bookingId: selectedBill.bookingId,
-      });
 
-      const { order } = res.data;
+        <button
+          onClick={async () => {
+            try {
+              const res = await axios.post("http://localhost:5000/api/payment/create-order", {
+                bookingId: selectedBill.bookingId,
+              });
 
-      launchRazorpay({
-        order_id: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        bookingId: selectedBill.bookingId,
-        name: profile?.name || "HelpNest User",
-        description: selectedBill.description || "HelpNest Service",
-       onSuccess: (updatedBill) => {
-  console.log("✅ Payment succeeded, navigating to summary with bill:", updatedBill);
-  navigate("/bill-summary", { state: { bill: updatedBill } });
-}
+              const { order } = res.data;
 
-          
-       
-      });
-    } catch (err) {
-      console.error("Payment failed", err);
-      alert("Could not start Razorpay");
-    }
-  }}
-  className="ml-2 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
->
-  Pay
-</button>
-
-
-
-
-
+              launchRazorpay({
+                order_id: order.id,
+                amount: order.amount,
+                currency: order.currency,
+                bookingId: selectedBill.bookingId,
+                name: profile?.name || "HelpNest User",
+                description: selectedBill.description || "HelpNest Service",
+                onSuccess: (updatedBill) => {
+                  console.log("✅ Payment succeeded, navigating to summary with bill:", updatedBill);
+                  navigate("/bill-summary", { state: { bill: updatedBill } });
+                },
+              });
+            } catch (err) {
+              console.error("Payment failed", err);
+              alert("Could not start Razorpay");
+            }
+          }}
+          className="flex items-center gap-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+        >
+          💸 Pay
+        </button>
       </div>
     </Dialog.Panel>
   </div>
