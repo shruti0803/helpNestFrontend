@@ -50,6 +50,7 @@ const [unreadCount, setUnreadCount] = useState(0);
           method: 'GET',
           credentials: 'include',
         });
+        localStorage.removeItem("token");
         dispatch(logout());
       } if (helperData) {
   await fetch('/api/helpers/logout', {
@@ -58,7 +59,7 @@ const [unreadCount, setUnreadCount] = useState(0);
   });
   localStorage.removeItem("helperToken");
   dispatch(logoutHelper());
-
+      }
 
   if (admin) {
         await fetch('/api/admin/logout', {
@@ -69,7 +70,7 @@ const [unreadCount, setUnreadCount] = useState(0);
       }
   // 🧹 Clear persisted data
   // persistor.purge();
-}
+
       
       window.location.href = '/';
     } catch (err) {

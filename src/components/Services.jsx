@@ -1,6 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Swal from "sweetalert2"; // ✅ Add this import
+
+import "react-toastify/dist/ReactToastify.css";
 
 const services = [
   {
@@ -28,22 +31,68 @@ const services = [
 const Services = () => {
   const navigate = useNavigate();
 const helper = useSelector((state) => state.helper.helperData);
-  const handleStart = (title) => {
-    if (title === "Skill Training") {
-    
-      navigate("/training"); // route to TrainingModules page
-      
+const handleStart = (title) => {
+  const role = localStorage.getItem("role");
+
+  if (title === "Skill Training") {
+    if (role === "helper") {
+      navigate("/training");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Access Denied",
+        text: "You can't access this page. Only helpers are allowed.",
+        confirmButtonColor: "#7e22ce",
+      });
     }
-    if(title=== "Trusted Helpers"){
+    return;
+  }
+
+  if (title === "Trusted Helpers") {
+    if (role === "user") {
       navigate("/helpers");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Access Denied",
+        text: "Only users can access this service.",
+        confirmButtonColor: "#7e22ce",
+      });
     }
-     if(title=== "Health Reminders"){
+    return;
+  }
+
+  if (title === "Health Reminders") {
+    if (role === "user") {
       navigate("/dashboard");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Access Denied",
+        text: "Only users can access this service.",
+        confirmButtonColor: "#7e22ce",
+      });
     }
-      if(title=== "Emergency Support"){
+    return;
+  }
+
+  if (title === "Emergency Support") {
+    if (role === "user") {
       navigate("/emergency");
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Access Denied",
+        text: "Only users can access this service.",
+        confirmButtonColor: "#7e22ce",
+      });
     }
-  };
+    return;
+  }
+};
+
+
+
 
   return (
     <div className="min-h-screen bg-white px-6 py-16">
