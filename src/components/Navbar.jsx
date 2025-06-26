@@ -51,6 +51,7 @@ const [unreadCount, setUnreadCount] = useState(0);
           credentials: 'include',
         });
         localStorage.removeItem("token");
+        localStorage.removeItem("role");
         dispatch(logout());
       } if (helperData) {
   await fetch('/api/helpers/logout', {
@@ -58,6 +59,7 @@ const [unreadCount, setUnreadCount] = useState(0);
     credentials: 'include',
   });
   localStorage.removeItem("helperToken");
+  localStorage.removeItem("role");
   dispatch(logoutHelper());
       }
 
