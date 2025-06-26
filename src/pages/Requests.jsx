@@ -326,20 +326,35 @@ useEffect(() => {
         <FaMoneyBillWave className="text-purple-600" /> Bill Details
       </Dialog.Title>
 
-      {selectedBill ? (
-        <div className="space-y-3 text-[15px] text-gray-800">
-          <p className="flex items-center gap-2"><MdDescription className="text-purple-600" /> <strong>Description:</strong> {selectedBill.description}</p>
-          <p className="flex items-center gap-2"><FaClock className="text-purple-600" /> <strong>Total Hours:</strong> {selectedBill.totalHours}</p>
-          <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /> <strong>Rate per Hour:</strong> ₹{selectedBill.ratePerHour}</p>
-          <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /> <strong>Base Amount:</strong> ₹{selectedBill.baseAmount}</p>
-          <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /> <strong>Platform Fee:</strong> ₹{selectedBill.userPlatformFee}</p>
-          <p className="flex items-center gap-2"><FaCheckCircle className="text-green-600" /> <strong>Total Paid:</strong> ₹{selectedBill.totalAmountPaid}</p>
-          <p className="flex items-center gap-2"><MdPayment className="text-purple-600" /> <strong>Payment Mode:</strong> {selectedBill.paymentMode}</p>
-          <p className="flex items-center gap-2"><MdPayment className="text-purple-600" /> <strong>Status:</strong> {selectedBill.paymentStatus}</p>
-        </div>
-      ) : (
-        <p className="text-gray-500">Loading bill...</p>
-      )}
+    {selectedBill ? (
+  <div className="space-y-6 text-[15px] text-gray-800">
+    {/* Section 1: Work Info */}
+    <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+      <h3 className="text-purple-700 font-semibold mb-2">🛠️ Work Summary</h3>
+      <p className="flex items-center gap-2"><MdDescription className="text-purple-600" /><strong>Description:</strong> {selectedBill.description}</p>
+      <p className="flex items-center gap-2"><FaClock className="text-purple-600" /><strong>Total Hours:</strong> {selectedBill.totalHours}</p>
+      <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /><strong>Rate per Hour:</strong> ₹{selectedBill.ratePerHour}</p>
+    </div>
+
+    {/* Section 2: Payment Breakdown */}
+    <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+      <h3 className="text-purple-700 font-semibold mb-2">💸 Billing Breakdown</h3>
+      <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /><strong>Base Amount:</strong> ₹{selectedBill.baseAmount}</p>
+      <p className="flex items-center gap-2"><FaRupeeSign className="text-purple-600" /><strong>Platform Fee:</strong> ₹{selectedBill.userPlatformFee}</p>
+      <p className="flex items-center gap-2"><FaCheckCircle className="text-green-600" /><strong>Total:</strong> ₹{selectedBill.totalAmountPaid}</p>
+    </div>
+
+    {/* Section 3: Payment Details */}
+    <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+      <h3 className="text-purple-700 font-semibold mb-2">🧾 Payment Info</h3>
+      <p className="flex items-center gap-2"><MdPayment className="text-purple-600" /><strong>Payment Mode:</strong> {selectedBill.paymentMode}</p>
+      <p className="flex items-center gap-2"><MdPayment className="text-purple-600" /><strong>Status:</strong> {selectedBill.paymentStatus}</p>
+    </div>
+  </div>
+) : (
+  <p className="text-gray-500">Loading bill...</p>
+)}
+
 
       <div className="pt-4 flex justify-end space-x-3">
         <button
