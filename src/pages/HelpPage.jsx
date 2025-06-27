@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
-import Loader from "../components/Loader";
+import { useNavigate } from "react-router-dom";
+
 import axios from "axios";
 import Swal from 'sweetalert2';
+import TaskDetails from "./TaskDetails";
+
 const categories = [
   {
     title: 'Tech Support',
@@ -189,7 +192,8 @@ try {
 
 const HelpPage = () => {
   const [selectedService, setSelectedService] = useState(null);
-const [loading, setLoading] = useState(true);
+const [showDetailsFor, setShowDetailsFor] = useState(null);
+
 
   // useEffect(() => {
   //   // Simulate a loading delay (you can replace this with real data fetching)
@@ -226,12 +230,21 @@ const [loading, setLoading] = useState(true);
               <p className="text-gray-600 mb-4 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 {cat.description}
               </p>
-              <button
-                onClick={() => setSelectedService(cat.title)}
-                className="w-full bg-white border-2 border-purple-400 text-black py-2 px-4 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-purple-700 hover:text-white"
-              >
-                Book Now
-              </button>
+              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+  <button
+    onClick={() => setSelectedService(cat.title)}
+    className="w-full bg-white border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-purple-700 hover:text-white"
+  >
+    Book Now
+  </button>
+  <button
+    onClick={() => setShowDetailsFor(cat.title)}
+    className="w-full bg-white border-2 border-gray-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
+  >
+    Details
+  </button>
+</div>
+
             </div>
             <div className="absolute inset-0 bg-white bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></div>
           </div>
@@ -244,6 +257,20 @@ const [loading, setLoading] = useState(true);
           onClose={() => setSelectedService(null)}
         />
       )}
+      {selectedService && (
+  <BookingForm
+    service={selectedService}
+    onClose={() => setSelectedService(null)}
+  />
+)}
+
+{showDetailsFor && (
+  <TaskDetails
+    title={showDetailsFor}
+    onClose={() => setShowDetailsFor(null)}
+  />
+)}
+
     </div>
   );
 };

@@ -36,6 +36,7 @@ import ManageHelper from "./pages/Admin/ManageHelper";
 import ManageSalary from "./pages/Admin/ManageSalary";
 import EmergencySupport from "./pages/EmergencySupport";
 
+
 function AppRoutes() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -60,6 +61,8 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/bill-summary" element={<BillSummary />} />
         <Route path="/emergency" element={<EmergencySupport/>}/>
+        
+
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
