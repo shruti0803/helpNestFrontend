@@ -110,14 +110,16 @@ Promise.all(
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(prev => prev + 1);
       } else {
-        const finalScore = score + (index === currentQuestion.correctAnswer ? 1 : 0);
-        setScore(finalScore);
-        setShowResult(true);
+      let finalRawScore = score + (index === currentQuestion.correctAnswer ? 1 : 0);
+const percentageScore = (finalRawScore * 100) / questions.length;
+setScore(finalRawScore); // Keep raw score in state
+setShowResult(true);
 
-        if (finalScore >= 8) {
-          updateTestScore(finalScore);
-          setTimeout(() => setShowPassPopup(true), 300);
-        }
+if (percentageScore >= 80) {
+  updateTestScore(percentageScore);
+  setTimeout(() => setShowPassPopup(true), 300);
+}
+
       }
     }, 1000);
   };
@@ -178,8 +180,9 @@ Promise.all(
         ) : (
           <div>
             <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
-            <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>
-            {score < 8 && (
+           <p className="text-xl mb-6">Your Score: {(score * 100 / questions.length).toFixed(0)}%</p>
+
+            {(score*100)/questions.length < 80 && (
               <button
                 onClick={handleRetake}
                 className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition"
@@ -196,7 +199,8 @@ Promise.all(
           <div className="bg-white p-8 rounded-lg text-center shadow-xl">
              <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
             <h2 className="text-2xl font-bold mb-4 text-green-600">🎉 You Passed the Test!</h2>
-            <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>
+           <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>
+ <p className="text-xl mb-6">Percentage: {(score * 100 / questions.length).toFixed(0)}%</p>
             <p className="mb-6 text-lg">Great job! Please proceed to fill your details.</p>
             <button
               onClick={handleFillDetails}

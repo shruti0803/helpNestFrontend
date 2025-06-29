@@ -80,11 +80,14 @@ const fetchWeeklyData = async () => {
       transition={{ duration: 0.7 }}
       className="w-full h-[350px] bg-white rounded-xl shadow-lg p-4"
     >
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-semibold text-purple-700">
-          Weekly Task Distribution
-        </h2>
-        <div className="flex gap-3">
+  <div className="relative mb-5">
+  <h2 className="text-2xl font-extrabold text-purple-800 tracking-wide text-center">
+    Weekly Task Distribution
+  </h2>
+
+  <div className="absolute top-0 right-0 flex gap-3">
+
+
           <div
             className={`w-4 h-4 rounded-full cursor-pointer border-2 ${visible.meds ? 'bg-purple-600' : 'bg-gray-200'}`}
             onClick={() => toggleVisibility('meds')}
@@ -104,14 +107,20 @@ const fetchWeeklyData = async () => {
         <ResponsiveContainer width="100%" height="90%">
           <AreaChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="colorMed" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#9333ea" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#9333ea" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="colorAppt" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#c4b5fd" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#c4b5fd" stopOpacity={0} />
-              </linearGradient>
+  <linearGradient id="colorMed" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.8} />
+  <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+</linearGradient>
+
+
+
+<linearGradient id="colorAppt" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="5%" stopColor="#7e22ce" stopOpacity={0.8} />  {/* Tailwind purple-800 */}
+  <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />  {/* Tailwind purple-500 */}
+</linearGradient>
+
+
+
             </defs>
 
             <XAxis dataKey="date" stroke="#8884d8" />

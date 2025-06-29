@@ -14,7 +14,8 @@ import { FaBell } from 'react-icons/fa';
 import { FaHome, FaClipboardList, FaTasks } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 import NotificationPopup from './Notification';
-
+import { FaMapMarkedAlt } from "react-icons/fa"; 
+import { FaUserCircle } from "react-icons/fa";
 import axios from 'axios';
 
 
@@ -208,9 +209,15 @@ useEffect(() => {
     <span>Home</span>
   </Link>
 </div>
+{user && (
+<div className={`h-16  flex items-center ${location.pathname === '/community' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
+  <Link to="/community" className="flex items-center space-x-2 text-sm" title="Community">
+ <FaMapMarkedAlt size={20} />
+<span>Local Hub</span>
+  </Link>
+</div>
 
-
-
+)}
 
 {user && (
  <div className={`h-16 flex items-center ${location.pathname === '/requests' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
@@ -239,7 +246,7 @@ useEffect(() => {
 )}
 
 
-{(user || helperData || admin) && (
+{(user || helperData ) && (
   <div className="relative">
     <div
       className={`h-16 flex items-center cursor-pointer ${
@@ -310,9 +317,11 @@ useEffect(() => {
                   )}
                 </div>
               ) : (
-                <button onClick={openLogin} className="text-gray-700 hover:text-blue-600">
-                  Login
-                </button>
+                <button onClick={openLogin} className="flex items-center gap-1 text-gray-700 hover:text-blue-600">
+ <FaUserCircle size={20} />
+
+  <span>Login</span>
+</button>
               )}
              
             </div>

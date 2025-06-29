@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-
+import CommunityPlaces from "./pages/CommunityPlaces"
 import Home from './pages/Home';
 import TrainingModules from './pages/TrainingModules';
 import Test from "./pages/Test";
@@ -48,6 +48,7 @@ function AppRoutes() {
       <Routes>
         {/* User/Helper Routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/community" element={<CommunityPlaces/>}/>
         <Route path="/training" element={<TrainingModules />} />
         <Route path="/test" element={<Test />} />
         <Route path="/details" element={<Details />} />
