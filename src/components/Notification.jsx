@@ -68,7 +68,10 @@ const NotificationPopup = ({ setHasUnread }) => {
           seen: seenMap.has(`${n.type}_${n._id}`) ? true : false
         }));
 
-        setNotifications(withSeen);
+      setNotifications(
+  withSeen.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+);
+
         const count = withSeen.filter(n => !n.seen).length;
 setHasUnread(count > 0, count);
 

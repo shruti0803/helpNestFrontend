@@ -147,14 +147,14 @@ const Sidebar = () => {
             {!collapsed && <span className="ml-3">Profile Form</span>}
           </Link> */}
           <Link
-            to="/admin/services"
+            to="/admin/manageshop"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/services' ? 'bg-purple-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/manageshop' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
-            onClick={() => handleLinkClick('/admin/services')}
+            onClick={() => handleLinkClick('/admin/manageshop')}
           >
             <HomeRepairService className="h-6 w-6" />
-            {!collapsed && <span className="ml-3">Manage Service</span>}
+            {!collapsed && <span className="ml-3">Manage Shop</span>}
           </Link>
           <Link
             to="/admin/salary"

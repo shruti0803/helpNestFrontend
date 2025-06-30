@@ -34,44 +34,53 @@ const CommunityPlaces = () => {
       return 'Address not available';
     }
   };
+const imageIndexTracker = {
+  fitness: 0,
+  sports: 0,
+  clinics: 0,
+  parks: 0
+};
 
  const dummyImages = {
-  fitness: [
-    "https://images.unsplash.com/photo-1583454110558-774b0e3a3a8e",
-    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
-    "https://images.unsplash.com/photo-1605296867304-46d5465a13f1",
-    "https://images.unsplash.com/photo-1554284126-aa88f22d8b74",
-    "https://images.unsplash.com/photo-1517964101675-f2d4c2cfa1f3",
-    "https://images.unsplash.com/photo-1571731956672-643d06edb7f3",
-    "https://images.unsplash.com/photo-1599058917212-d750089bc06d",
-    "https://images.unsplash.com/photo-1605296867304-46d5465a13f1",
-    "https://images.unsplash.com/photo-1583454110558-774b0e3a3a8e",
-    "https://images.unsplash.com/photo-1581009146145-6411c143055b"
-  ],
-  sports: [
-    "https://images.unsplash.com/photo-1587293852726-70cdb56c2863",
-    "https://images.unsplash.com/photo-1601625874704-cf6a1fd17be5",
-    "https://images.unsplash.com/photo-1599058917212-d750089bc06d",
-    "https://images.unsplash.com/photo-1611233418165-d289d333b7f4",
-    "https://images.unsplash.com/photo-1549921296-3a6b3d6ad9b4",
-    "https://images.unsplash.com/photo-1576267423445-97b6a2f8e5ec",
-    "https://images.unsplash.com/photo-1549921296-3a6b3d6ad9b4",
-    "https://images.unsplash.com/photo-1625346309443-6f4ae3fcb2fa",
-    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b",
-    "https://images.unsplash.com/photo-1554284126-aa88f22d8b74"
-  ],
-  clinics: [
-    "https://images.unsplash.com/photo-1580281657521-6d1fdf4f9301",
-    "https://images.unsplash.com/photo-1588776814546-ec0b0fc1e4d7",
-    "https://images.unsplash.com/photo-1606813902750-0b9bfc0d88a0",
-    "https://images.unsplash.com/photo-1580281657521-6d1fdf4f9301",
-    "https://images.unsplash.com/photo-1622253692010-333f3c1d6f59",
-    "https://images.unsplash.com/photo-1579154204601-b5c76a43c397",
-    "https://images.unsplash.com/photo-1580281657521-6d1fdf4f9301",
-    "https://images.unsplash.com/photo-1606813902750-0b9bfc0d88a0",
-    "https://images.unsplash.com/photo-1579154204601-b5c76a43c397",
-    "https://images.unsplash.com/photo-1588776814546-ec0b0fc1e4d7"
-  ],
+fitness: [
+  "https://images.pexels.com/photos/2247179/pexels-photo-2247179.jpeg", // Woman plank row in gym :contentReference[oaicite:2]{index=2}
+  "https://images.pexels.com/photos/1552249/pexels-photo-1552249.jpeg", // Woman lifting barbell :contentReference[oaicite:3]{index=3}
+  "https://images.pexels.com/photos/160529/pexels-photo-160529.jpeg", // Battle ropes workout :contentReference[oaicite:4]{index=4}
+  "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg", // Black punching bag in sunlight :contentReference[oaicite:5]{index=5}
+  "https://images.pexels.com/photos/374794/pexels-photo-374794.jpeg", // Dumbbell close‑up :contentReference[oaicite:6]{index=6}
+  "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg", // Barbell rack dark gym :contentReference[oaicite:7]{index=7}
+  "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg", // Deadlift intense :contentReference[oaicite:8]{index=8}
+  "https://images.pexels.com/photos/416778/pexels-photo-416778.jpeg", // Treadmill cardio :contentReference[oaicite:9]{index=9}
+  "https://images.pexels.com/photos/209969/pexels-photo-209969.jpeg", // Kettlebell flat‑lay :contentReference[oaicite:10]{index=10}
+  "https://images.pexels.com/photos/2294361/pexels-photo-2294361.jpeg"  // Bodybuilder black‑white :contentReference[oaicite:11]{index=11}
+]
+,
+ sports: [
+  "https://images.pexels.com/photos/5067760/pexels-photo-5067760.jpeg", // Elderly man doing medicine ball exercise outdoors :contentReference[oaicite:1]{index=1}
+  "https://images.pexels.com/photos/15376288/pexels-photo-15376288.jpeg", // Senior man with golf club on lush course :contentReference[oaicite:2]{index=2}
+  "https://images.pexels.com/photos/6542457/pexels-photo-6542457.jpeg", // Two golfers high-fiving on golf course :contentReference[oaicite:3]{index=3}
+  "https://images.pexels.com/photos/416778/pexels-photo-416778.jpeg", // Elderly man jogging along waterfront :contentReference[oaicite:4]{index=4}
+  "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg", // Senior man lifting weights (dumbbells) :contentReference[oaicite:5]{index=5}
+  "https://images.pexels.com/photos/209969/pexels-photo-209969.jpeg", // Senior woman using kettlebell :contentReference[oaicite:6]{index=6}
+  "https://images.pexels.com/photos/160529/pexels-photo-160529.jpeg", // Battle ropes strength exercise :contentReference[oaicite:7]{index=7}
+  "https://images.pexels.com/photos/374794/pexels-photo-374794.jpeg", // Dumbbell close‑up in senior fitness context :contentReference[oaicite:8]{index=8}
+  "https://images.pexels.com/photos/325521/pexels-photo-325521.jpeg", // Senior group yoga outdoors :contentReference[oaicite:9]{index=9}
+  "https://images.pexels.com/photos/158028/pexels-photo-158028.jpeg" // Elderly woman lifting weights in gym :contentReference[oaicite:10]{index=10}
+]
+,
+clinics: [
+  "https://images.pexels.com/photos/3844582/pexels-photo-3844582.jpeg", // Modern white building with landscaping
+  "https://images.pexels.com/photos/3845515/pexels-photo-3845515.jpeg", // Glass-wrapped medical facility
+  "https://images.pexels.com/photos/3844584/pexels-photo-3844584.jpeg", // Brick and glass clinic entrance
+  "https://images.pexels.com/photos/3845508/pexels-photo-3845508.jpeg", // Contemporary healthcare complex
+  "https://images.pexels.com/photos/3844589/pexels-photo-3844589.jpeg", // Small medical office building
+  "https://images.pexels.com/photos/3845511/pexels-photo-3845511.jpeg", // Clinic with green accents and glass facade
+  "https://images.pexels.com/photos/3844592/pexels-photo-3844592.jpeg", // Entrance to modern outpatient facility
+  "https://images.pexels.com/photos/3845514/pexels-photo-3845514.jpeg", // Clinic surrounded by trees and daylight
+  "https://images.pexels.com/photos/3844587/pexels-photo-3844587.jpeg", // Clean-lined hospital annex
+  "https://images.pexels.com/photos/3844590/pexels-photo-3844590.jpeg"  // Contemporary healthcare building with glass frontage
+]
+,
   parks: [
     "https://images.pexels.com/photos/325521/pexels-photo-325521.jpeg?_gl=1*1ynm1ii*_ga*MjAzOTA0ODM2NS4xNzQ4NDEwODg3*_ga_8JE65Q40S6*czE3NTExOTM4NzAkbzIwJGcxJHQxNzUxMTkzODg1JGo0NSRsMCRoMA..",
     "https://images.pexels.com/photos/158028/bellingrath-gardens-alabama-landscape-scenic-158028.jpeg?_gl=1*6bmy8b*_ga*MjAzOTA0ODM2NS4xNzQ4NDEwODg3*_ga_8JE65Q40S6*czE3NTExOTM4NzAkbzIwJGcxJHQxNzUxMTkzOTI3JGozJGwwJGgw",
@@ -86,11 +95,19 @@ const CommunityPlaces = () => {
   ]
 };
 
-const getRandomDummyImage = () => {
+const getSequentialDummyImage = () => {
   const list = dummyImages[type.folder] || [];
-  const randomIndex = Math.floor(Math.random() * list.length);
-  return list[randomIndex];
+  if (list.length === 0) return null;
+
+  const currentIndex = imageIndexTracker[type.folder] || 0;
+  const image = list[currentIndex];
+
+  // Update the index to point to the next image, wrap around using modulo
+  imageIndexTracker[type.folder] = (currentIndex + 1) % list.length;
+
+  return image;
 };
+
 
 
   const fetchPlaces = async () => {
@@ -116,7 +133,8 @@ const getRandomDummyImage = () => {
       const enriched = await Promise.all(
         elements.map(async (place) => {
           const address = await fetchAddress(place.lat, place.lon);
-          const image = getRandomDummyImage();
+         const image = getSequentialDummyImage();
+
           return { ...place, address, image };
         })
       );

@@ -62,7 +62,10 @@ useEffect(() => {
       const res = await axios.get("http://localhost:5000/api/bookings/requests", {
         withCredentials: true,
       });
-      setBookings(res.data);
+     setBookings(
+  res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+);
+
     } catch (err) {
       console.error("Error fetching bookings:", err);
     }

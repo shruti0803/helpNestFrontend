@@ -50,7 +50,12 @@ const [selectedBooking, setSelectedBooking] = useState(null);
       });
 
       if (Array.isArray(response.data.bookings)) {
-        setTasks(response.data.bookings);
+       setTasks(
+  response.data.bookings.sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+  )
+);
+
       } else {
         setTasks([]);
       }

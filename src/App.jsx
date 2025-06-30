@@ -35,6 +35,8 @@ import ManageUser from "./pages/Admin/ManageUser";
 import ManageHelper from "./pages/Admin/ManageHelper";
 import ManageSalary from "./pages/Admin/ManageSalary";
 import EmergencySupport from "./pages/EmergencySupport";
+import MedShop from "./pages/MedicineShop/MedShop";
+import ManageShop from "./pages/Admin/ManageShop";
 
 
 function AppRoutes() {
@@ -62,7 +64,7 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/bill-summary" element={<BillSummary />} />
         <Route path="/emergency" element={<EmergencySupport/>}/>
-        
+        <Route path="/shop" element={<MedShop/>}/>
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -82,7 +84,7 @@ function AppRoutes() {
             <Route path="invoices" element={<InvoiceBalance/>} />
           <Route path="faq" element={<FAQ/>} />
           <Route path="calendar" element={<Calendar />} />
-
+<Route path="manageshop" element={<ManageShop/>}/>
         </Route>
       </Routes>
       {!isAdminRoute && <Footer />}
