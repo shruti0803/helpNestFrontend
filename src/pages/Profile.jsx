@@ -160,7 +160,22 @@ const Profile = () => {
             <div className="col-span-2 grid grid-cols-2 gap-4 mt-4">
              
               <NonEditable label="Training Progress" value={<div className="w-20 h-20"><CircularProgressbar value={profile.trainingProgress * 100 / 3} text={`${profile.trainingProgress * 100 / 3 || 0}%`} styles={buildStyles({ pathColor: '#8b5cf6', textColor: '#4b0082' })} /></div>} />
-              <NonEditable label="Test Score" value={<div className="w-20 h-20"><CircularProgressbar value={profile.testScore * 10} text={`${profile.testScore * 10 || 0}%`} styles={buildStyles({ pathColor: '#10b981', textColor: '#065f46' })} /></div>} />
+             <NonEditable 
+  label="Test Score" 
+  value={
+    <div className="w-20 h-20">
+      <CircularProgressbar 
+        value={Math.round(profile.testScore) || 0} 
+        text={`${Math.round(profile.testScore) || 0}%`} 
+        styles={buildStyles({ 
+          pathColor: '#10b981', 
+          textColor: '#065f46' 
+        })} 
+      />
+    </div>
+  } 
+/>
+
               <NonEditable label="Verified" value={profile.isVerified ? 'Yes' : 'No'} />
               <NonEditable label="Active" value={profile.isActive ? 'Yes' : 'No'} />
             </div>
