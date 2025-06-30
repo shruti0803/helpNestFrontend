@@ -1,91 +1,109 @@
+// Updated Test.jsx with Gemini API integration and retake logic
+
 import React, { useState, useEffect } from 'react';
 import { toast } from "react-toastify"; 
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useGetHelperProfile from '../../hooks/useGetHelperProfile';
 
-const QUESTIONS_PER_CATEGORY = 10;  // total questions you want, or split equally if multiple categories
+const QUESTIONS_PER_CATEGORY = 10;
+const GEMINI_API_KEY = "AIzaSyCRymUERA_7lw-bUvsQTu0x4Gg4IP2NLR8";
 
 const Test = () => {
   const { helper, loading, error } = useGetHelperProfile();
-
   const [questions, setQuestions] = useState([]);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showPassPopup, setShowPassPopup] = useState(false);
-const categoryToFilename = {
-  "Errand Services": "errand.json",
-  "Companionship": "companionship.json",
-  "Childcare": "childcare",
-  "Tech Support":"tech.json",
-  "Disability Support": "disability.json",
-  "Medical Assistance": "medical.json"
-  // add all your mappings here
-};
 
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchQuestions = () => {
     if (!helper || !helper.services) return;
 
-    // Calculate how many questions per category
     const categories = helper.services;
     const perCategory = Math.floor(QUESTIONS_PER_CATEGORY / categories.length);
+    setLoadingQuestions(true);
 
-    // Fetch questions from all categories in parallel
+    Promise.all(
+      categories.map(cat => {
+        const prompt = `Generate ${perCategory} multiple choice questions (MCQs) for a helper who is being trained for ${cat}. Each question should have 4 options and one correct answer. Keep questions very easy. Format as: 1. Question\na. Option A\nb. Option B\nc. Option C\nd. Option D\nAnswer: b`;
 
-
-Promise.all(
-  categories.map(cat => {
-    const filename = categoryToFilename[cat];
-    if (!filename) {
-      console.error(`No filename mapping for category: ${cat}`);
-      return Promise.resolve([]);
-    }
-    return fetch(`https://raw.githubusercontent.com/shruti0803/question-bank-api/refs/heads/main/questions/${filename}`)
-      .then(res => {
-        if (!res.ok) throw new Error(`Failed to fetch questions for ${cat}`);
-        return res.json();
+        return axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            contents: [
+              {
+                parts: [
+                  {
+                    text: prompt
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        ).then(res => {
+          const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          return parseMCQs(text);
+        }).catch(err => {
+          console.error("Error fetching Gemini questions for", cat, err);
+          toast.error(`Failed to load questions for ${cat}`);
+          return [];
+        });
       })
-      .then(data => {
-        // pick random questions
-        const shuffled = data.sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, perCategory);
-      })
-      .catch(err => {
-        console.error(err);
-        return [];
-      });
-  })
-)
-
-    
-    .then(results => {
-      // Flatten array of arrays
+    ).then(results => {
       const combined = results.flat();
+      setQuestions(combined);
+    }).finally(() => setLoadingQuestions(false));
+  };
 
-      // If total questions < QUESTIONS_PER_CATEGORY due to rounding, add more from first category if available
-      if (combined.length < QUESTIONS_PER_CATEGORY && results.length > 0) {
-        const remaining = QUESTIONS_PER_CATEGORY - combined.length;
-        const firstCategoryQuestions = results[0];
-        const extra = firstCategoryQuestions.slice(perCategory, perCategory + remaining);
-        setQuestions([...combined, ...extra]);
-      } else {
-        setQuestions(combined);
-      }
-    })
-    .catch(err => {
-      console.error("Failed to fetch questions:", err);
-      toast.error("Failed to load questions.");
-      setQuestions([]);
-    })
-    .finally(() => setLoadingQuestions(false));
+  useEffect(() => {
+    fetchQuestions();
   }, [helper]);
+
+  const parseMCQs = (text) => {
+    const qBlocks = text.trim().split(/\n\s*\n+/);
+    const parsed = [];
+
+    qBlocks.forEach((block, i) => {
+      const lines = block.split(/\n+/).map(line => line.trim());
+      const questionLine = lines.find(line => /^\d+\./.test(line));
+      const optionLines = lines.filter(line => /^[a-dA-D]\./.test(line));
+      const answerLine = lines.find(line => /answer/i.test(line));
+
+      if (!questionLine || optionLines.length < 4 || !answerLine) {
+        console.warn(`Skipping block ${i} due to invalid format:\n`, block);
+        return;
+      }
+
+      const options = optionLines.map(line => line.replace(/^[a-dA-D]\./, '').trim());
+      const match = answerLine.match(/answer\s*[:\-]?\s*([a-dA-D])/i);
+      const correctChar = match?.[1]?.toLowerCase();
+      const correctAnswer = correctChar ? correctChar.charCodeAt(0) - 97 : -1;
+
+      if (correctAnswer < 0 || correctAnswer >= 4) {
+        console.warn(`Invalid correct answer index in block ${i}:`, correctChar);
+        return;
+      }
+
+      parsed.push({
+        question: questionLine.replace(/^\d+\.\s*/, ''),
+        options,
+        correctAnswer
+      });
+    });
+
+    return parsed;
+  };
 
   if (loading || loadingQuestions) return <p>Loading questions...</p>;
   if (error) return <p>Error loading profile: {error}</p>;
@@ -95,7 +113,6 @@ Promise.all(
 
   const handleOptionClick = (index) => {
     if (selectedOption !== null) return;
-
     setSelectedOption(index);
     setShowFeedback(true);
 
@@ -110,16 +127,14 @@ Promise.all(
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(prev => prev + 1);
       } else {
-      let finalRawScore = score + (index === currentQuestion.correctAnswer ? 1 : 0);
-const percentageScore = (finalRawScore * 100) / questions.length;
-setScore(finalRawScore); // Keep raw score in state
-setShowResult(true);
-
-if (percentageScore >= 80) {
-  updateTestScore(percentageScore);
-  setTimeout(() => setShowPassPopup(true), 300);
-}
-
+        let finalRawScore = score + (index === currentQuestion.correctAnswer ? 1 : 0);
+        const percentageScore = (finalRawScore * 100) / questions.length;
+        setScore(finalRawScore);
+        setShowResult(true);
+        if (percentageScore >= 80) {
+          updateTestScore(percentageScore);
+          setTimeout(() => setShowPassPopup(true), 300);
+        }
       }
     }, 1000);
   };
@@ -129,11 +144,9 @@ if (percentageScore >= 80) {
       "http://localhost:5000/api/helpers/test-score",
       { testScore: finalScore },
       { withCredentials: true }
-    )
-    .then(() => {
+    ).then(() => {
       toast.success("Test score saved!");
-    })
-    .catch(() => {
+    }).catch(() => {
       toast.error("Failed to update test score");
     });
   };
@@ -144,6 +157,7 @@ if (percentageScore >= 80) {
     setShowResult(false);
     setScore(0);
     setShowPassPopup(false);
+    fetchQuestions();
   };
 
   const handleFillDetails = () => {
@@ -172,16 +186,18 @@ if (percentageScore >= 80) {
               ))}
             </div>
             {showFeedback && (
-              <p className="mt-4 text-lg font-medium">
-                {selectedOption === currentQuestion.correctAnswer ? "Correct!" : "Wrong Answer"}
-              </p>
+              <div className="mt-4 text-lg font-medium">
+                <p>{selectedOption === currentQuestion.correctAnswer ? "Correct!" : "Wrong Answer"}</p>
+                {selectedOption !== currentQuestion.correctAnswer && (
+                  <p className="text-sm text-gray-600">Correct Answer: {currentQuestion.options[currentQuestion.correctAnswer]}</p>
+                )}
+              </div>
             )}
           </>
         ) : (
           <div>
             <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
-           <p className="text-xl mb-6">Your Score: {(score * 100 / questions.length).toFixed(0)}%</p>
-
+            <p className="text-xl mb-6">Your Score: {(score * 100 / questions.length).toFixed(0)}%</p>
             {(score*100)/questions.length < 80 && (
               <button
                 onClick={handleRetake}
@@ -197,10 +213,10 @@ if (percentageScore >= 80) {
       {showPassPopup && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
           <div className="bg-white p-8 rounded-lg text-center shadow-xl">
-             <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
+            <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
             <h2 className="text-2xl font-bold mb-4 text-green-600">🎉 You Passed the Test!</h2>
-           <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>
- <p className="text-xl mb-6">Percentage: {(score * 100 / questions.length).toFixed(0)}%</p>
+            <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>
+            <p className="text-xl mb-6">Percentage: {(score * 100 / questions.length).toFixed(0)}%</p>
             <p className="mb-6 text-lg">Great job! Please proceed to fill your details.</p>
             <button
               onClick={handleFillDetails}
