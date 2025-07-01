@@ -8,27 +8,55 @@ const MedShop = () => {
   const [cart, setCart] = useState({});
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    const fetchMedicines = async () => {
-      try {
-        const res = await axios.get('http://localhost:5000/api/shop');
-        setMedicines(res.data);
-      } catch (err) {
-        console.error('Error fetching medicines:', err);
-      }
-    };
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [medRes, cartRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/shop'),
+        axios.get('http://localhost:5000/api/shop/getCart', { withCredentials: true })
+      ]);
 
-    fetchMedicines();
-  }, []);
+      setMedicines(medRes.data);
 
-  const handleAdd = (item) => {
+      const backendCart = cartRes.data.items || [];
+      const cartMap = {};
+      backendCart.forEach(item => {
+        cartMap[item._id] = item.quantity;
+      });
+      setCart(cartMap);
+
+    } catch (err) {
+      console.error('Error loading shop or cart:', err);
+    }
+  };
+
+  fetchData();
+}, []);
+
+
+const handleAdd = async (item) => {
+  try {
+    await axios.post('http://localhost:5000/api/shop/add', {
+      medicineId: item._id,
+      quantity: 1,
+    }, { withCredentials: true }); // assumes user is authenticated via cookies
+
     setCart((prev) => ({
       ...prev,
       [item._id]: (prev[item._id] || 0) + 1,
     }));
-  };
+  } catch (err) {
+    console.error('Error adding to cart:', err);
+  }
+};
 
-  const handleRemove = (item) => {
+
+const handleRemove = async (item) => {
+  try {
+    await axios.post('http://localhost:5000/api/shop/remove', {
+      medicineId: item._id,
+    }, { withCredentials: true });
+
     setCart((prev) => {
       if (!prev[item._id]) return prev;
       const updated = { ...prev };
@@ -36,7 +64,11 @@ const MedShop = () => {
       if (updated[item._id] <= 0) delete updated[item._id];
       return updated;
     });
-  };
+  } catch (err) {
+    console.error('Error removing from cart:', err);
+  }
+};
+
 
   const filteredMeds = medicines.filter((med) =>
     med.name.toLowerCase().includes(search.toLowerCase())
@@ -75,6 +107,22 @@ const MedShop = () => {
             </li>
           </ul>
         )}
+
+        <div className="mt-6 space-y-2">
+  <button
+    onClick={() => alert("Proceeding to payment...")}
+    className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition"
+  >
+    Buy Now
+  </button>
+  <button
+    onClick={() => alert("Navigate to order history")}
+    className="w-full border border-purple-500 text-purple-700 py-2 rounded-lg transition hover:bg-purple-100"
+  >
+    Order History
+  </button>
+</div>
+
       </div>
 
       {/* Main Shop */}
