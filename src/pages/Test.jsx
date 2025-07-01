@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useGetHelperProfile from '../../hooks/useGetHelperProfile';
+import Loader from '../components/Loader';
 
 const QUESTIONS_PER_CATEGORY = 10;
 const GEMINI_API_KEY = "AIzaSyCRymUERA_7lw-bUvsQTu0x4Gg4IP2NLR8";
@@ -105,7 +106,10 @@ const Test = () => {
     return parsed;
   };
 
-  if (loading || loadingQuestions) return <p>Loading questions...</p>;
+ if (loading || loadingQuestions) {
+  return <Loader />;
+}
+
   if (error) return <p>Error loading profile: {error}</p>;
   if (!helper || !questions.length) return <p>No questions available for your services.</p>;
 

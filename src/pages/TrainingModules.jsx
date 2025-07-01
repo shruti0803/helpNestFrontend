@@ -90,7 +90,7 @@ const TrainingModules = () => {
         setTestScore(score);
 
         // Show "Start Test" button only if training complete and score < 8
-        if (progress >= 3 && score < 8) {
+        if (progress >= 3 && score < 80) {
           setShowTestButton(true);
         }
       })

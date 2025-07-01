@@ -116,7 +116,7 @@ useEffect(() => {
         withCredentials: true
       });
       const seenList = seenRes.data;
-      console.log("👁️ Seen from DB:", seenList);
+      //console.log("👁️ Seen from DB:", seenList);
 
       const seenMap = new Map();
       seenList.forEach(n => seenMap.set(`${n.type}_${n.refId}`, true));
@@ -124,7 +124,7 @@ useEffect(() => {
       if (role === 'helper') {
         const res = await axios.get('http://localhost:5000/api/bookings/tasks', { withCredentials: true });
         const bookings = res.data.bookings || [];
-        console.log("📦 Helper bookings:", bookings);
+        //console.log("📦 Helper bookings:", bookings);
 
         bookings.forEach(b => {
           dynamic.push({
@@ -133,13 +133,13 @@ useEffect(() => {
           });
         });
 
-        console.log("🧠 Constructed helper dynamic notifications:", dynamic);
+        //console.log("🧠 Constructed helper dynamic notifications:", dynamic);
       }
 
       if (role === 'user') {
         const res1 = await axios.get('http://localhost:5000/api/bookings/requests', { withCredentials: true });
         const bookings = res1.data || [];
-        console.log("📦 User bookings:", bookings);
+        //console.log("📦 User bookings:", bookings);
 
         bookings.forEach(b => {
           if (b.status === 'Scheduled') {
@@ -152,7 +152,7 @@ useEffect(() => {
 
         const res2 = await axios.get('http://localhost:5000/api/bills/allBills', { withCredentials: true });
         const bills = res2.data || [];
-        console.log("💸 User bills:", bills);
+        //console.log("💸 User bills:", bills);
 
         bills.forEach(bill => {
           if (bill.paymentStatus === 'Pending') {
@@ -163,7 +163,7 @@ useEffect(() => {
           }
         });
 
-        console.log("🧠 Constructed user dynamic notifications:", dynamic);
+       // console.log("🧠 Constructed user dynamic notifications:", dynamic);
       }
 
       // Match against seen
@@ -172,10 +172,10 @@ useEffect(() => {
         seen: seenMap.has(`${n.type}_${n._id}`)
       }));
 
-      console.log("📋 With seen info:", withSeen);
+      //console.log("📋 With seen info:", withSeen);
 
       const unseenCount = withSeen.filter(n => !n.seen).length;
-      console.log("🔢 Unseen count:", unseenCount);
+     // console.log("🔢 Unseen count:", unseenCount);
 
       setUnreadCount(unseenCount);
       setHasUnreadNotification(unseenCount > 0);
