@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiShoppingCart, FiPlus, FiMinus, FiSearch } from 'react-icons/fi';
 import { FaCapsules } from 'react-icons/fa';
+import { loadRazorpayScript } from '../Bill/RazorpayPayment';
+import Swal from 'sweetalert2';
 
 const MedShop = () => {
   const [medicines, setMedicines] = useState([]);
@@ -69,19 +71,60 @@ const handleRemove = async (item) => {
   }
 };
 
-const handleBuyNow = async () => {
-  try {
-    const res = await axios.post('http://localhost:5000/api/shop/checkout', {}, {
-      withCredentials: true
-    });
 
-    alert('✅ Order placed successfully!');  // Dummy confirmation
-    setCart({}); // Clear local cart after successful order
+
+const handleBuyNow = async () => {
+  const loaded = await loadRazorpayScript();
+  if (!loaded) {
+    alert("Failed to load Razorpay SDK");
+    return;
+  }
+
+  try {
+    // Step 1: Get order details from backend
+    const res = await axios.post('http://localhost:5000/api/shop/checkout', {}, { withCredentials: true });
+    const { razorpayOrderId, amount, key } = res.data;
+
+    // Step 2: Configure Razorpay options
+    const options = {
+      key,
+      amount,
+      currency: "INR",
+      name: "HelpNest",
+      description: "Medicine Purchase",
+      order_id: razorpayOrderId,
+      handler: async function (response) {
+        try {
+          await axios.post('http://localhost:5000/api/shop/confirm-payment', {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          }, { withCredentials: true });
+
+         Swal.fire({
+    title: '✅ Payment Successful!',
+    text: 'Your medicine order has been placed.',
+    icon: 'success',
+    confirmButtonColor: '#6b46c1'
+  });
+          setCart({});
+        } catch (err) {
+          alert("❌ Payment succeeded but backend failed");
+          console.error("Confirm payment failed:", err);
+        }
+      },
+      theme: { color: "#6b46c1" }
+    };
+
+    const razorpay = new window.Razorpay(options); // ✅ will now work
+    razorpay.open();
   } catch (err) {
-    console.error('Error placing order:', err);
-    alert('❌ Failed to place order');
+    console.error("Razorpay flow failed:", err);
+    alert("❌ Failed to initiate payment.");
   }
 };
+
+
 
   const filteredMeds = medicines.filter((med) =>
     med.name.toLowerCase().includes(search.toLowerCase())
