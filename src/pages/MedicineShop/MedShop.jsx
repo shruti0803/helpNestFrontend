@@ -4,127 +4,122 @@ import { FiShoppingCart, FiPlus, FiMinus, FiSearch } from 'react-icons/fi';
 import { FaCapsules } from 'react-icons/fa';
 import { loadRazorpayScript } from '../Bill/RazorpayPayment';
 import Swal from 'sweetalert2';
+import CarouselHero from '../../components/CarouselHero';
+import CategoryCards from '../../components/CategoryCards';
 
 const MedShop = () => {
   const [medicines, setMedicines] = useState([]);
   const [cart, setCart] = useState({});
   const [search, setSearch] = useState('');
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
- useEffect(() => {
-  const fetchData = async () => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [medRes, cartRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/shop'),
+          axios.get('http://localhost:5000/api/shop/getCart', { withCredentials: true })
+        ]);
+
+        setMedicines(medRes.data);
+
+        const backendCart = cartRes.data.items || [];
+        const cartMap = {};
+        backendCart.forEach(item => {
+          cartMap[item._id] = item.quantity;
+        });
+        setCart(cartMap);
+
+      } catch (err) {
+        console.error('Error loading shop or cart:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAdd = async (item) => {
     try {
-      const [medRes, cartRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/shop'),
-        axios.get('http://localhost:5000/api/shop/getCart', { withCredentials: true })
-      ]);
+      await axios.post('http://localhost:5000/api/shop/add', {
+        medicineId: item._id,
+        quantity: 1,
+      }, { withCredentials: true });
 
-      setMedicines(medRes.data);
-
-      const backendCart = cartRes.data.items || [];
-      const cartMap = {};
-      backendCart.forEach(item => {
-        cartMap[item._id] = item.quantity;
-      });
-      setCart(cartMap);
-
+      setCart((prev) => ({
+        ...prev,
+        [item._id]: (prev[item._id] || 0) + 1,
+      }));
     } catch (err) {
-      console.error('Error loading shop or cart:', err);
+      console.error('Error adding to cart:', err);
     }
   };
 
-  fetchData();
-}, []);
+  const handleRemove = async (item) => {
+    try {
+      await axios.post('http://localhost:5000/api/shop/remove', {
+        medicineId: item._id,
+      }, { withCredentials: true });
 
+      setCart((prev) => {
+        if (!prev[item._id]) return prev;
+        const updated = { ...prev };
+        updated[item._id]--;
+        if (updated[item._id] <= 0) delete updated[item._id];
+        return updated;
+      });
+    } catch (err) {
+      console.error('Error removing from cart:', err);
+    }
+  };
 
-const handleAdd = async (item) => {
-  try {
-    await axios.post('http://localhost:5000/api/shop/add', {
-      medicineId: item._id,
-      quantity: 1,
-    }, { withCredentials: true }); // assumes user is authenticated via cookies
+  const handleBuyNow = async () => {
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      alert("Failed to load Razorpay SDK");
+      return;
+    }
 
-    setCart((prev) => ({
-      ...prev,
-      [item._id]: (prev[item._id] || 0) + 1,
-    }));
-  } catch (err) {
-    console.error('Error adding to cart:', err);
-  }
-};
+    try {
+      const res = await axios.post('http://localhost:5000/api/shop/checkout', {}, { withCredentials: true });
+      const { razorpayOrderId, amount, key } = res.data;
 
+      const options = {
+        key,
+        amount,
+        currency: "INR",
+        name: "HelpNest",
+        description: "Medicine Purchase",
+        order_id: razorpayOrderId,
+        handler: async function (response) {
+          try {
+            await axios.post('http://localhost:5000/api/shop/confirm-payment', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            }, { withCredentials: true });
 
-const handleRemove = async (item) => {
-  try {
-    await axios.post('http://localhost:5000/api/shop/remove', {
-      medicineId: item._id,
-    }, { withCredentials: true });
+            Swal.fire({
+              title: '✅ Payment Successful!',
+              text: 'Your medicine order has been placed.',
+              icon: 'success',
+              confirmButtonColor: '#6b46c1'
+            });
+            setCart({});
+          } catch (err) {
+            alert("❌ Payment succeeded but backend failed");
+            console.error("Confirm payment failed:", err);
+          }
+        },
+        theme: { color: "#6b46c1" }
+      };
 
-    setCart((prev) => {
-      if (!prev[item._id]) return prev;
-      const updated = { ...prev };
-      updated[item._id]--;
-      if (updated[item._id] <= 0) delete updated[item._id];
-      return updated;
-    });
-  } catch (err) {
-    console.error('Error removing from cart:', err);
-  }
-};
-
-
-
-const handleBuyNow = async () => {
-  const loaded = await loadRazorpayScript();
-  if (!loaded) {
-    alert("Failed to load Razorpay SDK");
-    return;
-  }
-
-  try {
-    // Step 1: Get order details from backend
-    const res = await axios.post('http://localhost:5000/api/shop/checkout', {}, { withCredentials: true });
-    const { razorpayOrderId, amount, key } = res.data;
-
-    // Step 2: Configure Razorpay options
-    const options = {
-      key,
-      amount,
-      currency: "INR",
-      name: "HelpNest",
-      description: "Medicine Purchase",
-      order_id: razorpayOrderId,
-      handler: async function (response) {
-        try {
-          await axios.post('http://localhost:5000/api/shop/confirm-payment', {
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature
-          }, { withCredentials: true });
-
-         Swal.fire({
-    title: '✅ Payment Successful!',
-    text: 'Your medicine order has been placed.',
-    icon: 'success',
-    confirmButtonColor: '#6b46c1'
-  });
-          setCart({});
-        } catch (err) {
-          alert("❌ Payment succeeded but backend failed");
-          console.error("Confirm payment failed:", err);
-        }
-      },
-      theme: { color: "#6b46c1" }
-    };
-
-    const razorpay = new window.Razorpay(options); // ✅ will now work
-    razorpay.open();
-  } catch (err) {
-    console.error("Razorpay flow failed:", err);
-    alert("❌ Failed to initiate payment.");
-  }
-};
-
-
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error("Razorpay flow failed:", err);
+      alert("❌ Failed to initiate payment.");
+    }
+  };
 
   const filteredMeds = medicines.filter((med) =>
     med.name.toLowerCase().includes(search.toLowerCase())
@@ -136,9 +131,17 @@ const handleBuyNow = async () => {
   }, 0);
 
   return (
-    <div className="flex min-h-screen pt-16">
-      {/* Sidebar */}
-      <div className="w-80 bg-purple-100 p-4 border-r border-purple-300">
+    <div className="min-h-screen px-2 py-20 bg-gradient-to-br from-white to-purple-50">
+      <button
+        onClick={() => setIsCartOpen(!isCartOpen)}
+        className="fixed top-20 right-4 z-50 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full shadow-lg"
+      >
+        <FiShoppingCart className="inline mr-2" /> Cart
+      </button>
+
+      <div
+        className={`fixed top-0 right-0 h-full w-80 bg-purple-100 p-4 pt-20 border-l border-purple-300 shadow-xl transform transition-transform duration-300 z-40 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
         <h2 className="text-xl font-bold text-purple-800 flex items-center gap-2">
           <FiShoppingCart /> Cart
         </h2>
@@ -165,46 +168,49 @@ const handleBuyNow = async () => {
         )}
 
         <div className="mt-6 space-y-2">
-<button
-  onClick={handleBuyNow}
-  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition"
->
-  Buy Now
-</button>
+          <button
+            onClick={handleBuyNow}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition"
+          >
+            Buy Now
+          </button>
 
-  <button
-    onClick={() => alert("Navigate to order history")}
-    className="w-full border border-purple-500 text-purple-700 py-2 rounded-lg transition hover:bg-purple-100"
-  >
-    Order History
-  </button>
-</div>
-
+          <button
+            onClick={() => alert("Navigate to order history")}
+            className="w-full border border-purple-500 text-purple-700 py-2 rounded-lg transition hover:bg-purple-100"
+          >
+            Order History
+          </button>
+        </div>
       </div>
 
-      {/* Main Shop */}
-      <main className="flex-1 p-6 bg-gradient-to-br from-white to-purple-50">
-        <div className="flex justify-between items-center mb-6">
+      <main className="flex-1 px-4 sm:px-6 md:px-10">
+        <div className="flex flex-col md:flex-row items-center mb-6 gap-4">
           <h1 className="text-2xl font-bold text-purple-800 flex items-center gap-2">
             <FaCapsules className="text-purple-500" /> Medicine Shop
           </h1>
-          <div className="flex items-center gap-2 bg-white px-3 py-1 rounded shadow border border-purple-200">
+          <div className="flex items-center gap-2 bg-white px-4 py-2 rounded shadow border border-purple-200 w-full md:w-[840px]">
             <FiSearch className="text-purple-500" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name"
-              className="outline-none text-sm text-purple-800"
+              className="outline-none text-sm text-purple-800 w-full"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <CarouselHero />
+        <CategoryCards />
+
+        <h2 className="text-xl sm:text-2xl font-semibold text-purple-800 mb-4 mt-6 border-l-4 border-purple-500 pl-3">Featured Products</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredMeds.map((med) => (
             <div
               key={med._id}
-              className="bg-white rounded-2xl shadow p-4 border border-purple-100 hover:shadow-lg transition"
+              className="bg-white rounded-2xl shadow p-4 border border-purple-100 hover:shadow-lg transition flex flex-col justify-between"
             >
               <img
                 src={med.imageUrl || 'https://via.placeholder.com/150'}
@@ -214,7 +220,7 @@ const handleBuyNow = async () => {
               <h2 className="text-lg font-semibold text-purple-800 mb-1">
                 {med.name}
               </h2>
-              <p className="text-gray-600 text-sm mb-2">{med.description}</p>
+              <p className="text-gray-600 text-sm mb-2 line-clamp-2">{med.description}</p>
               <div className="flex items-center justify-between">
                 <span className="text-purple-700 font-bold">₹{med.price}</span>
                 <div className="flex gap-2">
