@@ -69,6 +69,19 @@ const handleRemove = async (item) => {
   }
 };
 
+const handleBuyNow = async () => {
+  try {
+    const res = await axios.post('http://localhost:5000/api/shop/checkout', {}, {
+      withCredentials: true
+    });
+
+    alert('✅ Order placed successfully!');  // Dummy confirmation
+    setCart({}); // Clear local cart after successful order
+  } catch (err) {
+    console.error('Error placing order:', err);
+    alert('❌ Failed to place order');
+  }
+};
 
   const filteredMeds = medicines.filter((med) =>
     med.name.toLowerCase().includes(search.toLowerCase())
@@ -109,12 +122,13 @@ const handleRemove = async (item) => {
         )}
 
         <div className="mt-6 space-y-2">
-  <button
-    onClick={() => alert("Proceeding to payment...")}
-    className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition"
-  >
-    Buy Now
-  </button>
+<button
+  onClick={handleBuyNow}
+  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition"
+>
+  Buy Now
+</button>
+
   <button
     onClick={() => alert("Navigate to order history")}
     className="w-full border border-purple-500 text-purple-700 py-2 rounded-lg transition hover:bg-purple-100"
