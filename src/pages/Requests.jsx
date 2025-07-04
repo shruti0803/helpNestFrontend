@@ -221,7 +221,7 @@ useEffect(() => {
                   const isEligibleToMarkComplete =
                     booking.status === "Scheduled" &&
                     bookingDateTime <= now &&
-                    !booking.isCompleted;
+                    !booking.isCompleted && booking.hasArrived;
 
                   return (
                     <tr

@@ -9,6 +9,7 @@ import {
 import useGetProfile from '../../hooks/useGetProfile';
 import axios from 'axios';
 import { FaSearch } from "react-icons/fa";
+import img from '../assets/em.png'
 const EmergencySupport = () => {
 
 const [confirmAction, setConfirmAction] = useState(null); // function to run
@@ -70,9 +71,9 @@ const handlePanicAlert = () => {
   setConfirmMessage("Are you sure you want to send a panic alert?");
   setConfirmAction(() => () => {
     setModalContent({
-      title: "Notifying Hospital",
-      image: "https://images.unsplash.com/photo-1588776814546-ec0b0fc1e4d7",
-      description: "Nearby hospital is being notified. Stay calm. Help is on the way."
+      title: "Notifying Emergency Contacts",
+      image: "https://images.pexels.com/photos/4033702/pexels-photo-4033702.jpeg?_gl=1*1y2xqpe*_ga*MjAzOTA0ODM2NS4xNzQ4NDEwODg3*_ga_8JE65Q40S6*czE3NTE1MjEyMDYkbzI1JGcxJHQxNzUxNTIxMjU1JGoxMSRsMCRoMA..",
+      description: "Your emergency contact is notified. Stay calm."
     });
     setShowModal(true);
 
@@ -145,7 +146,11 @@ const handlePanicAlert = () => {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
 
       {/* Top image section with heading and subtext */}
-      <div className="relative w-full h-64 md:h-80 bg-cover bg-center" style={{ backgroundImage: 'url("https://sdmntprcentralus.oaiusercontent.com/files/00000000-fc90-61f5-8bcd-f55dbcc7cd9e/raw?se=2025-07-01T07%3A33%3A23Z&sp=r&sv=2024-08-04&sr=b&scid=3766dee6-ea05-5c71-9d3d-e1f715ff9f85&skoid=02b7f7b5-29f8-416a-aeb6-99464748559d&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-06-30T18%3A11%3A59Z&ske=2025-07-01T18%3A11%3A59Z&sks=b&skv=2024-08-04&sig=8K3jwNLSmJU%2BTmVZPKaVZlECYN27A%2BhdHjKtZ1irycQ%3D") '}}>
+    <div
+  className="relative w-full h-64 md:h-80 bg-cover bg-center"
+  style={{ backgroundImage: `url(${img})` }}
+>
+
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center px-4">
           <h1 className="text-4xl md:text-5xl font-bold text-white">🚨 Emergency Support</h1>
           <p className="text-lg text-white mt-2">We are here for you</p>

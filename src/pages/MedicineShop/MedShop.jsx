@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FiShoppingCart, FiPlus, FiMinus, FiSearch } from 'react-icons/fi';
+import { FiShoppingCart, FiPlus, FiMinus, FiSearch,  FiMapPin, FiClock } from 'react-icons/fi';
 import { FaCapsules } from 'react-icons/fa';
 import { loadRazorpayScript } from '../Bill/RazorpayPayment';
 import Swal from 'sweetalert2';
@@ -140,28 +140,37 @@ const MedShop = () => {
       </button>
 
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-purple-100 p-4 pt-20 border-l border-purple-300 shadow-xl transform transition-transform duration-300 z-40 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full sm:w-96 bg-purple-100 p-4 pt-20 border-l border-purple-300 shadow-xl transform transition-transform duration-300 z-40 ${isCartOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <h2 className="text-xl font-bold text-purple-800 flex items-center gap-2">
-          <FiShoppingCart /> Cart
+          <FiShoppingCart /> Your Cart
         </h2>
+        <div className="flex items-center gap-2 text-sm text-gray-600 mt-2">
+          <FiClock className="text-green-500" />
+          <span>Delivery in <span className="font-semibold text-green-600">2 hours</span></span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4 mt-1">
+          <FiMapPin className="text-blue-500" />
+          <span>Delivering to: <span className="font-semibold text-purple-700">Your saved address</span></span>
+        </div>
+
         {Object.keys(cart).length === 0 ? (
           <p className="text-gray-500 mt-4">Your cart is empty.</p>
         ) : (
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-4 space-y-3">
             {Object.entries(cart).map(([id, qty]) => {
               const med = medicines.find((m) => m._id === id);
               return (
                 <li
                   key={id}
-                  className="flex justify-between items-center border-b pb-1"
+                  className="bg-white border border-purple-200 p-3 rounded-lg flex justify-between items-center"
                 >
-                  <span>{med?.name}</span>
-                  <span className="text-sm text-gray-600">x{qty}</span>
+                  <div className="text-sm font-medium text-purple-800">{med?.name}</div>
+                  <div className="text-sm text-gray-700">x{qty}</div>
                 </li>
               );
             })}
-            <li className="pt-4 font-semibold text-purple-800">
+            <li className="pt-4 font-semibold text-purple-800 text-right">
               Total: ₹{total}
             </li>
           </ul>
@@ -184,7 +193,7 @@ const MedShop = () => {
         </div>
       </div>
 
-      <main className="flex-1 px-4 sm:px-6 md:px-10">
+      <main className="flex-1 px-2 sm:px-6 md:px-10">
         <div className="flex flex-col md:flex-row items-center mb-6 gap-4">
           <h1 className="text-2xl font-bold text-purple-800 flex items-center gap-2">
             <FaCapsules className="text-purple-500" /> Medicine Shop
@@ -203,8 +212,10 @@ const MedShop = () => {
 
         <CarouselHero />
         <CategoryCards />
-
-        <h2 className="text-xl sm:text-2xl font-semibold text-purple-800 mb-4 mt-6 border-l-4 border-purple-500 pl-3">Featured Products</h2>
+<hr></hr>
+        <h2 className="text-xl sm:text-2xl font-semibold text-purple-800 mb-4 mt-8 border-l-4 border-purple-500 pl-3">
+          Featured Products
+        </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredMeds.map((med) => (

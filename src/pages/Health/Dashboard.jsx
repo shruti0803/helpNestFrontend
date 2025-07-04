@@ -14,12 +14,27 @@ const Dashboard = () => {
 navigate("/shop");
 }
   return (
-    <div className="min-h-screen pt-16 bg-purple-200 flex flex-col lg:flex-row overflow-hidden">
+    <div className="min-h-screen  pt-16 bg-purple-200 flex flex-col lg:flex-row overflow-hidden">
 
       {/* Left Sidebar */}
       <div className="w-full lg:w-96 bg-purple-200 p-4 shrink-0">
         <Today />
-        <button onClick={handle}>Shop</button>
+        <div className="max-w-4xl mx-auto mt-6 mb-6">
+  <div className="bg-gradient-to-r from-purple-500 to-purple-700 rounded-xl p-6 shadow-lg text-white relative overflow-hidden">
+    <div className="bg-white bg-opacity-10 absolute inset-0 z-0"></div>
+    <div className="relative z-10">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-2">Running Out of Medicines?</h2>
+      <p className="text-base sm:text-lg mb-4">Don’t wait until it’s too late. Get essentials delivered in <span className="font-semibold">just 2 hours!</span></p>
+      <button
+        onClick={handle}
+        className="px-6 py-2 bg-white text-purple-700 font-semibold rounded-lg shadow hover:bg-purple-100 transition-all"
+      >
+        Shop Now
+      </button>
+    </div>
+  </div>
+</div>
+
       </div>
 
       {/* Right Content */}

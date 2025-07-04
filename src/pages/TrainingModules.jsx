@@ -155,7 +155,7 @@ const TrainingModules = () => {
             className={`mb-8 p-4 rounded border shadow-sm transition 
             ${
               isCompleted
-                ? "border-orange-500 bg-orange-50"
+                ? "border-purple-500 bg-purple-50"
                 : isLocked
                 ? "border-gray-300 bg-gray-100 opacity-60 cursor-not-allowed"
                 : "border-blue-400 bg-white"
@@ -163,7 +163,7 @@ const TrainingModules = () => {
           >
             <h2 className="text-xl font-semibold mb-2">
               {module.title}{" "}
-              {isCompleted && <span className="text-orange-600">✅</span>}
+              {isCompleted && <span className="text-purple-600">✅</span>}
               {isLocked && <span className="text-gray-500">🔒</span>}
             </h2>
 
@@ -191,7 +191,7 @@ const TrainingModules = () => {
         <div className="text-center mt-8">
           <button
             onClick={handleTest}
-            className="bg-orange-600 text-white py-2 px-4 rounded hover:bg-orange-700 transition"
+            className="bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 transition"
           >
             Start Test
           </button>

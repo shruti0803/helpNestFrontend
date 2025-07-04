@@ -46,7 +46,8 @@ const categories = [
 ];
 
 const BookingForm = ({ service, onClose }) => {
-  
+  const [suggestions, setSuggestions] = useState([]);
+
   const [personName, setPersonName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState("");
@@ -54,6 +55,8 @@ const BookingForm = ({ service, onClose }) => {
   const [genderPreference, setGenderPreference] = useState("Any");
   const [address, setAddress]=useState("");
   const [city, setCity] = useState(""); // Added state for city
+const [lat, setLat] = useState(null);
+const [lng, setLng] = useState(null);
 
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -66,6 +69,8 @@ const handleSubmit = async (e) => {
     genderPreference,
     address,
     city,
+    lat,
+  lng,
   };
 
 try {
@@ -126,14 +131,57 @@ try {
             required
             className="w-full border px-3 py-2 rounded"
           />
-           <input
-            type="text"
-            placeholder="Address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            required
-            className="w-full border px-3 py-2 rounded"
-          />
+          <div className="relative">
+        <input
+  type="text"
+  placeholder="Enter address"
+  value={address}
+onChange={async (e) => {
+  const val = e.target.value;
+  setAddress(val);
+
+  if (!city) {
+    setSuggestions([]);
+    return; // City is required before address suggestions
+  }
+
+  if (val.length > 3) {
+    const query = `${val}, ${city}, India`;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`
+    );
+    const results = await res.json();
+    setSuggestions(results);
+  } else {
+    setSuggestions([]);
+  }
+}}
+
+
+
+  required
+  className="w-full border px-3 py-2 rounded"
+/>
+{suggestions.length > 0 && (
+  <ul className="border rounded-md mt-1 bg-white shadow z-50 max-h-40 overflow-y-auto absolute w-full">
+    {suggestions.map((place, idx) => (
+      <li
+        key={idx}
+        onClick={() => {
+          setAddress(place.display_name);
+          setLat(parseFloat(place.lat));
+          setLng(parseFloat(place.lon));
+          setSuggestions([]);
+        }}
+        className="px-4 py-2 hover:bg-purple-100 cursor-pointer text-sm"
+      >
+        {place.display_name}
+      </li>
+    ))}
+  </ul>
+)}
+
+  </div>
           <select
   value={city}
   onChange={(e) => setCity(e.target.value)}

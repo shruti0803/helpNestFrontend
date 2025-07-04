@@ -220,7 +220,54 @@ const now = new Date();
         </button>
       )
     ) : (
-      "-"
+      <button
+        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+        onClick={() => {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                  // Step 1: Update helper's location
+                  await axios.put(
+                    `http://localhost:5000/api/bookings/update-helper-location/${task._id}`,
+                    { lat: latitude, lng: longitude },
+                    { withCredentials: true }
+                  );
+
+                  // Step 2: Now check if arrived
+                  const res = await axios.post(
+                    `http://localhost:5000/api/bookings/check-arrival/${task._id}`,
+                    {},
+                    { withCredentials: true }
+                  );
+
+                  if (res.data.arrived) {
+                    alert("✅ You’ve arrived at the location!");
+                    setBookings((prev) =>
+                      prev.map((b) =>
+                        b._id === task._id ? { ...b, hasarrived: true } : b
+                      )
+                    );
+                  } else {
+                    alert(`🛣 You are still ${Math.round(res.data.distance)}m away.`);
+                  }
+                } catch (err) {
+                  console.error(err);
+                  alert("❌ Failed to share or verify location.");
+                }
+              },
+              () => {
+                alert("❌ Location permission denied.");
+              }
+            );
+          } else {
+            alert("❌ Geolocation not supported.");
+          }
+        }}
+      >
+        Share My Location
+      </button>
     )}
   </td>
 )}

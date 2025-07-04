@@ -182,7 +182,7 @@ const Test = () => {
                   className={`w-full py-3 rounded-lg border text-lg transition-all duration-300
                     ${selectedOption === index ? 
                       (index === currentQuestion.correctAnswer ? 'bg-green-400 text-white' : 'bg-red-400 text-white') :
-                      'bg-gray-100 hover:bg-orange-100'}`}
+                      'bg-gray-100 hover:bg-purple-100'}`}
                   disabled={selectedOption !== null}
                 >
                   {option}
