@@ -4,9 +4,12 @@ import useGetProfile from "../../hooks/useGetProfile";
 import { Dialog } from "@headlessui/react";
 import { launchRazorpay } from "./Bill/RazorpayPayment";
 import { useNavigate } from "react-router-dom";
-
+import { FaStar } from "react-icons/fa";
+import { toast } from "react-toastify"; // if you're using toast
 import { FaRupeeSign, FaMoneyBillWave, FaClock, FaCheckCircle } from 'react-icons/fa';
 import { MdDescription, MdPayment, MdClose } from 'react-icons/md';
+import Swal from "sweetalert2";
+
 import {
   FiCheckCircle,
   FiClock,
@@ -28,6 +31,31 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
+const [existingRating, setExistingRating] = useState(false);
+const [showRatingModal, setShowRatingModal] = useState(false);
+const [selectedBookingId, setSelectedBookingId] = useState(null);
+const [rating, setRating] = useState(1);
+const [comment, setComment] = useState("");
+const [reviewedBookings, setReviewedBookings] = useState(new Map());
+
+
+
+const openRatingModal = (bookingId) => {
+  setSelectedBookingId(bookingId);
+
+  const existingReview = reviewedBookings.get(bookingId);
+  if (existingReview) {
+    setRating(existingReview.rating);
+    setComment(existingReview.comment);
+    setExistingRating(true);
+  } else {
+    setRating(0);
+    setComment("");
+    setExistingRating(false);
+  }
+
+  setShowRatingModal(true);
+};
 
 
   const [otpModalOpen, setOtpModalOpen] = useState(false);
@@ -46,6 +74,37 @@ const [billModalOpen, setBillModalOpen] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [filter, setFilter] = useState("all");
   const { data: profile, loading, error } = useGetProfile();
+
+const handleSubmitRating = async () => {
+  try {
+    console.log("Sending Review:", {
+  bookingId: selectedBookingId,
+  rating,
+  comment,
+});
+    await axios.post(
+      "http://localhost:5000/api/reviews",
+      {
+        bookingId: selectedBookingId,
+        rating,
+        comment,
+      },
+      { withCredentials: true }
+    );
+    setReviewedBookings((prev) => new Set(prev).add(selectedBookingId));
+    setShowRatingModal(false);
+    await Swal.fire({
+      icon: 'success',
+      title: 'Thank you!',
+      text: 'Your rating has been submitted successfully.',
+      confirmButtonColor: '#6B46C1',
+    });
+  } catch (err) {
+    toast.error(err.response?.data?.message || "Review submission failed");
+  }
+};
+
+
 const handleGetBill = async (bookingId) => {
   try {
     const res = await axios.get(`http://localhost:5000/api/bills/getbill/${bookingId}`);
@@ -55,6 +114,32 @@ const handleGetBill = async (bookingId) => {
     console.error("Error fetching bill:", error);
   }
 };
+useEffect(() => {
+  const fetchReviewedBookings = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/reviews/by-user", {
+        withCredentials: true,
+      });
+
+     const reviewMap = new Map();
+res.data.forEach((r) => {
+  console.log("Fetched Review:", r); // should show bookingId
+  reviewMap.set(String(r.bookingId), {
+    rating: r.rating,
+    comment: r.comment,
+  });
+});
+console.log("Review Map Keys:", [...reviewMap.keys()]);
+setReviewedBookings(reviewMap);
+
+    } catch (err) {
+      console.error("Failed to fetch reviewed bookings", err);
+    }
+  };
+
+  fetchReviewedBookings();
+}, []);
+
 
 useEffect(() => {
   const fetchBookings = async () => {
@@ -128,6 +213,7 @@ useEffect(() => {
       console.error("Error marking booking complete:", error);
     }
   };
+
 
   return (
     <div className="flex min-h-screen pt-16">
@@ -243,19 +329,53 @@ useEffect(() => {
                         {new Date(booking.date).toLocaleDateString()}
                       </td>
 {filter === "Completed" && (
-  <td className="px-4 py-2 whitespace-nowrap">
-    {billsMap[booking._id]?.paymentStatus === "Paid" ? (
-      <span className="text-green-600 font-semibold p-2">Paid</span>
-    ) : (
+  <>
+    {/* Bill column */}
+    <td className="px-4 py-2 whitespace-nowrap relative">
+      {billsMap[booking._id]?.paymentStatus === "Paid" ? (
+        <span className="text-green-600 font-semibold">Paid</span>
+      ) : (
+        <button
+          onClick={() => handleGetBill(booking._id)}
+          className="text-sm bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded shadow"
+        >
+          Get Bill
+        </button>
+      )}
+    </td>
+
+    {/* Three dots column */}
+    <td className="px-4 py-2 whitespace-nowrap text-center">
       <button
-        onClick={() => handleGetBill(booking._id)}
-        className="text-sm bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded shadow"
+        onClick={() => openRatingModal(booking._id)}
+        disabled={
+          booking.status !== "Completed" ||
+          billsMap[booking._id]?.paymentStatus !== "Paid" 
+         
+        }
+        className={`text-xl px-2 py-1 rounded-full ${
+          booking.status !== "Completed" ||
+          billsMap[booking._id]?.paymentStatus !== "Paid" 
+        
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-700 hover:text-purple-600"
+        }`}
+        title={
+          reviewedBookings.has(booking._id)
+            ? "Already Rated"
+            : billsMap[booking._id]?.paymentStatus !== "Paid"
+            ? "Payment Pending"
+            : "Rate this service"
+        }
       >
-        Get Bill
+        ⋮
       </button>
-    )}
-  </td>
+    </td>
+  </>
 )}
+
+
+
 
 
                       {filter === "Scheduled" && (
@@ -425,8 +545,58 @@ useEffect(() => {
     </Dialog.Panel>
   </div>
 </Dialog>
+{showRatingModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+      <h2 className="text-xl font-semibold mb-4 text-purple-700">
+        {existingRating ? "Your Review" : "Rate the Service"}
+      </h2>
+
+      <div className="flex gap-1 text-yellow-400 mb-4">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            onClick={() => !existingRating && setRating(star)}
+            className={star <= rating ? "text-yellow-500" : "text-gray-300"}
+            disabled={existingRating}
+          >
+            <FaStar />
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        placeholder="Write your comment..."
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        className="w-full border border-gray-300 rounded p-2 mb-4"
+        rows={4}
+        readOnly={existingRating}
+      />
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowRatingModal(false)}
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+        >
+          Close
+        </button>
+        {!existingRating && (
+          <button
+            onClick={handleSubmitRating}
+            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            Submit
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       </main>
+
+
     </div>
   );
 };
