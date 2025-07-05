@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
+import { useRef } from 'react';
  import { FaClipboardList } from 'react-icons/fa'; // make sure this is imported at top
 import {
   Chart as ChartJS,
@@ -7,6 +8,7 @@ import {
   LineElement,
   PointElement,
   CategoryScale,
+   BarElement, 
   LinearScale,
   Tooltip,
   Legend
@@ -18,14 +20,55 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-ChartJS.register(ArcElement, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+ChartJS.register(ArcElement, LineElement, PointElement, CategoryScale,  BarElement,  LinearScale, Tooltip, Legend);
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
+import { Bar } from 'react-chartjs-2';
+
+
+
 
 const AdminDashboard = () => {
+const barChartRef = useRef(null);
+const barOptions = {
+  responsive: true,
+  animation: {
+    duration: 1500,
+    easing: 'easeOutBounce',
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Services',
+      },
+      grid: {
+        display: false, // no vertical lines
+      },
+    },
+    y: {
+      display: false, // ❌ remove Y-axis completely
+      grid: {
+        display: false, // no background lines
+      },
+      ticks: {
+        display: false, // remove numbers
+      },
+    },
+  },
+};
+
   //new
+
+  
+
+
 
   const [monthlyProfit, setMonthlyProfit] = useState(0);
 const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
@@ -61,6 +104,19 @@ const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
 
   
 
+const [ratingStats, setRatingStats] = useState(null);
+
+useEffect(() => {
+  const fetchRatingStats = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/admin/ratings-summary');
+      setRatingStats(res.data);
+    } catch (err) {
+      console.error("Failed to fetch rating stats", err);
+    }
+  };
+  fetchRatingStats();
+}, []);
 
  
 
@@ -272,16 +328,32 @@ const [servicesData, setServicesData] = useState({
   labels: serviceLabels,
   datasets: [
     {
-      data: new Array(serviceLabels.length).fill(0), // exactly 6 items
-      backgroundColor: [
-        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F'
-      ],
-      hoverBackgroundColor: [
-        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F'
-      ],
+      label: "Requests Booked",
+      data: new Array(serviceLabels.length).fill(0),
+      backgroundColor: '	#2e2e2e', // Light purple for all bars
+      hoverBackgroundColor: '#7e22ce', // Dark purple on hover
+      borderRadius: 14,               // More rounded bars
+      barThickness: 24,               // Slim but visible
+      borderSkipped: false,          // All corners rounded
     },
   ],
 });
+
+
+
+
+// useEffect(() => {
+//   const chart = barChartRef.current;
+//   if (!chart) return;
+
+//   const ctx = chart.ctx;
+//   const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+//   gradient.addColorStop(0, '#a855f7');
+//   gradient.addColorStop(1, '#9333ea');
+
+//   chart.data.datasets[0].backgroundColor = gradient;
+//   chart.update();
+// }, [servicesData]);
 
   
   useEffect(() => {
@@ -289,7 +361,7 @@ const [servicesData, setServicesData] = useState({
     try {
       const response = await axios.get('http://localhost:5000/api/admin/bookings-by-category');
       const apiData = response.data; // [{ Service_Name: "Tech Support", booking_count: 12 }, ...]
-console.log("booking by category", apiData);
+
       const updatedData = serviceLabels.map(label => {
         const match = apiData.find(item => item.Service_Name === label);
         return match ? match.booking_count : 0;
@@ -443,26 +515,76 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
   return (
     <div className=" w-full bg-gray-100 p-4">
       {/* Row with three equal-sized cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2  h-80">
         {/* Sales Obtained */}
-        <div className="bg-purple-500 text-black p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Net Profit</h2>
-          <p>Total Profit for <strong>{monthNames[currentMonth - 1]}</strong></p>
-          <p className="text-3xl font-bold text-white mt-3">
-         ₹{monthlyProfit.toLocaleString()}
+       
+<div className="bg-white p-4 rounded-xl shadow-lg flex flex-col justify-center">
+  <h2 className="text-2xl font-semibold mb-8 pb-8">Overall Ratings</h2>
 
-          </p>
-          {/* Line Chart with custom mountain-like curve */}
-          <div className="mt-4">
-            <div className="w-full text-white h-40">
-              <Line data={waveData} options={chartOptions} height={150} width={300} />
-            </div>
+  {ratingStats ? (
+    <div className="flex flex-col md:flex-row items-center justify-between">
+      {/* Circle with average */}
+      <div className="relative w-32 h-32 flex-shrink-0">
+        <svg className="w-full h-full transform -rotate-90">
+          <circle
+            className="text-gray-300"
+            strokeWidth="10"
+            stroke="currentColor"
+            fill="transparent"
+            r="50"
+            cx="64"
+            cy="64"
+          />
+          <circle
+            className="text-purple-700"
+            strokeWidth="10"
+            strokeLinecap="round"
+            stroke="currentColor"
+            fill="transparent"
+            r="50"
+            cx="64"
+            cy="64"
+            strokeDasharray={`${ratingStats.averageRating * 62.8}, 314`} // 2πr = 314
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-purple-700">{ratingStats.averageRating}</div>
+            <div className="text-sm text-gray-600">Avg Rating</div>
           </div>
         </div>
+      </div>
+
+      {/* Rating breakdown */}
+      <div className="flex flex-col gap-1 mt-4 md:mt-0 md:ml-6 w-full">
+        {[5, 4, 3, 2, 1].map(star => {
+          const total = ratingStats.totalRatings || 1;
+          const count = ratingStats.ratingBreakdown[star] || 0;
+          const percent = ((count / total) * 100).toFixed(1);
+          return (
+            <div key={star} className="flex items-center gap-2">
+              <span className="text-sm font-medium w-6">{star}★</span>
+              <div className="w-full bg-gray-200 h-3 rounded overflow-hidden">
+                <div
+                  className="bg-purple-700 h-full rounded"
+                  style={{ width: `${percent}%` }}
+                />
+              </div>
+              {/* <span className="text-sm text-gray-600 ml-2">{count}</span> */}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  ) : (
+    <p>Loading rating stats...</p>
+  )}
+</div>
+
 
         {/* New Customers */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Users Analytics </h2>
+        <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-center">
+          <h2 className="text-2xl font-semibold mb-8">Users Analytics </h2>
           <div className="mt-4 flex items-center justify-between">
             {/* Pie Chart */}
             <div className="w-40 h-40">
@@ -482,15 +604,48 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
           </div>
         </div>
 
-        {/* New Service Providers */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
+        
+  <div className="bg-purple-300 p-4 rounded-xl shadow-lg flex flex-col justify-center">
+  <h2 className="text-xl font-semibold mb-12">Requests Booked</h2>
+  <div className=" w-full  px-2">
+    <Bar ref={barChartRef} data={servicesData} options={{
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `${context.raw} bookings`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#4B5563",
+            font: { size: 8, weight: "200" },
+          },
+          grid: { display: false },
+        },
+        y: {
+          display: false,
+          grid: { display: false },
+          ticks: { display: false },
+        },
+      },
+    }} />
+  </div>
+</div>
+
+        {/* <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
           <div className="mt-4 flex items-center justify-between">
-            {/* Pie Chart */}
+            
             <div className="w-40 h-40">
               <Pie data={newHelpersData} options={{ responsive: true }} />
             </div>
-            {/* Stats */}
+          
             <div className="ml-6">
               <div className="mb-4">
                 <p className="font-semibold">New Helpers</p>
@@ -502,7 +657,7 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Revenue Generated Card with month and year selector */}
@@ -538,14 +693,21 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
       </div>
       {/* Services Booked and geography graph  */}
       <div className='flex flex-col md:flex-row'>
-  <div className="bg-white p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
-    <h2 className="text-2xl font-semibold">Requests Booked</h2>
-    <div className="mt-4 flex justify-center">
-      <div className="w-80 h-80">
-        <Pie data={servicesData} options={{ responsive: true }} />
-      </div>
-    </div>
-  </div>
+
+ <div className="bg-purple-500 text-black p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold">Net Profit</h2>
+          <p>Total Profit for <strong>{monthNames[currentMonth - 1]}</strong></p>
+          <p className="text-3xl font-bold text-white mt-3">
+         ₹{monthlyProfit.toLocaleString()}
+
+          </p>
+         
+          <div className="mt-4">
+            <div className="w-full text-white h-40">
+              <Line data={waveData} options={chartOptions} height={150} width={300} />
+            </div>
+          </div>
+        </div>
 
   {/* Geography Chart (India map) with city markers */}
   <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">

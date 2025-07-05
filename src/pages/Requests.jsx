@@ -290,6 +290,13 @@ useEffect(() => {
   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
     Bill
   </th>
+  
+)}
+               {filter === "Completed" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Actions
+  </th>
+  
 )}
 
                 </tr>
