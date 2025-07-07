@@ -663,7 +663,7 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
   )}
 </div>
 
-<div className="bg-white text-black mt-6 p-6 rounded-lg shadow-lg">
+<div className="bg-white text-black  p-6 rounded-lg shadow-lg">
   <h2 className="text-2xl font-semibold">Orders Per Week</h2>
  
 
@@ -726,80 +726,78 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
         </div>
       </div>
       {/* Services Booked and geography graph  */}
-      <div className='flex flex-col md:flex-row justify-center gap-4'>
-
-
-<div className="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-center">
-          <h2 className="text-2xl font-semibold mb-8">Users Analytics </h2>
-          <div className="mt-4 flex items-center justify-between">
-            
-            <div className="w-40 h-40">
-              <Pie data={newCustomersData} options={{ responsive: true }} />
-            </div>
-         
-            <div className="ml-6">
-              <div className="mb-4">
-                <p className="font-semibold">New Users</p>
-                <p className="text-green-500 font-bold">{newCustomers}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Total Users</p>
-                <p className="text-blue-500 font-bold">{totalCustomers}</p>
-              </div>
-            </div>
-          </div>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+  {/* Users Analytics */}
+  <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Users Analytics</h2>
+    <div className="flex flex-col sm:flex-row items-center justify-between">
+      <div className="w-32 h-32 sm:w-40 sm:h-40">
+        <Pie data={newCustomersData} options={{ responsive: true }} />
+      </div>
+      <div className="mt-4 sm:mt-0 sm:ml-6 text-sm">
+        <div className="mb-2">
+          <p className="font-semibold">New Users</p>
+          <p className="text-green-500 font-bold">{newCustomers}</p>
         </div>
-
- <div className="bg-white mt-6 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
-          <div className="mt-4 flex items-center justify-between">
-            
-            <div className="w-40 h-40">
-              <Pie data={newHelpersData} options={{ responsive: true }} />
-            </div>
-          
-            <div className="ml-6">
-              <div className="mb-4">
-                <p className="font-semibold">New Helpers</p>
-                <p className="text-green-500 font-bold">{newHelpers}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Total Helpers</p>
-                <p className="text-blue-500 font-bold">{totalHelpers}</p>
-              </div>
-            </div>
-          </div>
+        <div>
+          <p className="font-semibold">Total Users</p>
+          <p className="text-blue-500 font-bold">{totalCustomers}</p>
         </div>
-  {/* Geography Chart (India map) with city markers */}
-  <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
-      <h2 className="text-2xl font-semibold">Bookings by City</h2>
-      <div className="mt-4" style={{ height: '300px' }}>
-        <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          {cityBookingsData.map((cityData, index) => (
-            <Marker
-              key={index}
-              position={cityData.coordinates}
-              icon={L.divIcon({
-                className: 'custom-icon',
-                html: `<div style="background-color: #3388ff; color: white; padding: 5px; border-radius: 5px;">${cityData.bookings}</div>`,
-                iconSize: [30, 30],
-                iconAnchor: [15, 15],
-              })}
-            >
-              <Popup>
-                <h3>{cityData.city}</h3>
-                <p>Bookings: {cityData.bookings}</p>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
       </div>
     </div>
+  </div>
+
+  {/* Helpers Analytics */}
+  <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Helpers Analytics</h2>
+    <div className="flex flex-col sm:flex-row items-center justify-between">
+      <div className="w-32 h-32 sm:w-40 sm:h-40">
+        <Pie data={newHelpersData} options={{ responsive: true }} />
+      </div>
+      <div className="mt-4 sm:mt-0 sm:ml-6 text-sm">
+        <div className="mb-2">
+          <p className="font-semibold">New Helpers</p>
+          <p className="text-green-500 font-bold">{newHelpers}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Total Helpers</p>
+          <p className="text-blue-500 font-bold">{totalHelpers}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* City Map Analytics */}
+  <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Bookings by City</h2>
+    <div className="w-full h-64">
+      <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {cityBookingsData.map((cityData, index) => (
+          <Marker
+            key={index}
+            position={cityData.coordinates}
+            icon={L.divIcon({
+              className: 'custom-icon',
+              html: `<div style="background-color: #3388ff; color: white; padding: 5px; border-radius: 5px;">${cityData.bookings}</div>`,
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+            })}
+          >
+            <Popup>
+              <h3>{cityData.city}</h3>
+              <p>Bookings: {cityData.bookings}</p>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
+  </div>
 </div>
+
 
          
           

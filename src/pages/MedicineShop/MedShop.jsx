@@ -6,12 +6,15 @@ import { loadRazorpayScript } from '../Bill/RazorpayPayment';
 import Swal from 'sweetalert2';
 import CarouselHero from '../../components/CarouselHero';
 import CategoryCards from '../../components/CategoryCards';
-
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 const MedShop = () => {
   const [medicines, setMedicines] = useState([]);
   const [cart, setCart] = useState({});
   const [search, setSearch] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
+ const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false);
+  const [selectedMed, setSelectedMed] = useState(null);
+  const [prescriptionFile, setPrescriptionFile] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +42,11 @@ const MedShop = () => {
   }, []);
 
   const handleAdd = async (item) => {
+     if (item.prescriptionRequired) {
+      setSelectedMed(item);
+      setPrescriptionModalOpen(true);
+      return;
+    }
     try {
       await axios.post('http://localhost:5000/api/shop/add', {
         medicineId: item._id,
@@ -252,6 +260,56 @@ const MedShop = () => {
             </div>
           ))}
         </div>
+          <Dialog open={prescriptionModalOpen} onClose={() => setPrescriptionModalOpen(false)}>
+        <DialogTitle>Prescription Required</DialogTitle>
+        <DialogContent>
+          <p className="text-purple-800 font-medium">
+            This medicine requires a valid prescription to proceed.
+            Please upload your prescription. It will be reviewed before this item is allowed in your cart.
+          </p>
+         <input
+  type="file"
+  className="mt-4"
+  onChange={(e) => setPrescriptionFile(e.target.files[0])}
+/>
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPrescriptionModalOpen(false)} color="secondary">Cancel</Button>
+         <Button
+  onClick={async () => {
+    if (!prescriptionFile || !selectedMed) return;
+
+    const formData = new FormData();
+    formData.append("prescription", prescriptionFile);
+    formData.append("medicineId", selectedMed._id);
+
+    try {
+      await axios.post('http://localhost:5000/api/shop/upload-prescription', formData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      Swal.fire('Uploaded', 'Your prescription will be reviewed shortly.', 'info');
+    } catch (error) {
+      console.error('Prescription upload failed:', error);
+      Swal.fire('Error', 'Failed to upload prescription.', 'error');
+    }
+
+    setPrescriptionModalOpen(false);
+    setSelectedMed(null);
+    setPrescriptionFile(null);
+  }}
+  variant="contained"
+  color="primary"
+>
+  Upload
+</Button>
+
+        </DialogActions>
+      </Dialog>
       </main>
     </div>
   );
