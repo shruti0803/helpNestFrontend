@@ -30,6 +30,13 @@ import { Bar } from 'react-chartjs-2';
 
 
 const AdminDashboard = () => {
+  const [totalProducts, setTotalProducts] = useState(0);
+useEffect(() => {
+  axios.get('http://localhost:5000/api/admin/product-count')
+    .then(res => setTotalProducts(res.data.count || 0))
+    .catch(err => console.error("Error fetching product count", err));
+}, []);
+
 const barChartRef = useRef(null);
 const barOptions = {
   responsive: true,
@@ -80,7 +87,49 @@ const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 0 for January, 11 for December
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
  
-  
+const [orderPerWeekData, setOrderPerWeekData] = useState({
+  labels: [],
+  datasets: [],
+});
+
+
+useEffect(() => {
+  const fetchOrderPerWeek = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/admin/orders-per-week');
+      const data = res.data;
+console.log(res)
+      const labels = data.map(item => item.label);
+      const counts = data.map(item => item.count);
+
+      setOrderPerWeekData({
+        labels,
+        datasets: [
+          {
+            label: 'Orders per Week',
+            data: counts,
+            borderColor: '#9333ea',
+            backgroundColor: 'rgba(168, 85, 247, 0.2)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointBackgroundColor: '#7e22ce',
+            tooltip: { enabled: false },
+legend: { display: false },
+
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Error fetching orders per week', error);
+    }
+  };
+
+  fetchOrderPerWeek();
+}, []);
+
+
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June', 
@@ -614,28 +663,30 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
   )}
 </div>
 
+<div className="bg-white text-black mt-6 p-6 rounded-lg shadow-lg">
+  <h2 className="text-2xl font-semibold">Orders Per Week</h2>
+ 
 
+  <div className="mt-4">
+    {orderPerWeekData.labels.length > 0 ? (
+      <Line data={orderPerWeekData} options={{
+        responsive: true,
+        scales: {
+          x: { display: false },
+          y: { display: false },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+        },
+      }} height={150} width={300} />
+    ) : (
+      <p className="text-white">Loading...</p>
+    )}
+  </div>
+</div>
         {/* New Customers */}
-        <div className="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-center">
-          <h2 className="text-2xl font-semibold mb-8">Users Analytics </h2>
-          <div className="mt-4 flex items-center justify-between">
-            {/* Pie Chart */}
-            <div className="w-40 h-40">
-              <Pie data={newCustomersData} options={{ responsive: true }} />
-            </div>
-            {/* Stats */}
-            <div className="ml-6">
-              <div className="mb-4">
-                <p className="font-semibold">New Users</p>
-                <p className="text-green-500 font-bold">{newCustomers}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Total Users</p>
-                <p className="text-blue-500 font-bold">{totalCustomers}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
         
  
@@ -677,20 +728,28 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
       {/* Services Booked and geography graph  */}
       <div className='flex flex-col md:flex-row justify-center gap-4'>
 
- <div className="bg-purple-500 text-black mt-6 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Net Profit</h2>
-          <p>Total Profit for <strong>{monthNames[currentMonth - 1]}</strong></p>
-          <p className="text-3xl font-bold text-white mt-3">
-         ₹{monthlyProfit.toLocaleString()}
 
-          </p>
+<div className="bg-white p-4 rounded-lg shadow-lg flex flex-col justify-center">
+          <h2 className="text-2xl font-semibold mb-8">Users Analytics </h2>
+          <div className="mt-4 flex items-center justify-between">
+            
+            <div className="w-40 h-40">
+              <Pie data={newCustomersData} options={{ responsive: true }} />
+            </div>
          
-          <div className="mt-4">
-            <div className="w-full text-white ">
-              <Line data={waveData} options={chartOptions} height={150} width={300} />
+            <div className="ml-6">
+              <div className="mb-4">
+                <p className="font-semibold">New Users</p>
+                <p className="text-green-500 font-bold">{newCustomers}</p>
+              </div>
+              <div>
+                <p className="font-semibold">Total Users</p>
+                <p className="text-blue-500 font-bold">{totalCustomers}</p>
+              </div>
             </div>
           </div>
         </div>
+
  <div className="bg-white mt-6 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
           <div className="mt-4 flex items-center justify-between">
