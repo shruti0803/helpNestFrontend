@@ -94,7 +94,8 @@ const TaskDetails = ({ title, onClose }) => {
           ← Back
         </button>
 
-        <div className="bg-gray-100 p-4 rounded-lg">
+       <div className="bg-gray-100 p-4 rounded-lg max-h-72 overflow-y-auto">
+
           {reviews.length === 0 ? (
             <p className="text-gray-500 italic">No reviews yet.</p>
           ) : (
