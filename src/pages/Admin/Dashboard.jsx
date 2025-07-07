@@ -517,7 +517,40 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
       {/* Row with three equal-sized cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2  h-80">
         {/* Sales Obtained */}
-       
+        <div className="bg-purple-300 p-4 rounded-xl shadow-lg flex flex-col justify-center">
+  <h2 className="text-xl font-semibold mb-12">Requests Booked</h2>
+  <div className=" w-full  px-2">
+    <Bar ref={barChartRef} data={servicesData} options={{
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `${context.raw} bookings`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#4B5563",
+            font: { size: 8, weight: "200" },
+          },
+          grid: { display: false },
+        },
+        y: {
+          display: false,
+          grid: { display: false },
+          ticks: { display: false },
+        },
+      },
+    }} />
+  </div>
+</div>
+
+
 <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col justify-center">
   <h2 className="text-2xl font-semibold mb-8 pb-8">Overall Ratings</h2>
 
@@ -605,59 +638,9 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
         </div>
 
         
-  <div className="bg-purple-300 p-4 rounded-xl shadow-lg flex flex-col justify-center">
-  <h2 className="text-xl font-semibold mb-12">Requests Booked</h2>
-  <div className=" w-full  px-2">
-    <Bar ref={barChartRef} data={servicesData} options={{
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              return `${context.raw} bookings`;
-            },
-          },
-        },
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#4B5563",
-            font: { size: 8, weight: "200" },
-          },
-          grid: { display: false },
-        },
-        y: {
-          display: false,
-          grid: { display: false },
-          ticks: { display: false },
-        },
-      },
-    }} />
-  </div>
-</div>
+ 
 
-        {/* <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
-          <div className="mt-4 flex items-center justify-between">
-            
-            <div className="w-40 h-40">
-              <Pie data={newHelpersData} options={{ responsive: true }} />
-            </div>
-          
-            <div className="ml-6">
-              <div className="mb-4">
-                <p className="font-semibold">New Helpers</p>
-                <p className="text-green-500 font-bold">{newHelpers}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Total Helpers</p>
-                <p className="text-blue-500 font-bold">{totalHelpers}</p>
-              </div>
-            </div>
-          </div>
-        </div> */}
+       
       </div>
 
       {/* Revenue Generated Card with month and year selector */}
@@ -692,9 +675,9 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
         </div>
       </div>
       {/* Services Booked and geography graph  */}
-      <div className='flex flex-col md:flex-row'>
+      <div className='flex flex-col md:flex-row justify-center gap-4'>
 
- <div className="bg-purple-500 text-black p-6 rounded-lg shadow-lg">
+ <div className="bg-purple-500 text-black mt-6 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold">Net Profit</h2>
           <p>Total Profit for <strong>{monthNames[currentMonth - 1]}</strong></p>
           <p className="text-3xl font-bold text-white mt-3">
@@ -703,16 +686,35 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
           </p>
          
           <div className="mt-4">
-            <div className="w-full text-white h-40">
+            <div className="w-full text-white ">
               <Line data={waveData} options={chartOptions} height={150} width={300} />
             </div>
           </div>
         </div>
-
+ <div className="bg-white mt-6 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
+          <div className="mt-4 flex items-center justify-between">
+            
+            <div className="w-40 h-40">
+              <Pie data={newHelpersData} options={{ responsive: true }} />
+            </div>
+          
+            <div className="ml-6">
+              <div className="mb-4">
+                <p className="font-semibold">New Helpers</p>
+                <p className="text-green-500 font-bold">{newHelpers}</p>
+              </div>
+              <div>
+                <p className="font-semibold">Total Helpers</p>
+                <p className="text-blue-500 font-bold">{totalHelpers}</p>
+              </div>
+            </div>
+          </div>
+        </div>
   {/* Geography Chart (India map) with city markers */}
   <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
       <h2 className="text-2xl font-semibold">Bookings by City</h2>
-      <div className="mt-4" style={{ height: '400px' }}>
+      <div className="mt-4" style={{ height: '300px' }}>
         <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -31,6 +31,8 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
+  const moodEmojis = ["😠", "😢", "😐", "🙂", "😄"];
+
 const [existingRating, setExistingRating] = useState(false);
 const [showRatingModal, setShowRatingModal] = useState(false);
 const [selectedBookingId, setSelectedBookingId] = useState(null);
@@ -91,7 +93,12 @@ const handleSubmitRating = async () => {
       },
       { withCredentials: true }
     );
-    setReviewedBookings((prev) => new Set(prev).add(selectedBookingId));
+   setReviewedBookings((prev) => {
+  const updated = new Map(prev);
+  updated.set(selectedBookingId, { rating, comment });
+  return updated;
+});
+
     setShowRatingModal(false);
     await Swal.fire({
       icon: 'success',
@@ -559,18 +566,27 @@ useEffect(() => {
         {existingRating ? "Your Review" : "Rate the Service"}
       </h2>
 
-      <div className="flex gap-1 text-yellow-400 mb-4">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            onClick={() => !existingRating && setRating(star)}
-            className={star <= rating ? "text-yellow-500" : "text-gray-300"}
-            disabled={existingRating}
-          >
-            <FaStar />
-          </button>
-        ))}
-      </div>
+    <div className="text-6xl text-center mb-4 transition-all">
+  {rating > 0 ? moodEmojis[rating - 1] : "🤔"}
+</div>
+
+<div className="flex justify-center gap-2 mb-4">
+  {[1, 2, 3, 4, 5].map((star) => (
+  <button
+  key={star}
+  onClick={() => !existingRating && setRating(star)}
+  onMouseEnter={() => !existingRating && setRating(star)}
+  disabled={existingRating}
+  className={`text-3xl transition-transform ${
+    rating >= star ? "text-yellow-500" : "text-gray-300"
+  } ${!existingRating ? "hover:scale-125" : ""}`}
+>
+  <FaStar />
+</button>
+
+  ))}
+</div>
+
 
       <textarea
         placeholder="Write your comment..."

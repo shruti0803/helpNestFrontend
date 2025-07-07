@@ -157,6 +157,7 @@ const bookingDateTime = new Date(`${dateOnly}T${task.time}`);
 const now = new Date();
 
 
+
     const formattedDate = new Date(task.date).toLocaleDateString("en-IN");
 
     return (
@@ -220,54 +221,63 @@ const now = new Date();
         </button>
       )
     ) : (
-      <button
-        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              async (position) => {
-                const { latitude, longitude } = position.coords;
-                try {
-                  // Step 1: Update helper's location
-                  await axios.put(
-                    `http://localhost:5000/api/bookings/update-helper-location/${task._id}`,
-                    { lat: latitude, lng: longitude },
-                    { withCredentials: true }
-                  );
+     task.hasArrived ? (
+  <span className="px-3 py-1 text-blue-700 font-semibold">Reached</span>
+) : (
+  <button
+    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+    onClick={() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              await axios.put(
+                `http://localhost:5000/api/bookings/update-helper-location/${task._id}`,
+                { lat: latitude, lng: longitude },
+                { withCredentials: true }
+              );
 
-                  // Step 2: Now check if arrived
-                  const res = await axios.post(
-                    `http://localhost:5000/api/bookings/check-arrival/${task._id}`,
-                    {},
-                    { withCredentials: true }
-                  );
+              const res = await axios.post(
+                `http://localhost:5000/api/bookings/check-arrival/${task._id}`,
+                {},
+                { withCredentials: true }
+              );
 
-                  if (res.data.arrived) {
-                    alert("✅ You’ve arrived at the location!");
-                    setBookings((prev) =>
-                      prev.map((b) =>
-                        b._id === task._id ? { ...b, hasarrived: true } : b
-                      )
-                    );
-                  } else {
-                    alert(`🛣 You are still ${Math.round(res.data.distance)}m away.`);
-                  }
-                } catch (err) {
-                  console.error(err);
-                  alert("❌ Failed to share or verify location.");
-                }
-              },
-              () => {
-                alert("❌ Location permission denied.");
+              if (res.data.arrived) {
+                Swal.fire({
+                  icon: "success",
+                  title: "You’ve arrived at the location!",
+                  showConfirmButton: false,
+                  timer: 1500,
+                });
+
+                setTasks((prev) =>
+                  prev.map((b) =>
+                    b._id === task._id ? { ...b, hasarrived: true } : b
+                  )
+                );
+              } else {
+                alert(`🛣 You are still ${Math.round(res.data.distance)}m away.`);
               }
-            );
-          } else {
-            alert("❌ Geolocation not supported.");
+            } catch (err) {
+              console.error(err);
+              alert("❌ Failed to share or verify location.");
+            }
+          },
+          () => {
+            alert("❌ Location permission denied.");
           }
-        }}
-      >
-        Share My Location
-      </button>
+        );
+      } else {
+        alert("❌ Geolocation not supported.");
+      }
+    }}
+  >
+    Verify Location
+  </button>
+)
+
     )}
   </td>
 )}
