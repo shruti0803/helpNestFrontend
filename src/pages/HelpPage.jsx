@@ -46,6 +46,8 @@ const categories = [
 ];
 
 const BookingForm = ({ service, onClose }) => {
+  const [duration, setDuration] = useState("");
+
   const [suggestions, setSuggestions] = useState([]);
 
   const [personName, setPersonName] = useState("");
@@ -66,6 +68,7 @@ const handleSubmit = async (e) => {
     phone,
     date,
     time,
+    duration: parseInt(duration), // ✅ Send as number
     genderPreference,
     address,
     city,
@@ -216,6 +219,26 @@ onChange={async (e) => {
     : undefined} // min time only if today's date is selected
             className="w-full border px-3 py-2 rounded"
           />
+<div className="mt-4">
+  <label className="block text-gray-700 font-semibold mb-1">
+    Duration: {Math.floor(duration / 60)} hr {duration % 60} min
+  </label>
+  <input
+    type="range"
+    min={15}
+    max={480}
+    step={15}
+    value={duration}
+    onChange={(e) => setDuration(parseInt(e.target.value))}
+    className="w-full accent-purple-600"
+  />
+  <div className="flex justify-between text-sm text-gray-500 mt-1">
+    <span>15 min</span>
+    <span>8 hrs</span>
+  </div>
+</div>
+
+
           {/* <select
             value={genderPreference}
             onChange={(e) => setGenderPreference(e.target.value)}

@@ -353,12 +353,69 @@ useEffect(() => {
                 <Link to="/tasks" className="block px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100">Tasks</Link>
               )}
 
-              <a href="#" className="block px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100">Services</a>
+           {user && (
+<div className={`h-16  flex items-center ${location.pathname === '/community' ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'}`}>
+  <Link to="/community" className="flex items-center space-x-2 text-sm" title="Community">
+ <FaMapMarkedAlt size={20} />
+<span>Local Hub</span>
+  </Link>
+</div>
 
+)}  
+{(user || helperData ) && (
+  <div className="relative">
+    <div
+      className={`h-16 flex items-center cursor-pointer ${
+        showNotifications ? 'border-b-4 border-purple-600 font-bold text-purple-600' : 'text-gray-700 hover:text-purple-600'
+      }`}
+      onClick={() => setShowNotifications((prev) => !prev)}
+    >
+      <div className="flex items-center space-x-2 text-sm">
+        <div className="relative">
+  <FaBell size={20} className={hasUnreadNotification ? 'text-yellow-500' : ''} />
+  {hasUnreadNotification && unreadCount > 0 && (
+  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
+  {unreadCount}
+</span>
+
+  )}
+</div>
+
+        <span>Alerts</span>
+      </div>
+    </div>
+
+  {showNotifications && (
+  <>
+  
+
+    {/* Mobile Fullscreen View */}
+    <div className="fixed inset-0 bg-white z-50 p-4 md:hidden flex flex-col">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-purple-700">Notifications</h2>
+        <button onClick={() => setShowNotifications(false)} className="text-2xl font-bold text-gray-600">
+          &times;
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        <NotificationPopup
+          setHasUnread={(hasUnread, count) => {
+            setHasUnreadNotification(hasUnread);
+            setUnreadCount(count);
+          }}
+        />
+      </div>
+    </div>
+  </>
+)}
+
+  </div>
+)}
               {(user || helperData) ? (
                 <>
                   <div
-                    className="w-8 h-8 rounded-full bg-orange-600 text-white flex justify-center items-center font-bold"
+                    className="w-8 h-8 rounded-full bg-purple-600 text-white flex justify-center items-center font-bold"
                     title={`Logged in as ${displayName}`}
                   >
                     {userInitial}

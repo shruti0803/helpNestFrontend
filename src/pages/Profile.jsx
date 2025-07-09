@@ -13,8 +13,12 @@ import {
 } from 'react-icons/fa';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { FaStar, FaRegStar } from 'react-icons/fa';
+
 
 const Profile = () => {
+  const [avgRating, setAvgRating] = useState(null);
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -34,6 +38,10 @@ const Profile = () => {
         const userData = isHelper ? data : data.user;
         setProfile(userData);
         setForm(userData);
+         if (isHelper) {
+        const ratingRes = await axios.get(`http://localhost:5000/api/reviews/helper/${userData._id}`);
+        setAvgRating(ratingRes.data.avgRating); // adjust key if needed
+      }
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -156,7 +164,33 @@ const Profile = () => {
                 {profile.services?.join(', ') || 'No services listed'}
               </div>
             </div>
-             <NonEditable label="Total Earned" value={<div>{form.totalEarned}</div>}></NonEditable>
+<div className="col-span-2 grid grid-cols-2 gap-4">
+  <NonEditable label="Total Earned" value={<div>₹{form.totalEarned}</div>} />
+<NonEditable
+  label="Average Rating"
+  value={
+    avgRating !== null ? (
+      <div className="flex items-center gap-2">
+        <div className="flex text-yellow-400">
+          {[...Array(5)].map((_, index) =>
+            index < Math.round(avgRating) ? (
+              <FaStar key={index} />
+            ) : (
+              <FaRegStar key={index} />
+            )
+          )}
+        </div>
+       
+      </div>
+    ) : (
+      <div className="text-gray-500">Not Rated</div>
+    )
+  }
+/>
+
+</div>
+
+
             <div className="col-span-2 grid grid-cols-2 gap-4 mt-4">
              
               <NonEditable label="Training Progress" value={<div className="w-20 h-20"><CircularProgressbar value={profile.trainingProgress * 100 / 3} text={`${profile.trainingProgress * 100 / 3 || 0}%`} styles={buildStyles({ pathColor: '#8b5cf6', textColor: '#4b0082' })} /></div>} />

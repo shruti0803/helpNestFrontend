@@ -113,7 +113,8 @@ setHasUnread(count > 0, count);
   }, [notifications]);
 
 
- return (<div className="p-6 text-[15px] text-gray-800 max-h-[520px] w-[580px] overflow-y-auto rounded-2xl bg-white/70">
+ return (<div className="p-4 md:p-6 text-[15px] text-gray-800 max-h-screen md:max-h-[520px] w-full md:w-[580px] overflow-y-auto rounded-none md:rounded-2xl bg-white md:bg-white/70">
+
 
     <h2 className="text-lg font-semibold text-purple-700 mb-4 flex items-center gap-2">
       <span className="text-purple-600">🔔</span> Notifications
