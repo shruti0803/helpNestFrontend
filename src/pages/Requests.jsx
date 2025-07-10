@@ -31,7 +31,67 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
-  const moodEmojis = ["😠", "😢", "😐", "🙂", "😄"];
+  
+
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+const [currentOtp, setCurrentOtp] = useState(null);
+
+
+const submitReport = async () => {
+  try {
+    await axios.post(
+      "http://localhost:5000/api/reports/create",
+      {
+        bookingId: reportDetails.bookingId,
+        reason: reportDetails.reason,
+        details: reportDetails.details,
+      },
+      { withCredentials: true }
+    );
+
+    setShowReportModal(false);
+    Swal.fire("Report Submitted", "Your report has been submitted.", "success");
+  } catch (err) {
+    console.error(err);
+    toast.error(err.response?.data?.message || "Failed to submit report");
+  }
+};
+
+  const [billsMap, setBillsMap] = useState({});
+const navigate = useNavigate();
+
+  const [selectedBill, setSelectedBill] = useState(null);
+const [billModalOpen, setBillModalOpen] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [bookings, setBookings] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const { data: profile, loading, error } = useGetProfile();
+const moodEmojis = ["😠", "😢", "😐", "🙂", "😄"];
+const [openActionMenu, setOpenActionMenu] = useState(null);
+
+const [showReportModal, setShowReportModal] = useState(false);
+const [reportDetails, setReportDetails] = useState({ reason: "", details: "", bookingId: null });
+
+const openReportModal = (booking) => {
+  const existingReport = reportedBookings.get(String(booking._id));
+  if (existingReport) {
+    // Set with existing values so modal shows correct content
+    setReportDetails({
+      reason: existingReport.reason,
+      details: existingReport.details,
+      bookingId: booking._id,
+    });
+  } else {
+    setReportDetails({
+      reason: "",
+      details: "",
+      bookingId: booking._id,
+    });
+  }
+  setShowReportModal(true);
+};
+
 
 const [existingRating, setExistingRating] = useState(false);
 const [showRatingModal, setShowRatingModal] = useState(false);
@@ -39,6 +99,8 @@ const [selectedBookingId, setSelectedBookingId] = useState(null);
 const [rating, setRating] = useState(1);
 const [comment, setComment] = useState("");
 const [reviewedBookings, setReviewedBookings] = useState(new Map());
+const [reportedBookings, setReportedBookings] = useState(new Map());
+
 
 
 
@@ -58,24 +120,6 @@ const openRatingModal = (bookingId) => {
 
   setShowRatingModal(true);
 };
-
-
-  const [otpModalOpen, setOtpModalOpen] = useState(false);
-const [currentOtp, setCurrentOtp] = useState(null);
-
-
-
-
-  const [billsMap, setBillsMap] = useState({});
-const navigate = useNavigate();
-
-  const [selectedBill, setSelectedBill] = useState(null);
-const [billModalOpen, setBillModalOpen] = useState(false);
-
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [bookings, setBookings] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const { data: profile, loading, error } = useGetProfile();
 
 const handleSubmitRating = async () => {
   try {
@@ -110,6 +154,29 @@ const handleSubmitRating = async () => {
     toast.error(err.response?.data?.message || "Review submission failed");
   }
 };
+const fetchReportedBookings = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/reports/by-user", {
+      withCredentials: true,
+    });
+console.log(res);
+    const reportMap = new Map();
+    res.data.forEach((r) => {
+  console.log("bookingId in report:", r.booking, typeof r.booking);
+reportMap.set(String(r.booking), {
+
+        
+        reason: r.reason,
+        details: r.details,
+      });
+    });
+
+    setReportedBookings(reportMap); // store full report object instead of Set
+  } catch (err) {
+    console.error("Failed to fetch reported bookings", err);
+  }
+};
+
 
 
 const handleGetBill = async (bookingId) => {
@@ -145,6 +212,7 @@ setReviewedBookings(reviewMap);
   };
 
   fetchReviewedBookings();
+  fetchReportedBookings();
 }, []);
 
 
@@ -359,32 +427,61 @@ useEffect(() => {
     </td>
 
     {/* Three dots column */}
-    <td className="px-4 py-2 whitespace-nowrap text-center">
+    {/* Three dots column */}
+<td className="px-4 py-2 whitespace-nowrap text-center relative">
+  <button
+    onClick={() =>
+      setOpenActionMenu(openActionMenu === booking._id ? null : booking._id)
+    }
+    disabled={
+      booking.status !== "Completed" ||
+      billsMap[booking._id]?.paymentStatus !== "Paid"
+    }
+    className={`text-xl px-2 py-1 rounded-full ${
+      booking.status !== "Completed" ||
+      billsMap[booking._id]?.paymentStatus !== "Paid"
+        ? "text-gray-400 cursor-not-allowed"
+        : "text-gray-700 hover:text-purple-600"
+    }`}
+    title="More actions"
+  >
+    ⋮
+  </button>
+
+ {openActionMenu === booking._id &&
+  booking.status === "Completed" &&
+  billsMap[booking._id]?.paymentStatus === "Paid" && (
+   <div className="absolute left-1/2 -translate-x-1/2 top-8 w-20 bg-white border rounded shadow z-50 flex flex-col">
+
       <button
-        onClick={() => openRatingModal(booking._id)}
-        disabled={
-          booking.status !== "Completed" ||
-          billsMap[booking._id]?.paymentStatus !== "Paid" 
-         
-        }
-        className={`text-xl px-2 py-1 rounded-full ${
-          booking.status !== "Completed" ||
-          billsMap[booking._id]?.paymentStatus !== "Paid" 
-        
-            ? "text-gray-400 cursor-not-allowed"
-            : "text-gray-700 hover:text-purple-600"
-        }`}
-        title={
-          reviewedBookings.has(booking._id)
-            ? "Already Rated"
-            : billsMap[booking._id]?.paymentStatus !== "Paid"
-            ? "Payment Pending"
-            : "Rate this service"
-        }
+        className="w-full px-4 py-2 text-left text-sm hover:bg-purple-100"
+        onClick={() => {
+          openRatingModal(booking._id);
+          setOpenActionMenu(null);
+        }}
       >
-        ⋮
+        Rate
       </button>
-    </td>
+    <button
+  className={`w-full px-4 py-2 text-left text-sm ${
+    reportedBookings.has(String(booking._id))
+      ? "text-gray-500 cursor-pointer hover:bg-gray-100"
+      : "hover:bg-red-100"
+  }`}
+  onClick={() => {
+    openReportModal(booking);
+    setOpenActionMenu(null);
+  }}
+>
+  {reportedBookings.has(String(booking._id)) ? "View Report" : "Report"}
+</button>
+
+
+    </div>
+)}
+
+</td>
+
   </>
 )}
 
@@ -612,7 +709,71 @@ useEffect(() => {
             Submit
           </button>
         )}
+
+
       </div>
+    </div>
+  </div>
+)}
+{showReportModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+      {reportedBookings.has(String(reportDetails.bookingId)) ? (
+        <>
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Already Reported</h2>
+          <p className="mb-2"><strong>Reason:</strong> {reportedBookings.get(String(reportDetails.bookingId)).reason}</p>
+          <p className="mb-4"><strong>Details:</strong> {reportedBookings.get(String(reportDetails.bookingId)).details || "No additional details"}</p>
+          <div className="flex justify-end">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+            >
+              Close
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <h2 className="text-xl font-semibold mb-4 text-red-600">Report the Helper</h2>
+
+          <label className="block mb-2 text-sm font-medium">Reason</label>
+          <input
+            type="text"
+            className="w-full border border-gray-300 rounded p-2 mb-4"
+            placeholder="Short reason"
+            value={reportDetails.reason}
+            onChange={(e) =>
+              setReportDetails({ ...reportDetails, reason: e.target.value })
+            }
+          />
+
+          <label className="block mb-2 text-sm font-medium">Details</label>
+          <textarea
+            className="w-full border border-gray-300 rounded p-2 mb-4"
+            rows={4}
+            placeholder="Additional details (optional)"
+            value={reportDetails.details}
+            onChange={(e) =>
+              setReportDetails({ ...reportDetails, details: e.target.value })
+            }
+          />
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={submitReport}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Submit Report
+            </button>
+          </div>
+        </>
+      )}
     </div>
   </div>
 )}
