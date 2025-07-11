@@ -6,7 +6,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useGetHelperProfile from '../../hooks/useGetHelperProfile';
 import Loader from '../components/Loader';
-
+import question from '../assets/Untitled.mp4'
 const QUESTIONS_PER_CATEGORY = 10;
 const GEMINI_API_KEY = "AIzaSyCRymUERA_7lw-bUvsQTu0x4Gg4IP2NLR8";
 
@@ -169,8 +169,21 @@ const Test = () => {
   };
 
   return (
-    <div className="min-h-screen bg-purple-50 flex items-center justify-center relative">
-      <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl p-10 text-center">
+    <div className="min-h-screen relative flex items-center justify-center">
+  {/* 🔹 Background Video */}
+  <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  >
+   <source src={question} type="video/mp4" />
+
+    Your browser does not support the video tag.
+  </video>
+
+       <div className="relative z-10 bg-white shadow-lg rounded-lg w-full max-w-2xl p-10 text-center">
         {!showResult ? (
           <>
             <h2 className="text-2xl font-semibold mb-6">{currentQuestion.question}</h2>
@@ -216,7 +229,7 @@ const Test = () => {
 
       {showPassPopup && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white p-8 rounded-lg text-center shadow-xl">
+          <div className="bg-white w-[740px] p-8 rounded-lg text-center shadow-xl">
             <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
             <h2 className="text-2xl font-bold mb-4 text-green-600">🎉 You Passed the Test!</h2>
             <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>

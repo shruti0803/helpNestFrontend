@@ -167,22 +167,31 @@ const TrainingModules = () => {
               {isLocked && <span className="text-gray-500">🔒</span>}
             </h2>
 
-            <video
-              controls={!isLocked}
-              src={module.videoUrl}
-              width="100%"
-              className="rounded"
-              onEnded={() => {
-                if (isCurrent) handleCompleteModule(module.id);
-              }}
-              style={{ pointerEvents: isLocked ? "none" : "auto" }}
-            />
+            <details className="mt-2">
+  <summary className="cursor-pointer text-blue-600 hover:underline">
+    {isLocked ? "Locked Module" : "Watch Video"}
+  </summary>
+  <div className="mt-3">
+    <video
+      controls={!isLocked}
+      src={module.videoUrl}
+      width="100%"
+      className="rounded"
+      onEnded={() => {
+        if (isCurrent) handleCompleteModule(module.id);
+      }}
+      style={{ pointerEvents: isLocked ? "none" : "auto" }}
+    />
+    {isLocked && (
+      <p className="text-sm text-red-500 mt-2">
+        Please complete previous modules to unlock this.
+      </p>
+    )}
+  </div>
+</details>
 
-            {isLocked && (
-              <p className="text-sm text-red-500 mt-2">
-                Please complete previous modules to unlock this.
-              </p>
-            )}
+
+          
           </div>
         );
       })}
