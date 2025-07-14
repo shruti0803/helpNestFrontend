@@ -38,6 +38,7 @@ import EmergencySupport from "./pages/EmergencySupport";
 import MedShop from "./pages/MedicineShop/MedShop";
 import ManageShop from "./pages/Admin/ManageShop";
 import ManageReport from "./pages/Admin/ManageReport";
+import ManageReview from "./pages/Admin/ManageReview";
 
 
 function AppRoutes() {
@@ -87,6 +88,7 @@ function AppRoutes() {
           <Route path="calendar" element={<Calendar />} />
 <Route path="manageshop" element={<ManageShop/>}/>
 <Route path="managereport" element={<ManageReport/>}/>
+<Route path="rating" element={<ManageReview/>}/>
         </Route>
       </Routes>
       {!isAdminRoute && <Footer />}

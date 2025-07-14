@@ -564,135 +564,136 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
   return (
     <div className=" w-full bg-gray-100 p-4">
       {/* Row with three equal-sized cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2  h-80">
-        {/* Sales Obtained */}
-        <div className="bg-purple-300 p-4 rounded-xl shadow-lg flex flex-col justify-center">
-  <h2 className="text-xl font-semibold mb-12">Requests Booked</h2>
-  <div className=" w-full  px-2">
-    <Bar ref={barChartRef} data={servicesData} options={{
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              return `${context.raw} bookings`;
+     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-auto md:h-80">
+  {/* ✅ Requests Booked */}
+  <div className="bg-purple-300 p-4 rounded-xl shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Requests Booked</h2>
+    <div className="w-full px-2 h-[160px] sm:h-[180px] md:h-[200px] lg:h-[210px]">
+      <Bar
+        ref={barChartRef}
+        data={servicesData}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return `${context.raw} bookings`;
+                },
+              },
             },
           },
-        },
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "#4B5563",
-            font: { size: 8, weight: "200" },
+          scales: {
+            x: {
+              ticks: {
+                color: "#4B5563",
+                font: { size: 10, weight: "400" },
+              },
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              ticks: { display: false },
+            },
           },
-          grid: { display: false },
-        },
-        y: {
-          display: false,
-          grid: { display: false },
-          ticks: { display: false },
-        },
-      },
-    }} />
+        }}
+      />
+    </div>
   </div>
-</div>
 
-
-<div className="bg-white p-4 rounded-xl shadow-lg flex flex-col justify-center">
-  <h2 className="text-2xl font-semibold mb-8 pb-8">Overall Ratings</h2>
-
-  {ratingStats ? (
-    <div className="flex flex-col md:flex-row items-center justify-between">
-      {/* Circle with average */}
-      <div className="relative w-32 h-32 flex-shrink-0">
-        <svg className="w-full h-full transform -rotate-90">
-          <circle
-            className="text-gray-300"
-            strokeWidth="10"
-            stroke="currentColor"
-            fill="transparent"
-            r="50"
-            cx="64"
-            cy="64"
-          />
-          <circle
-            className="text-purple-700"
-            strokeWidth="10"
-            strokeLinecap="round"
-            stroke="currentColor"
-            fill="transparent"
-            r="50"
-            cx="64"
-            cy="64"
-            strokeDasharray={`${ratingStats.averageRating * 62.8}, 314`} // 2πr = 314
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-purple-700">{ratingStats.averageRating}</div>
-            <div className="text-sm text-gray-600">Avg Rating</div>
+  {/* ✅ Overall Ratings */}
+  <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl md:text-2xl font-semibold mb-4">Overall Ratings</h2>
+    {ratingStats ? (
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 mx-auto sm:mx-0">
+          <svg className="w-full h-full transform -rotate-90">
+            <circle
+              className="text-gray-300"
+              strokeWidth="10"
+              stroke="currentColor"
+              fill="transparent"
+              r="50"
+              cx="64"
+              cy="64"
+            />
+            <circle
+              className="text-purple-700"
+              strokeWidth="10"
+              strokeLinecap="round"
+              stroke="currentColor"
+              fill="transparent"
+              r="50"
+              cx="64"
+              cy="64"
+              strokeDasharray={`${ratingStats.averageRating * 62.8}, 314`}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-700">
+                {ratingStats.averageRating}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-600">Avg Rating</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Rating breakdown */}
-      <div className="flex flex-col gap-1 mt-4 md:mt-0 md:ml-6 w-full">
-        {[5, 4, 3, 2, 1].map(star => {
-          const total = ratingStats.totalRatings || 1;
-          const count = ratingStats.ratingBreakdown[star] || 0;
-          const percent = ((count / total) * 100).toFixed(1);
-          return (
-            <div key={star} className="flex items-center gap-2">
-              <span className="text-sm font-medium w-6">{star}★</span>
-              <div className="w-full bg-gray-200 h-3 rounded overflow-hidden">
-                <div
-                  className="bg-purple-700 h-full rounded"
-                  style={{ width: `${percent}%` }}
-                />
+        <div className="flex flex-col gap-2 w-full">
+          {[5, 4, 3, 2, 1].map((star) => {
+            const total = ratingStats.totalRatings || 1;
+            const count = ratingStats.ratingBreakdown[star] || 0;
+            const percent = ((count / total) * 100).toFixed(1);
+            return (
+              <div key={star} className="flex items-center gap-2 text-sm sm:text-base">
+                <span className="font-medium w-6">{star}★</span>
+                <div className="flex-1 bg-gray-200 h-3 rounded">
+                  <div
+                    className="bg-purple-700 h-full rounded"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
               </div>
-              {/* <span className="text-sm text-gray-600 ml-2">{count}</span> */}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
-  ) : (
-    <p>Loading rating stats...</p>
-  )}
-</div>
-
-<div className="bg-white text-black  p-6 rounded-lg shadow-lg">
-  <h2 className="text-2xl font-semibold">Orders Per Week</h2>
- 
-
-  <div className="mt-4">
-    {orderPerWeekData.labels.length > 0 ? (
-      <Line data={orderPerWeekData} options={{
-        responsive: true,
-        scales: {
-          x: { display: false },
-          y: { display: false },
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: { enabled: false },
-        },
-      }} height={150} width={300} />
     ) : (
-      <p className="text-white">Loading...</p>
+      <p className="text-sm text-gray-500">Loading rating stats...</p>
     )}
   </div>
+
+  {/* ✅ Orders Per Week */}
+  <div className="bg-white text-black p-4 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl md:text-2xl font-semibold mb-4">Orders Per Week</h2>
+    <div className="flex-grow">
+      {orderPerWeekData.labels.length > 0 ? (
+        <Line
+          data={orderPerWeekData}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { display: false },
+              y: { display: false },
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false },
+            },
+          }}
+          height={160}
+        />
+      ) : (
+        <p className="text-sm text-gray-500">Loading...</p>
+      )}
+    </div>
+  </div>
 </div>
-        {/* New Customers */}
-        
 
-        
- 
-
-       
-      </div>
 
       {/* Revenue Generated Card with month and year selector */}
       <div className="p-6 rounded-lg shadow-lg mt-6">
