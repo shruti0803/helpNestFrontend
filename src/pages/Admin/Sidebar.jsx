@@ -177,11 +177,11 @@ const Sidebar = () => {
             {!collapsed && <span className="ml-3">Rating & Reviews</span>}
           </Link>
           <Link
-            to="/admin/report"
+            to="/admin/managereport"
             className={`flex items-center p-3 m-1 rounded ${
-              activeLink === '/admin/report' ? 'bg-purple-500' : 'hover:bg-gray-700'
+              activeLink === '/admin/managereport' ? 'bg-purple-500' : 'hover:bg-gray-700'
             }`}
-            onClick={() => handleLinkClick('/admin/report')}
+            onClick={() => handleLinkClick('/admin/managereport')}
           >
             <Report className="h-6 w-6" />
             {!collapsed && <span className="ml-3">Reports</span>}

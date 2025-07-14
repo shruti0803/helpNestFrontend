@@ -10,8 +10,9 @@ import useGetProfile from '../../hooks/useGetProfile';
 import axios from 'axios';
 import { FaSearch } from "react-icons/fa";
 import img from '../assets/em.png'
+import ChatBot from '../components/ChatBot';
 const EmergencySupport = () => {
-
+const [showChatModal, setShowChatModal] = useState(false);
 const [confirmAction, setConfirmAction] = useState(null); // function to run
 const [confirmMessage, setConfirmMessage] = useState('');
 
@@ -137,8 +138,13 @@ const handlePanicAlert = () => {
     {
       title: 'Support Chat',
       icon: <FaComments size={30} className="text-purple-800" />,
-      text: 'Talk to a support agent for quick help.',
-      button: <button className="bg-white text-purple-800 border-2 border-purple-800 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50">Start Chat</button>
+      text: 'Talk to a AI agent for quick help.',
+      button: <button
+          onClick={() => setShowChatModal(true)}
+          className="bg-white text-purple-800 border-2 border-purple-800 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50"
+        >
+          Start Chat
+        </button>
     }
   ];
 
@@ -227,7 +233,21 @@ const handlePanicAlert = () => {
     </div>
   </div>
 )}
-      </div>
+     
+     {showChatModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-hidden relative">
+            <button
+              onClick={() => setShowChatModal(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl font-bold"
+            >
+              &times;
+            </button>
+           <ChatBot/>
+          </div>
+        </div>
+      )}
+       </div>
     </div>
     
   );

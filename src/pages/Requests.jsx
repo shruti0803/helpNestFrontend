@@ -164,11 +164,12 @@ console.log(res);
     res.data.forEach((r) => {
   console.log("bookingId in report:", r.booking, typeof r.booking);
 reportMap.set(String(r.booking), {
+  reason: r.reason,
+  details: r.details,
+  status: r.status,
+  adminNote: r.adminNote,
+});
 
-        
-        reason: r.reason,
-        details: r.details,
-      });
     });
 
     setReportedBookings(reportMap); // store full report object instead of Set
@@ -273,6 +274,7 @@ useEffect(() => {
         return "text-gray-700";
     }
   };
+const report = reportedBookings.get(String(reportDetails.bookingId));
 
   const handleMarkComplete = async (id) => {
     try {
@@ -719,19 +721,53 @@ useEffect(() => {
   <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
       {reportedBookings.has(String(reportDetails.bookingId)) ? (
-        <>
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">Already Reported</h2>
-          <p className="mb-2"><strong>Reason:</strong> {reportedBookings.get(String(reportDetails.bookingId)).reason}</p>
-          <p className="mb-4"><strong>Details:</strong> {reportedBookings.get(String(reportDetails.bookingId)).details || "No additional details"}</p>
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowReportModal(false)}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
-            >
-              Close
-            </button>
-          </div>
-        </>
+       <>
+  <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-800 gap-2">
+    <FiClipboard className="text-purple-600" /> Already Reported
+  </h2>
+
+  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 space-y-2 text-sm">
+    <p className="flex items-start gap-2">
+      <MdDescription className="text-gray-600 mt-1" />
+      <span><strong>Reason:</strong> {report.reason}</span>
+    </p>
+
+    <p className="flex items-start gap-2">
+      <MdDescription className="text-gray-600 mt-1" />
+      <span><strong>Details:</strong> {report.details || "No additional details"}</span>
+    </p>
+
+    <p className="flex items-start gap-2">
+      <FiClock className="text-gray-600 mt-1" />
+   <span className={`px-2 py-1 rounded-full text-xs font-medium
+  ${report.status === 'resolved' ? 'bg-green-100 text-green-700' :
+    report.status === 'rejected' ? 'bg-red-100 text-red-700' :
+    'bg-yellow-100 text-yellow-700'}
+`}>
+  {report.status?.charAt(0).toUpperCase() + report.status?.slice(1)}
+</span>
+
+
+    </p>
+
+    {report.status !== "pending" && (
+      <p className="flex items-start gap-2">
+        <FiCheckCircle className="text-green-600 mt-1" />
+        <span><strong>Admin Note:</strong> {report.adminNote || "No note provided"}</span>
+      </p>
+    )}
+  </div>
+
+  <div className="flex justify-end">
+    <button
+      onClick={() => setShowReportModal(false)}
+      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+    >
+      Close
+    </button>
+  </div>
+</>
+
       ) : (
         <>
           <h2 className="text-xl font-semibold mb-4 text-red-600">Report the Helper</h2>
