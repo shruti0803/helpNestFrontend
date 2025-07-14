@@ -10,12 +10,15 @@ export default {
       colors: {
        customPurple: 'rgb(230, 220, 250)'
 ,    // your light background color
-        customOrange: 'rgb(255, 155, 69)',    // your bright button color
+         // your bright button color
       },
        fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-        mont: ['Montserrat', 'sans-serif'],
-        roboto: ['Roboto', 'sans-serif'],
+       poppins: ['Poppins', 'sans-serif'],
+  mont: ['Montserrat', 'sans-serif'],
+  roboto: ['Roboto', 'sans-serif'],
+  inter: ['Inter', 'sans-serif'],
+  urbanist: ['Urbanist', 'sans-serif'],
+  playfair: ['Playfair Display', 'serif'],
       },
        animation: {
     'spin-slow': 'spin 3s linear infinite',

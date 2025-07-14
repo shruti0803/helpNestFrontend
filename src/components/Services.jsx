@@ -96,7 +96,7 @@ const handleStart = (title) => {
 
   return (
     <div className="min-h-screen bg-white px-6 py-16">
-      <h2 className="text-4xl font-bold text-center mb-12 text-gray-800">Our Services</h2>
+      <h2 className="text-4xl font-mont font-bold text-center mb-12 text-gray-800">Our Services</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
         {services.map((service, index) => (
          <div
@@ -111,8 +111,8 @@ const handleStart = (title) => {
             />
             {/* Overlay */}
             <div className="absolute inset-0 bg-purple-200 bg-opacity-90 transform translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-in-out flex flex-col justify-center items-center text-black p-4 text-center">
-              <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-              <p className="text-sm mb-3">{service.description}</p>
+              <h3 className="text-xl font-poppins font-semibold mb-2">{service.title}</h3>
+              <p className="text-sm  font-poppins mb-3">{service.description}</p>
               <button
                 onClick={() => handleStart(service.title)}
                 className="px-4 py-2 bg-purple-500 text-white rounded-full shadow-md hover:bg-blue-700 transition"

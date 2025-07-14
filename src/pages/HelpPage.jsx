@@ -108,7 +108,7 @@ try {
 
 }
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed font-poppins inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
         <button
           className="absolute top-2 right-3 text-gray-500 font-bold text-xl"
@@ -296,21 +296,21 @@ const [showDetailsFor, setShowDetailsFor] = useState(null);
             <div className="relative z-10 p-4 flex flex-col justify-between h-full">
               <div className="flex items-center gap-4 mb-4 bg-white/30 rounded-2xl">
                 <img src={cat.icon} alt={cat.title} className="w-10 h-10" />
-                <h2 className="text-xl font-semibold text-gray-800">{cat.title}</h2>
+                <h2 className="text-xl font-poppins font-semibold text-gray-800">{cat.title}</h2>
               </div>
-              <p className="text-gray-600 mb-4 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-gray-600 mb-4 font-poppins leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 {cat.description}
               </p>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
   <button
     onClick={() => setSelectedService(cat.title)}
-    className="w-full bg-white border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-purple-700 hover:text-white"
+    className="w-full bg-white font-poppins border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-purple-700 hover:text-white"
   >
     Book Now
   </button>
   <button
     onClick={() => setShowDetailsFor(cat.title)}
-    className="w-full bg-white border-2 border-gray-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
+    className="w-full bg-white font-poppins  border-2 border-gray-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
   >
     Details
   </button>

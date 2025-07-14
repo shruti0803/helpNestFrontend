@@ -129,7 +129,7 @@ const TrainingModules = () => {
   const progressPercent = (trainingProgress / modulesList.length) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto p-20">
+    <div className="max-w-4xl font-mont mx-auto p-20">
       <ToastContainer />
       <h1 className="text-4xl font-bold mb-2 text-center">Your Training Journey</h1>
       <p className="text-center text-gray-600 mb-6">

@@ -149,7 +149,7 @@ const handlePanicAlert = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+    <div className="min-h-screen font-inter bg-gray-100 flex flex-col items-center">
 
       {/* Top image section with heading and subtext */}
     <div

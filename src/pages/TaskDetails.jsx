@@ -72,7 +72,7 @@ const TaskDetails = ({ title, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed font-inter inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-2xl p-6 w-[90%] max-w-4xl max-h-[90vh] overflow-y-auto relative shadow-xl">
         <button
           className="absolute top-3 right-4 text-gray-500 font-bold text-2xl hover:text-gray-700"

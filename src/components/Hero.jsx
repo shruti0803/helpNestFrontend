@@ -30,10 +30,10 @@ const Hero = () => {
  px-6 md:px-16 py-24 ">
       {/* Left Text Section */}
       <div className="w-full md:w-1/2 mb-10 md:mb-0 p-8 ">
-        <h1 className="text-6xl md:text-5xl font-roboto font-bold text-purple-900 mb-6">
+        <h1 className="text-6xl md:text-5xl font-urbanist font-bold text-purple-900 mb-6">
           Welcome  {displayName || "to HelpNest" }
         </h1>
-        <p className="text-lg text-gray-700 mb-6 mr-4">
+        <p className="text-lg font-inter text-gray-700 mb-6 mr-4">
          A trusted platform for health, independence, and everyday support.
         
 Designed to help elders manage medicines, track wellness, and connect with reliable helpers—while staying safe, confident, and connected to their community.

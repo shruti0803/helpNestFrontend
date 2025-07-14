@@ -94,7 +94,7 @@ const navigate = useNavigate();
   if (!profile) return <p className="p-20 text-center text-red-600">No helper data available. Please login.</p>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+    <div className="min-h-screen font-inter bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
       <ToastContainer />
       <div className="bg-white shadow-2xl rounded-2xl p-10 m-20 w-full max-w-2xl">
         <h2 className="text-3xl font-bold text-purple-700 mb-8 text-center">Helper Registration</h2>

@@ -169,7 +169,7 @@ const Test = () => {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center">
+    <div className="min-h-screen font-inter relative flex items-center justify-center">
   {/* 🔹 Background Video */}
   <video
     autoPlay

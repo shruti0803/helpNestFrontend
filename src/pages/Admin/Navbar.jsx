@@ -43,7 +43,7 @@ const Navbar = () => {
   };
 
   return (
-    <Box className="flex items-center justify-between py-4 w-full">
+    <Box className="flex font-poppins items-center justify-between py-4 w-full">
       {/* Search Bar */}
       <Box className="flex items-center gap-2 w-full">
         <Box className="hidden md:flex items-center h-12 bg-gray-200 rounded-lg w-full">

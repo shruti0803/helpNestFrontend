@@ -90,7 +90,7 @@ const [selectedBooking, setSelectedBooking] = useState(null);
   };
 
   return (
-    <div className="flex min-h-screen pt-16">
+    <div className="flex font-inter min-h-screen pt-16">
       {/* Sidebar */}
       <div
         className={`bg-gradient-to-r from-fuchsia-50 to-purple-300 transition-all duration-300 ease-in-out ${

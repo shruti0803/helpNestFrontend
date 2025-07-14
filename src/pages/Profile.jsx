@@ -107,7 +107,7 @@ const Profile = () => {
   if (!profile) return <div className="h-screen flex justify-center items-center text-red-600 font-semibold">Failed to load profile.</div>;
 
   return (
-    <div className="min-h-screen p-4 sm:p-8 md:p-16 lg:p-20 bg-gradient-to-br from-purple-100 via-white to-purple-200">
+    <div className="min-h-screen font-poppins p-4 sm:p-8 md:p-16 lg:p-20 bg-gradient-to-br from-purple-100 via-white to-purple-200">
       <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto">
         <div className="flex-1 bg-white shadow-xl rounded-3xl p-6 sm:p-8 space-y-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
