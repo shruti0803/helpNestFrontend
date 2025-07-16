@@ -398,24 +398,27 @@ const report = reportedBookings.get(String(reportDetails.bookingId));
                       key={booking._id}
                       className="hover:bg-purple-50 transition-colors"
                     >
-                      <td className="px-4 py-2 whitespace-nowrap">{booking.personName}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">
+                    <td className="px-4 py-2 whitespace-nowrap text-center">
+{booking.personName}</td>
+                     <td className="px-4 py-2 whitespace-nowrap text-center">
+
                         {typeof booking.helper === "object" && booking.helper !== null
                           ? booking.helper.name || "N/A"
                           : booking.helper || "N/A"}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap">{booking.service}</td>
-                      <td className={`px-4 py-2 whitespace-nowrap ${getStatusColor(booking.status)}`}>
+                     <td className="px-4 py-2 whitespace-nowrap text-center">
+{booking.service}</td>
+                      <td className={`px-4 py-2 whitespace-nowrap text-center ${getStatusColor(booking.status)}`}>
                         {booking.status}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap">{booking.city}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">
+                      <td className="px-4 py-2 whitespace-nowrap text-center ">{booking.city}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">
                         {new Date(booking.date).toLocaleDateString()}
                       </td>
 {filter === "Completed" && (
   <>
     {/* Bill column */}
-    <td className="px-4 py-2 whitespace-nowrap relative">
+    <td className="px-4 py-2 whitespace-nowrap text-center relative">
       {billsMap[booking._id]?.paymentStatus === "Paid" ? (
         <span className="text-green-600 font-semibold">Paid</span>
       ) : (

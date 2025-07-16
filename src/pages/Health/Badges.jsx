@@ -7,7 +7,7 @@ const allBadges = [
     id: 1,
     title: "Med Rookie",
     icon: <FaMedkit className="text-green-100 text-4xl drop-shadow" />,
-    achievedBy: "Took medicine for 3 days in a row",
+    achievedBy: "Took medicine for 2 days in a row",
     condition: (streak) => streak >= 2
   },
   {
@@ -15,14 +15,14 @@ const allBadges = [
     title: "Expert Med Time",
     icon: <FaCrown className="text-yellow-100 text-4xl drop-shadow" />,
     achievedBy: "Took medicine consistently for 10+ days",
-    condition: (streak) => streak >= 1
+    condition: (streak) => streak >= 10
   },
   {
     id: 3,
     title: "Streak Star",
     icon: <FaStar className="text-purple-100 text-4xl drop-shadow" />,
     achievedBy: "Maintained a 7-day streak",
-    condition: (streak) => streak >= 2
+    condition: (streak) => streak >= 7
   }
 ];
 

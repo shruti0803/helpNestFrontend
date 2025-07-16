@@ -7,6 +7,7 @@ import Swal from 'sweetalert2';
 import CarouselHero from '../../components/CarouselHero';
 import CategoryCards from '../../components/CategoryCards';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import OrderHistoryModal from './OrderHistoryModal';
 const MedShop = () => {
   const [medicines, setMedicines] = useState([]);
   const [cart, setCart] = useState({});
@@ -15,7 +16,7 @@ const MedShop = () => {
  const [prescriptionModalOpen, setPrescriptionModalOpen] = useState(false);
   const [selectedMed, setSelectedMed] = useState(null);
   const [prescriptionFile, setPrescriptionFile] = useState(null);
-
+ const [showModal, setShowModal] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -193,11 +194,13 @@ const MedShop = () => {
           </button>
 
           <button
-            onClick={() => alert("Navigate to order history")}
-            className="w-full border border-purple-500 text-purple-700 py-2 rounded-lg transition hover:bg-purple-100"
-          >
-            Order History
-          </button>
+        onClick={() => setShowModal(true)}
+        className="w-full border border-purple-500 text-purple-700 py-2 rounded-lg transition hover:bg-purple-100"
+      >
+        Order History
+      </button>
+
+      {showModal && <OrderHistoryModal onClose={() => setShowModal(false)} />}
         </div>
       </div>
 

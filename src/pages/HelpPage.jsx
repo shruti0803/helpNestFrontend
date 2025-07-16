@@ -46,7 +46,7 @@ const categories = [
 ];
 
 const BookingForm = ({ service, onClose }) => {
-  const [duration, setDuration] = useState("");
+  const [duration, setDuration] = useState(15);
 
   const [suggestions, setSuggestions] = useState([]);
 

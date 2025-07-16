@@ -167,7 +167,7 @@ const now = new Date();
         <td className="p-2">{task.phone || "N/A"}</td>
         <td className="p-2">{task.address || "N/A"}</td>
         <td className="p-2">{task.city || "N/A"}</td>
-        <td className="p-2">{formattedDate}</td> {/* Only date shown */}
+        <td className="p-2">{formattedDate}</td> 
         <td className="p-2">{task.time} </td>
         
         <td
@@ -195,7 +195,7 @@ const now = new Date();
           </td>
         )}
 {activeTab === "scheduled" && (
-  <td className="p-2">
+  <td className="p-2 flex items-center justify-center">
     {task.isCompleted ? (
       task.otpVerified ? (
         <button
@@ -208,8 +208,9 @@ const now = new Date();
           Generate Bill
         </button>
       ) : (
-        <button
-          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+       <button
+  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 "
+
           onClick={() => {
             setSelectedBooking(task);
             setOtpModalOpen(true);
