@@ -37,6 +37,7 @@
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
     "lottie-react": "^2.4.1",
+    "lucide-react": "^0.525.0",
     "mongoose": "^8.15.1",
     "nprogress": "^0.2.0",
     "react": "^19.1.0",

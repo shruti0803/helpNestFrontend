@@ -115,7 +115,7 @@ const handleStart = (title) => {
               <p className="text-sm  font-poppins mb-3">{service.description}</p>
               <button
                 onClick={() => handleStart(service.title)}
-                className="px-4 py-2 bg-purple-500 text-white rounded-full shadow-md hover:bg-blue-700 transition"
+                className="px-4 py-2 bg-purple-600 text-white rounded-full shadow-md hover:bg-purple-800 transition"
               >
                 Start
               </button>

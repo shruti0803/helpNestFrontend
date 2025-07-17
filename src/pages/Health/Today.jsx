@@ -28,7 +28,8 @@ const Today = () => {
   const [todayBp, setTodayBp] = useState(null);
 
   const [showBpModal, setShowBpModal] = useState(false);
-const [bp, setBp] = useState({ systolic: "", diastolic: "" });
+const [bp, setBp] = useState({ systolic: 120, diastolic: 80 });
+
 const [showVerdict, setShowVerdict] = useState(false);
 const [verdictInfo, setVerdictInfo] = useState({ verdict: "", suggestion: "" });
 
@@ -38,27 +39,39 @@ const handle=()=>{
 }
   const [medicines, setMedicines] = useState([]);
   const [appointments, setAppointments] = useState([]);
-   const getBpVerdict = (systolic, diastolic) => {
+const getBpVerdict = (systolic, diastolic) => {
   systolic = Number(systolic);
   diastolic = Number(diastolic);
 
-  if (systolic < 90 || diastolic < 60) {
+  if (systolic < 100 || diastolic < 70) {
     return {
       verdict: "Low Blood Pressure",
       suggestion: "Drink more fluids, eat small salty meals, avoid sudden standing.",
+      icon: "⬇️",
+      iconColor: "text-blue-600",
+      textColor: "text-yellow-600"
     };
   } else if (systolic > 140 || diastolic > 90) {
     return {
       verdict: "High Blood Pressure",
       suggestion: "Limit salt, avoid stress, exercise gently, consult a doctor if persistent.",
+      icon: "⬆️",
+      iconColor: "text-red-600",
+      textColor: "text-red-600"
     };
   } else {
     return {
       verdict: "Normal Blood Pressure",
       suggestion: "Keep up the good work! Maintain a healthy diet and regular exercise.",
+      icon: "✅",
+      iconColor: "text-green-600",
+      textColor: "text-green-600"
     };
   }
 };
+
+
+
   const getFormattedDate = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -275,9 +288,10 @@ const date = buildDate(dateStr);
     <p className="text-gray-800 text-md mb-2">
       <strong>Diastolic:</strong> {todayBp.diastolic} mmHg
     </p>
-    <p className="text-sm italic text-purple-700">
-      {getBpVerdict(todayBp.systolic, todayBp.diastolic).verdict}
-    </p>
+   <p className={`text-sm italic ${getBpVerdict(todayBp.systolic, todayBp.diastolic).textColor}`}>
+  {getBpVerdict(todayBp.systolic, todayBp.diastolic).verdict}
+</p>
+
   </div>
 ) : null}
 
@@ -302,29 +316,50 @@ const date = buildDate(dateStr);
 </div>
 {showBpModal && (
   <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-    <div className="bg-white rounded-xl shadow-lg p-6 w-80">
-      <h3 className="text-xl font-semibold mb-4 text-purple-700">Add Blood Pressure</h3>
-      
-      <div className="mb-3">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Systolic (Upper)</label>
+    <div className="bg-white rounded-xl shadow-lg p-6 w-96">
+      <h3 className="text-xl font-semibold mb-6 text-purple-700">Add Blood Pressure</h3>
+
+      {/* Systolic Slider */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Systolic (Upper): {bp.systolic} mmHg
+        </label>
         <input
-          type="number"
+          type="range"
+          min={90}
+          max={180}
+          step={1}
           value={bp.systolic}
-          onChange={(e) => setBp({ ...bp, systolic: e.target.value })}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+          onChange={(e) =>
+            setBp({
+              ...bp,
+              systolic: parseInt(e.target.value),
+              diastolic: Math.min(bp.diastolic, parseInt(e.target.value) - 1), // auto-fix if invalid
+            })
+          }
+          className="w-full accent-purple-600"
         />
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Diastolic (Lower)</label>
+      {/* Diastolic Slider */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Diastolic (Lower): {bp.diastolic} mmHg
+        </label>
         <input
-          type="number"
+          type="range"
+          min={60}
+          max={bp.systolic - 1} // cannot be >= systolic
+          step={1}
           value={bp.diastolic}
-          onChange={(e) => setBp({ ...bp, diastolic: e.target.value })}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+          onChange={(e) =>
+            setBp({ ...bp, diastolic: parseInt(e.target.value) })
+          }
+          className="w-full accent-purple-600"
         />
       </div>
 
+      {/* Buttons */}
       <div className="flex justify-between">
         <button
           onClick={() => setShowBpModal(false)}
@@ -333,27 +368,26 @@ const date = buildDate(dateStr);
           Cancel
         </button>
         <button
-onClick={async () => {
-  try {
-    await axios.post(
-      "http://localhost:5000/api/health/add-bp",
-      {
-        systolic: bp.systolic,
-        diastolic: bp.diastolic,
-        date: getFormattedDate(),
-      },
-      { withCredentials: true }
-    );
-    const result = getBpVerdict(bp.systolic, bp.diastolic);
-    setVerdictInfo(result);
-    setShowBpModal(false);
-    setShowVerdict(true);
-    setBp({ systolic: "", diastolic: "" });
-  } catch (err) {
-    console.error("❌ Error adding BP", err.response?.data || err.message);
-  }
-}}
-
+          onClick={async () => {
+            try {
+              await axios.post(
+                "http://localhost:5000/api/health/add-bp",
+                {
+                  systolic: bp.systolic,
+                  diastolic: bp.diastolic,
+                  date: getFormattedDate(),
+                },
+                { withCredentials: true }
+              );
+              const result = getBpVerdict(bp.systolic, bp.diastolic);
+              setVerdictInfo(result);
+              setShowBpModal(false);
+              setShowVerdict(true);
+              setBp({ systolic: 120, diastolic: 80 });
+            } catch (err) {
+              console.error("❌ Error adding BP", err.response?.data || err.message);
+            }
+          }}
           className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white"
         >
           Submit
@@ -362,11 +396,14 @@ onClick={async () => {
     </div>
   </div>
 )}
+
 {showVerdict && (
   <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
     <div className="bg-white rounded-xl shadow-lg p-6 w-80 text-center">
-      <h3 className="text-2xl font-bold text-purple-700 mb-4">{verdictInfo.verdict}</h3>
-      <p className="text-gray-800 mb-6">{verdictInfo.suggestion}</p>
+      <div className={`text-4xl mb-3 ${verdictInfo.iconColor}`}>{verdictInfo.icon}</div>
+     <h3 className={`text-2xl font-bold mb-4 ${verdictInfo.textColor}`}>{verdictInfo.verdict}</h3>
+
+      <p className="text-gray-700 mb-6">{verdictInfo.suggestion}</p>
       <button
         onClick={() => setShowVerdict(false)}
         className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded"
@@ -376,6 +413,8 @@ onClick={async () => {
     </div>
   </div>
 )}
+
+
 
     </div>
   );

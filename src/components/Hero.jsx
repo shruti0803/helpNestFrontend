@@ -43,7 +43,7 @@ Designed to help elders manage medicines, track wellness, and connect with relia
         <button className="px-6 py-3 bg-purple-600 text-white rounded-2xl shadow-md hover:bg-purple-800 transition">
           Get Started
         </button>
-        <button className="px-6 py-3 text-black bg-white border-2 border-purple-300 rounded-2xl shadow-md hover:bg-purple-800 transition">
+        <button className="px-6 py-3 text-black bg-white border-2 border-purple-300 rounded-2xl shadow-md hover:bg-purple-800 hover:text-white transition">
           Explore
         </button>
        </div>

@@ -9,8 +9,7 @@ export default {
     extend: {
       colors: {
        customPurple: 'rgb(230, 220, 250)'
-,    // your light background color
-         // your bright button color
+,   
       },
        fontFamily: {
        poppins: ['Poppins', 'sans-serif'],
