@@ -57,7 +57,8 @@
     "recharts": "^2.15.3",
     "redux-persist": "^6.0.0",
     "slick-carousel": "^1.8.1",
-    "sweetalert2": "^11.22.0",
+    "sweetalert2": "^11.22.2",
+    "sweetalert2-react-content": "^5.1.0",
     "use-places-autocomplete": "^4.0.1"
   },
   "devDependencies": {

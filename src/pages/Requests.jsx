@@ -10,6 +10,8 @@ import { FaRupeeSign, FaMoneyBillWave, FaClock, FaCheckCircle } from 'react-icon
 import { MdDescription, MdPayment, MdClose } from 'react-icons/md';
 import Swal from "sweetalert2";
 
+import withReactContent from 'sweetalert2-react-content';
+
 import {
   FiCheckCircle,
   FiClock,
@@ -31,7 +33,7 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
-  
+  const MySwal = withReactContent(Swal);
 
   const [otpModalOpen, setOtpModalOpen] = useState(false);
 const [currentOtp, setCurrentOtp] = useState(null);
@@ -342,9 +344,12 @@ const report = reportedBookings.get(String(reportDetails.bookingId));
                   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
                     Person Name
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Helper Name
-                  </th>
+                 {filter !== "Pending" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Helper Name
+  </th>
+)}
+
                   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
                     Service
                   </th>
@@ -359,10 +364,16 @@ const report = reportedBookings.get(String(reportDetails.bookingId));
                   </th>
                   {filter === "Scheduled" && (
                     <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                      Mark Completed
+                      Actions
                     </th>
                     
                   )}
+                  {filter === "Pending" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Cancel
+  </th>
+)}
+
                   {filter === "Completed" && (
   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
     Bill
@@ -398,23 +409,52 @@ const report = reportedBookings.get(String(reportDetails.bookingId));
                       key={booking._id}
                       className="hover:bg-purple-50 transition-colors"
                     >
-                    <td className="px-4 py-2 whitespace-nowrap text-center">
+                    <td className="px-4 py-2 whitespace-nowrap ">
 {booking.personName}</td>
-                     <td className="px-4 py-2 whitespace-nowrap text-center">
+                    {filter !== "Pending" && (
+  <td className="px-4 py-2 whitespace-nowrap">
+    {typeof booking.helper === "object" && booking.helper !== null
+      ? booking.helper.name || "N/A"
+      : booking.helper || "N/A"}
+  </td>
+)}
 
-                        {typeof booking.helper === "object" && booking.helper !== null
-                          ? booking.helper.name || "N/A"
-                          : booking.helper || "N/A"}
-                      </td>
-                     <td className="px-4 py-2 whitespace-nowrap text-center">
+                     <td className="px-4 py-2 whitespace-nowrap ">
 {booking.service}</td>
-                      <td className={`px-4 py-2 whitespace-nowrap text-center ${getStatusColor(booking.status)}`}>
+                      <td className={`px-4 py-2 whitespace-nowrap  ${getStatusColor(booking.status)}`}>
                         {booking.status}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-center ">{booking.city}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-center">
+                      
+                      <td className="px-4 py-2 whitespace-nowrap  ">{booking.city}</td>
+                      <td className="px-4 py-2 whitespace-nowrap ">
                         {new Date(booking.date).toLocaleDateString()}
                       </td>
+                      {filter === "Pending" && (
+  <td className="px-2 py-2 whitespace-nowrap ">
+    <button
+        onClick={async () => {
+          try {
+            const confirmed = window.confirm("Are you sure you want to cancel this booking?");
+            if (!confirmed) return;
+
+            await axios.delete(`http://localhost:5000/api/bookings/${booking._id}`, {
+              withCredentials: true,
+            });
+
+            setBookings((prev) => prev.filter((b) => b._id !== booking._id));
+            toast.success("Booking cancelled successfully.");
+          } catch (err) {
+            console.error("Error cancelling booking", err);
+            toast.error("Failed to cancel booking");
+          }
+        }}
+        className="text-sm text-red-600 border border-red-600 hover:bg-red-100 px-3 py-1 rounded mx-auto block"
+      >
+        Cancel
+      </button>
+  </td>
+)}
+
 {filter === "Completed" && (
   <>
     {/* Bill column */}
@@ -452,6 +492,7 @@ const report = reportedBookings.get(String(reportDetails.bookingId));
   >
     ⋮
   </button>
+  
 
  {openActionMenu === booking._id &&
   booking.status === "Completed" &&
@@ -494,62 +535,91 @@ const report = reportedBookings.get(String(reportDetails.bookingId));
 
 
 
-                      {filter === "Scheduled" && (
-                        <td className="px-4 py-2 whitespace-nowrap text-center">
-                  {isEligibleToMarkComplete ? (
-  <button
-   onClick={async () => {
-  try {
-    const res = await axios.put(
-      "http://localhost:5000/api/bookings/mark-completed",
-      { bookingId: booking._id },
-      { withCredentials: true }
-    );
+                    {filter === "Scheduled" && (
+  <td className="px-4 py-2 whitespace-nowrap text-center">
+    {isEligibleToMarkComplete ? (
+      <button
+        onClick={async () => {
+          try {
+            const res = await axios.put(
+              "http://localhost:5000/api/bookings/mark-completed",
+              { bookingId: booking._id },
+              { withCredentials: true }
+            );
 
-    setCurrentOtp(res.data.otp); // <-- set actual OTP
-    setOtpModalOpen(true);
+            setCurrentOtp(res.data.otp);
+            setOtpModalOpen(true);
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b._id === booking._id ? { ...b, isCompleted: true } : b
-      )
-    );
-  } catch (error) {
-    console.error("Error marking booking complete:", error);
-    alert("Failed to mark as completed.");
-  }
-}}
-
-    className="bg-purple-500 hover:bg-purple-600 text-white text-sm px-3 py-1 rounded shadow"
-  >
-    Mark as Completed
-  </button>
-) : booking.isCompleted ? (
-  <div className="relative w-6 h-6 mx-auto">
-    <input
-      type="checkbox"
-      checked={true}
-      disabled
-      className="absolute w-6 h-6 opacity-0 cursor-default"
-    />
-    <div className="w-6 h-6 rounded border-2 border-green-500 flex items-center justify-center bg-green-100">
-      <svg
-        className="w-5 h-5 text-green-600 animate-ping-once"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={3}
-        viewBox="0 0 24 24"
+            setBookings((prev) =>
+              prev.map((b) =>
+                b._id === booking._id ? { ...b, isCompleted: true } : b
+              )
+            );
+          } catch (error) {
+            console.error("Error marking booking complete:", error);
+            alert("Failed to mark as completed.");
+          }
+        }}
+        className="text-sm bg-purple-100 border border-purple-600 hover:bg-purple-300 px-3 py-1 rounded mx-auto block"
       >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-      </svg>
-    </div>
-  </div>
-) : (
-  "-"
+        Mark as Completed
+      </button>
+    ) : booking.isCompleted ? (
+      <div className="relative w-6 h-6 mx-auto">
+        <input
+          type="checkbox"
+          checked={true}
+          disabled
+          className="absolute w-6 h-6 opacity-0 cursor-default"
+        />
+        <div className="w-6 h-6 rounded border-2 border-green-500 flex items-center justify-center bg-green-100">
+          <svg
+            className="w-5 h-5 text-green-600 animate-ping-once"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={3}
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      </div>
+    ) : (
+     <button
+  onClick={async () => {
+    const result = await MySwal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to cancel this booking? ₹100 will be added to your next booking.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, cancel it!',
+      cancelButtonText: 'No, keep it'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/bookings/${booking._id}`, {
+        withCredentials: true,
+      });
+
+      setBookings((prev) => prev.filter((b) => b._id !== booking._id));
+      toast.success('Booking cancelled successfully.');
+    } catch (err) {
+      console.error('Error cancelling booking', err);
+      toast.error('Failed to cancel booking');
+    }
+  }}
+  className="text-sm text-red-600 border border-red-600 hover:bg-red-100 px-3 py-1 rounded mx-auto block"
+>
+  Cancel 
+</button>
+    )}
+  </td>
 )}
 
-                        </td>
-                      )}
                     </tr>
                   );
                 })}

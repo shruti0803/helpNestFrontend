@@ -98,11 +98,11 @@ const [selectedBooking, setSelectedBooking] = useState(null);
         }`}
       >
         <button
-          className="p-4 hover:bg-orange-300 focus:outline-none"
+          className="p-4 hover:bg-purple-300 focus:outline-none"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? (
-            <FiX className="h-6 w-6 mx-auto text-orange-100" />
+            <FiX className="h-6 w-6 mx-auto text-purple-100" />
           ) : (
             <FiMenu className="h-6 w-6 mx-auto" />
           )}

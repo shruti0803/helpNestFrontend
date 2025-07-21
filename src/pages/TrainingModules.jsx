@@ -237,7 +237,7 @@ const TrainingModules = () => {
                 className={`py-2 px-4 rounded text-white ${
                   selectedServices.length === 0
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-orange-600 hover:bg-orange-700"
+                    : "bg-purple-600 hover:bg-purple-700"
                 } transition`}
               >
                 Submit

@@ -134,6 +134,20 @@ try {
             required
             className="w-full border px-3 py-2 rounded"
           />
+              <select
+  value={city}
+  onChange={(e) => setCity(e.target.value)}
+  required
+  className="w-full border px-3 py-2 rounded"
+>
+  <option value="">Select City</option>
+  <option value="Delhi">Delhi</option>
+  <option value="Mumbai">Mumbai</option>
+  <option value="Bangalore">Bangalore</option>
+  <option value="Chennai">Chennai</option>
+  <option value="Kolkata">Kolkata</option>
+  <option value="Other">Other</option>
+</select>
           <div className="relative">
         <input
   type="text"
@@ -185,20 +199,7 @@ onChange={async (e) => {
 )}
 
   </div>
-          <select
-  value={city}
-  onChange={(e) => setCity(e.target.value)}
-  required
-  className="w-full border px-3 py-2 rounded"
->
-  <option value="">Select City</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Mumbai">Mumbai</option>
-  <option value="Bangalore">Bangalore</option>
-  <option value="Chennai">Chennai</option>
-  <option value="Kolkata">Kolkata</option>
-  <option value="Other">Other</option>
-</select>
+      
 
          
           <input
@@ -304,13 +305,13 @@ const [showDetailsFor, setShowDetailsFor] = useState(null);
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
   <button
     onClick={() => setSelectedService(cat.title)}
-    className="w-full bg-white font-poppins border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-purple-700 hover:text-white"
+    className="w-full bg-purple-600 font-poppins border-2 border-purple-600 text-white py-2 px-4 rounded-xl hover:bg-purple-800 hover:text-white"
   >
     Book Now
   </button>
   <button
     onClick={() => setShowDetailsFor(cat.title)}
-    className="w-full bg-white font-poppins  border-2 border-gray-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
+    className="w-full bg-white font-poppins  border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
   >
     Details
   </button>
