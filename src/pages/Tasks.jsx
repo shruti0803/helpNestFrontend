@@ -65,11 +65,25 @@ const [selectedBooking, setSelectedBooking] = useState(null);
     }
   };
 
-  useEffect(() => {
-    if (helper) {
-      fetchTasks();
+ useEffect(() => {
+  let intervalId;
+
+  const startPolling = () => {
+    fetchTasks(); // initial call
+    intervalId = setInterval(fetchTasks, 3000); // poll every 3 seconds
+  };
+
+  if (helper) {
+    startPolling();
+  }
+
+  return () => {
+    if (intervalId) {
+      clearInterval(intervalId); // cleanup on unmount or dependency change
     }
-  }, [activeTab, helper]);
+  };
+}, [activeTab, helper]);
+
 
   const handleAccept = async (id) => {
     try {
@@ -195,7 +209,8 @@ const now = new Date();
           </td>
         )}
 {activeTab === "scheduled" && (
-  <td className="p-2 flex items-center justify-center">
+  <td className="p-2 h-[100px] flex items-center justify-center">
+
     {task.isCompleted ? (
       task.otpVerified ? (
         <button
@@ -209,7 +224,7 @@ const now = new Date();
         </button>
       ) : (
        <button
-  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 "
+  className="px-3 py-1 border-2 border-green-600 text-black rounded hover:bg-green-600 hover:text-white "
 
           onClick={() => {
             setSelectedBooking(task);
@@ -223,10 +238,10 @@ const now = new Date();
       )
     ) : (
      task.hasArrived ? (
-  <span className="px-3 py-1 text-blue-700 font-semibold">Reached</span>
+  <span className="px-3 py-1  text-blue-700 font-semibold">Reached</span>
 ) : (
   <button
-    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+    className="px-3 py-1 border-2 border-blue-600  rounded hover:bg-blue-600 hover:text-white" 
     onClick={() => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -255,7 +270,7 @@ const now = new Date();
 
                 setTasks((prev) =>
                   prev.map((b) =>
-                    b._id === task._id ? { ...b, hasarrived: true } : b
+                    b._id === task._id ? { ...b, hasArrived: true } : b
                   )
                 );
               } else {

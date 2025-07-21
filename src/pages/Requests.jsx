@@ -225,10 +225,9 @@ useEffect(() => {
       const res = await axios.get("http://localhost:5000/api/bookings/requests", {
         withCredentials: true,
       });
-     setBookings(
-  res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-);
-
+      setBookings(
+        res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      );
     } catch (err) {
       console.error("Error fetching bookings:", err);
     }
@@ -253,9 +252,20 @@ useEffect(() => {
     }
   };
 
+  // Initial fetch
   fetchBookings();
-  fetchBills(); // <- new call
+  fetchBills();
+
+  // Set interval to poll every 3 seconds
+  const interval = setInterval(() => {
+    fetchBookings();
+    fetchBills();
+  }, 3000);
+
+  // Clean up on unmount
+  return () => clearInterval(interval);
 }, []);
+
 
 
   const filteredBookings =
