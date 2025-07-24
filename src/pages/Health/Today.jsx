@@ -379,6 +379,8 @@ const date = buildDate(dateStr);
                 },
                 { withCredentials: true }
               );
+              await fetchTodayBp(); // <- this actually updates the displayed value
+
               const result = getBpVerdict(bp.systolic, bp.diastolic);
               setVerdictInfo(result);
               setShowBpModal(false);

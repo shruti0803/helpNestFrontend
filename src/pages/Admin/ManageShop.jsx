@@ -179,7 +179,7 @@ const handleAddStock = async (id) => {
   return (
     <Box className="p-4">
       <Box className="flex justify-between items-center mb-4">
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#6a1b9a' }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#880e4f' }}>
           Manage Medicines
         </Typography>
         <div className=' flex gap-2'>

@@ -215,7 +215,12 @@ export default function Health() {
       </div>
 
       {/* Modals */}
-      <AddMedicineModal isOpen={open} onClose={() => setOpen(false)} />
+      <AddMedicineModal
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  onSuccess={() => fetchMedicines(selectedDate)}
+/>
+
       <AddAppointmentModal
         isOpen={openA}
         onClose={() => setOpenA(false)}

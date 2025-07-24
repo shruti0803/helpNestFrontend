@@ -124,7 +124,7 @@ function InvoiceBalance() {
 
   return (
     <div style={{ height: 600, width: '100%' }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#880e4f' }}>
         Bill Transactions
       </Typography>
 
