@@ -25,12 +25,52 @@ const typeEmojis = {
 };
 
 const Today = () => {
+  const [todayBp, setTodayBp] = useState(null);
+
+  const [showBpModal, setShowBpModal] = useState(false);
+const [bp, setBp] = useState({ systolic: 120, diastolic: 80 });
+
+const [showVerdict, setShowVerdict] = useState(false);
+const [verdictInfo, setVerdictInfo] = useState({ verdict: "", suggestion: "" });
+
      const navigate=useNavigate();
 const handle=()=>{
   navigate("/health");
 }
   const [medicines, setMedicines] = useState([]);
   const [appointments, setAppointments] = useState([]);
+const getBpVerdict = (systolic, diastolic) => {
+  systolic = Number(systolic);
+  diastolic = Number(diastolic);
+
+  if (systolic < 100 || diastolic < 70) {
+    return {
+      verdict: "Low Blood Pressure",
+      suggestion: "Drink more fluids, eat small salty meals, avoid sudden standing.",
+      icon: "⬇️",
+      iconColor: "text-blue-600",
+      textColor: "text-yellow-600"
+    };
+  } else if (systolic > 140 || diastolic > 90) {
+    return {
+      verdict: "High Blood Pressure",
+      suggestion: "Limit salt, avoid stress, exercise gently, consult a doctor if persistent.",
+      icon: "⬆️",
+      iconColor: "text-red-600",
+      textColor: "text-red-600"
+    };
+  } else {
+    return {
+      verdict: "Normal Blood Pressure",
+      suggestion: "Keep up the good work! Maintain a healthy diet and regular exercise.",
+      icon: "✅",
+      iconColor: "text-green-600",
+      textColor: "text-green-600"
+    };
+  }
+};
+
+
 
   const getFormattedDate = () => {
     const today = new Date();
@@ -39,6 +79,8 @@ const handle=()=>{
 
   const fetchToday = async () => {
    const dateStr = getFormattedDate();
+
+
 const date = buildDate(dateStr);
 
 
@@ -96,14 +138,37 @@ const date = buildDate(dateStr);
     }
 
     fetchToday(); // refresh
+
+
+
+
+
+
   } catch (err) {
     console.error("❌ Failed to mark task", err.response?.data || err.message);
   }
 };
 
+    const fetchTodayBp = async () => {
+  const dateStr = getFormattedDate();
 
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/health/get-bp?date=${dateStr}`,
+      { withCredentials: true }
+    );
+    setTodayBp(res.data);
+  } catch (err) {
+    if (err?.response?.status === 404) {
+      setTodayBp(null); // No BP for today
+    } else {
+      console.error("❌ Error fetching today's BP:", err.message);
+    }
+  }
+};
   useEffect(() => {
     fetchToday();
+    fetchTodayBp();
   }, []);
 
   return (
@@ -212,14 +277,146 @@ const date = buildDate(dateStr);
           </ul>
         )}
       </section>
-     <div className="flex justify-center p-4">
+      {todayBp ? (
+  <div className="bg-white border border-purple-300 rounded-lg p-4 my-6 text-center shadow">
+    <h3 className="text-lg font-semibold text-purple-800 mb-2">
+      🩺 Today's Blood Pressure
+    </h3>
+    <p className="text-gray-800 text-md mb-1">
+      <strong>Systolic:</strong> {todayBp.systolic} mmHg
+    </p>
+    <p className="text-gray-800 text-md mb-2">
+      <strong>Diastolic:</strong> {todayBp.diastolic} mmHg
+    </p>
+   <p className={`text-sm italic ${getBpVerdict(todayBp.systolic, todayBp.diastolic).textColor}`}>
+  {getBpVerdict(todayBp.systolic, todayBp.diastolic).verdict}
+</p>
+
+  </div>
+) : null}
+
+     <div className="flex justify-center p-4 gap-4">
   <button
     onClick={handle}
-    className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-lg font-medium px-6 py-3 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition duration-300"
+    className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-lg font-medium px-4 py-2 rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition duration-300"
   >
     ➕ Add Entry
   </button>
+{!todayBp && (
+  <button
+    onClick={() => setShowBpModal(true)}
+    className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-lg font-medium px-4 py-2 rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition duration-300"
+  >
+    ➕ Add BP
+  </button>
+)}
+
+
+ 
 </div>
+{showBpModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-lg p-6 w-96">
+      <h3 className="text-xl font-semibold mb-6 text-purple-700">Add Blood Pressure</h3>
+
+      {/* Systolic Slider */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Systolic (Upper): {bp.systolic} mmHg
+        </label>
+        <input
+          type="range"
+          min={90}
+          max={180}
+          step={1}
+          value={bp.systolic}
+          onChange={(e) =>
+            setBp({
+              ...bp,
+              systolic: parseInt(e.target.value),
+              diastolic: Math.min(bp.diastolic, parseInt(e.target.value) - 1), // auto-fix if invalid
+            })
+          }
+          className="w-full accent-purple-600"
+        />
+      </div>
+
+      {/* Diastolic Slider */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Diastolic (Lower): {bp.diastolic} mmHg
+        </label>
+        <input
+          type="range"
+          min={60}
+          max={bp.systolic - 1} // cannot be >= systolic
+          step={1}
+          value={bp.diastolic}
+          onChange={(e) =>
+            setBp({ ...bp, diastolic: parseInt(e.target.value) })
+          }
+          className="w-full accent-purple-600"
+        />
+      </div>
+
+      {/* Buttons */}
+      <div className="flex justify-between">
+        <button
+          onClick={() => setShowBpModal(false)}
+          className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-gray-800"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              await axios.post(
+                "http://localhost:5000/api/health/add-bp",
+                {
+                  systolic: bp.systolic,
+                  diastolic: bp.diastolic,
+                  date: getFormattedDate(),
+                },
+                { withCredentials: true }
+              );
+              await fetchTodayBp(); // <- this actually updates the displayed value
+
+              const result = getBpVerdict(bp.systolic, bp.diastolic);
+              setVerdictInfo(result);
+              setShowBpModal(false);
+              setShowVerdict(true);
+              setBp({ systolic: 120, diastolic: 80 });
+            } catch (err) {
+              console.error("❌ Error adding BP", err.response?.data || err.message);
+            }
+          }}
+          className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{showVerdict && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl shadow-lg p-6 w-80 text-center">
+      <div className={`text-4xl mb-3 ${verdictInfo.iconColor}`}>{verdictInfo.icon}</div>
+     <h3 className={`text-2xl font-bold mb-4 ${verdictInfo.textColor}`}>{verdictInfo.verdict}</h3>
+
+      <p className="text-gray-700 mb-6">{verdictInfo.suggestion}</p>
+      <button
+        onClick={() => setShowVerdict(false)}
+        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
+
 
     </div>
   );

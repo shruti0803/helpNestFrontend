@@ -1,4 +1,4 @@
-// LoginRegister.jsx — UI Updated to match LoginHelper, logic unchanged
+
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";

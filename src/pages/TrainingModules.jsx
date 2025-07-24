@@ -129,7 +129,7 @@ const TrainingModules = () => {
   const progressPercent = (trainingProgress / modulesList.length) * 100;
 
   return (
-    <div className="max-w-4xl mx-auto p-20">
+    <div className="max-w-4xl font-mont mx-auto p-20">
       <ToastContainer />
       <h1 className="text-4xl font-bold mb-2 text-center">Your Training Journey</h1>
       <p className="text-center text-gray-600 mb-6">
@@ -167,22 +167,31 @@ const TrainingModules = () => {
               {isLocked && <span className="text-gray-500">🔒</span>}
             </h2>
 
-            <video
-              controls={!isLocked}
-              src={module.videoUrl}
-              width="100%"
-              className="rounded"
-              onEnded={() => {
-                if (isCurrent) handleCompleteModule(module.id);
-              }}
-              style={{ pointerEvents: isLocked ? "none" : "auto" }}
-            />
+            <details className="mt-2">
+  <summary className="cursor-pointer text-blue-600 hover:underline">
+    {isLocked ? "Locked Module" : "Watch Video"}
+  </summary>
+  <div className="mt-3">
+    <video
+      controls={!isLocked}
+      src={module.videoUrl}
+      width="100%"
+      className="rounded"
+      onEnded={() => {
+        if (isCurrent) handleCompleteModule(module.id);
+      }}
+      style={{ pointerEvents: isLocked ? "none" : "auto" }}
+    />
+    {isLocked && (
+      <p className="text-sm text-red-500 mt-2">
+        Please complete previous modules to unlock this.
+      </p>
+    )}
+  </div>
+</details>
 
-            {isLocked && (
-              <p className="text-sm text-red-500 mt-2">
-                Please complete previous modules to unlock this.
-              </p>
-            )}
+
+          
           </div>
         );
       })}
@@ -228,7 +237,7 @@ const TrainingModules = () => {
                 className={`py-2 px-4 rounded text-white ${
                   selectedServices.length === 0
                     ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-orange-600 hover:bg-orange-700"
+                    : "bg-purple-600 hover:bg-purple-700"
                 } transition`}
               >
                 Submit

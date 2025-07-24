@@ -179,7 +179,7 @@ const handleConfirmVerify = () => {
 
   return (
     <Box className="w-full px-4 py-4">
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#4a148c' }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#880e4f' }}>
         Manage Helpers
       </Typography>
 

@@ -87,9 +87,9 @@ const WeeklyDonutChart = () => {
       transition={{ duration: 0.7 }}
       className="w-full h-80 bg-gradient-to-br from-purple-100 to-white rounded-2xl shadow-lg p-4 hover:shadow-xl transition-all duration-500 relative"
     >
-      <h3 className="text-lg font-semibold mb-4 text-center text-purple-800">
-        Weekly Health Completion
-      </h3>
+      <h2 className="text-2xl font-extrabold text-purple-800 tracking-wide text-center">
+    Weekly Health Completion
+  </h2>
 
       {loading ? (
         <p className="text-center text-gray-500">Loading chart...</p>

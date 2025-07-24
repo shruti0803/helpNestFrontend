@@ -46,6 +46,8 @@ const categories = [
 ];
 
 const BookingForm = ({ service, onClose }) => {
+  const [duration, setDuration] = useState(15);
+
   const [suggestions, setSuggestions] = useState([]);
 
   const [personName, setPersonName] = useState("");
@@ -66,6 +68,7 @@ const handleSubmit = async (e) => {
     phone,
     date,
     time,
+    duration: parseInt(duration), // ✅ Send as number
     genderPreference,
     address,
     city,
@@ -105,7 +108,7 @@ try {
 
 }
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="fixed font-poppins inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
         <button
           className="absolute top-2 right-3 text-gray-500 font-bold text-xl"
@@ -131,6 +134,20 @@ try {
             required
             className="w-full border px-3 py-2 rounded"
           />
+              <select
+  value={city}
+  onChange={(e) => setCity(e.target.value)}
+  required
+  className="w-full border px-3 py-2 rounded"
+>
+  <option value="">Select City</option>
+  <option value="Delhi">Delhi</option>
+  <option value="Mumbai">Mumbai</option>
+  <option value="Bangalore">Bangalore</option>
+  <option value="Chennai">Chennai</option>
+  <option value="Kolkata">Kolkata</option>
+  <option value="Other">Other</option>
+</select>
           <div className="relative">
         <input
   type="text"
@@ -182,20 +199,7 @@ onChange={async (e) => {
 )}
 
   </div>
-          <select
-  value={city}
-  onChange={(e) => setCity(e.target.value)}
-  required
-  className="w-full border px-3 py-2 rounded"
->
-  <option value="">Select City</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Mumbai">Mumbai</option>
-  <option value="Bangalore">Bangalore</option>
-  <option value="Chennai">Chennai</option>
-  <option value="Kolkata">Kolkata</option>
-  <option value="Other">Other</option>
-</select>
+      
 
          
           <input
@@ -216,6 +220,26 @@ onChange={async (e) => {
     : undefined} // min time only if today's date is selected
             className="w-full border px-3 py-2 rounded"
           />
+<div className="mt-4">
+  <label className="block text-gray-700 font-semibold mb-1">
+    Duration: {Math.floor(duration / 60)} hr {duration % 60} min
+  </label>
+  <input
+    type="range"
+    min={15}
+    max={480}
+    step={15}
+    value={duration}
+    onChange={(e) => setDuration(parseInt(e.target.value))}
+    className="w-full accent-purple-600"
+  />
+  <div className="flex justify-between text-sm text-gray-500 mt-1">
+    <span>15 min</span>
+    <span>8 hrs</span>
+  </div>
+</div>
+
+
           {/* <select
             value={genderPreference}
             onChange={(e) => setGenderPreference(e.target.value)}
@@ -273,21 +297,21 @@ const [showDetailsFor, setShowDetailsFor] = useState(null);
             <div className="relative z-10 p-4 flex flex-col justify-between h-full">
               <div className="flex items-center gap-4 mb-4 bg-white/30 rounded-2xl">
                 <img src={cat.icon} alt={cat.title} className="w-10 h-10" />
-                <h2 className="text-xl font-semibold text-gray-800">{cat.title}</h2>
+                <h2 className="text-xl font-poppins font-semibold text-gray-800">{cat.title}</h2>
               </div>
-              <p className="text-gray-600 mb-4 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <p className="text-gray-600 mb-4 font-poppins leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 {cat.description}
               </p>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
   <button
     onClick={() => setSelectedService(cat.title)}
-    className="w-full bg-white border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-purple-700 hover:text-white"
+    className="w-full bg-purple-600 font-poppins border-2 border-purple-600 text-white py-2 px-4 rounded-xl hover:bg-purple-800 hover:text-white"
   >
     Book Now
   </button>
   <button
     onClick={() => setShowDetailsFor(cat.title)}
-    className="w-full bg-white border-2 border-gray-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
+    className="w-full bg-white font-poppins  border-2 border-purple-400 text-black py-2 px-4 rounded-xl hover:bg-gray-700 hover:text-white"
   >
     Details
   </button>

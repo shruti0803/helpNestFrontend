@@ -39,7 +39,7 @@ const CarouselHero = () => {
   };
 
   return (
-    <div className="w-full max-w-[1210px] h-64 rounded-xl overflow-hidden mb-8 shadow-md mx-auto px-4">
+    <div className="w-full font-poppins max-w-[1210px] h-64 rounded-xl overflow-hidden mb-8 shadow-md mx-auto px-4">
       <Slider {...settings}>
         {slides.map((slide, index) => (
           <div key={index}>

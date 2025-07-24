@@ -65,11 +65,25 @@ const [selectedBooking, setSelectedBooking] = useState(null);
     }
   };
 
-  useEffect(() => {
-    if (helper) {
-      fetchTasks();
+ useEffect(() => {
+  let intervalId;
+
+  const startPolling = () => {
+    fetchTasks(); // initial call
+    intervalId = setInterval(fetchTasks, 3000); // poll every 3 seconds
+  };
+
+  if (helper) {
+    startPolling();
+  }
+
+  return () => {
+    if (intervalId) {
+      clearInterval(intervalId); // cleanup on unmount or dependency change
     }
-  }, [activeTab, helper]);
+  };
+}, [activeTab, helper]);
+
 
   const handleAccept = async (id) => {
     try {
@@ -90,7 +104,7 @@ const [selectedBooking, setSelectedBooking] = useState(null);
   };
 
   return (
-    <div className="flex min-h-screen pt-16">
+    <div className="flex font-inter min-h-screen pt-16">
       {/* Sidebar */}
       <div
         className={`bg-gradient-to-r from-fuchsia-50 to-purple-300 transition-all duration-300 ease-in-out ${
@@ -98,11 +112,11 @@ const [selectedBooking, setSelectedBooking] = useState(null);
         }`}
       >
         <button
-          className="p-4 hover:bg-orange-300 focus:outline-none"
+          className="p-4 hover:bg-purple-300 focus:outline-none"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? (
-            <FiX className="h-6 w-6 mx-auto text-orange-100" />
+            <FiX className="h-6 w-6 mx-auto text-purple-100" />
           ) : (
             <FiMenu className="h-6 w-6 mx-auto" />
           )}
@@ -157,6 +171,7 @@ const bookingDateTime = new Date(`${dateOnly}T${task.time}`);
 const now = new Date();
 
 
+
     const formattedDate = new Date(task.date).toLocaleDateString("en-IN");
 
     return (
@@ -166,7 +181,7 @@ const now = new Date();
         <td className="p-2">{task.phone || "N/A"}</td>
         <td className="p-2">{task.address || "N/A"}</td>
         <td className="p-2">{task.city || "N/A"}</td>
-        <td className="p-2">{formattedDate}</td> {/* Only date shown */}
+        <td className="p-2">{formattedDate}</td> 
         <td className="p-2">{task.time} </td>
         
         <td
@@ -194,7 +209,8 @@ const now = new Date();
           </td>
         )}
 {activeTab === "scheduled" && (
-  <td className="p-2">
+  <td className="p-2 h-[100px] flex items-center justify-center">
+ 
     {task.isCompleted ? (
       task.otpVerified ? (
         <button
@@ -207,8 +223,9 @@ const now = new Date();
           Generate Bill
         </button>
       ) : (
-        <button
-          className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+       <button
+  className="px-3 py-1 border-2 border-green-600 text-black rounded hover:bg-green-600 hover:text-white "
+
           onClick={() => {
             setSelectedBooking(task);
             setOtpModalOpen(true);
@@ -220,54 +237,63 @@ const now = new Date();
         </button>
       )
     ) : (
-      <button
-        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        onClick={() => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              async (position) => {
-                const { latitude, longitude } = position.coords;
-                try {
-                  // Step 1: Update helper's location
-                  await axios.put(
-                    `http://localhost:5000/api/bookings/update-helper-location/${task._id}`,
-                    { lat: latitude, lng: longitude },
-                    { withCredentials: true }
-                  );
+     task.hasArrived ? (
+  <span className="px-3 py-1  text-blue-700 font-semibold">Reached</span>
+) : (
+  <button
+    className="px-3 py-1 border-2 border-blue-600  rounded hover:bg-blue-600 hover:text-white" 
+    onClick={() => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            try {
+              await axios.put(
+                `http://localhost:5000/api/bookings/update-helper-location/${task._id}`,
+                { lat: latitude, lng: longitude },
+                { withCredentials: true }
+              );
 
-                  // Step 2: Now check if arrived
-                  const res = await axios.post(
-                    `http://localhost:5000/api/bookings/check-arrival/${task._id}`,
-                    {},
-                    { withCredentials: true }
-                  );
+              const res = await axios.post(
+                `http://localhost:5000/api/bookings/check-arrival/${task._id}`,
+                {},
+                { withCredentials: true }
+              );
 
-                  if (res.data.arrived) {
-                    alert("✅ You’ve arrived at the location!");
-                    setBookings((prev) =>
-                      prev.map((b) =>
-                        b._id === task._id ? { ...b, hasarrived: true } : b
-                      )
-                    );
-                  } else {
-                    alert(`🛣 You are still ${Math.round(res.data.distance)}m away.`);
-                  }
-                } catch (err) {
-                  console.error(err);
-                  alert("❌ Failed to share or verify location.");
-                }
-              },
-              () => {
-                alert("❌ Location permission denied.");
+              if (res.data.arrived) {
+                Swal.fire({
+                  icon: "success",
+                  title: "You’ve arrived at the location!",
+                  showConfirmButton: false,
+                  timer: 1500,
+                });
+
+                setTasks((prev) =>
+                  prev.map((b) =>
+                    b._id === task._id ? { ...b, hasArrived: true } : b
+                  )
+                );
+              } else {
+                alert(`🛣 You are still ${Math.round(res.data.distance)}m away.`);
               }
-            );
-          } else {
-            alert("❌ Geolocation not supported.");
+            } catch (err) {
+              console.error(err);
+              alert("❌ Failed to share or verify location.");
+            }
+          },
+          () => {
+            alert("❌ Location permission denied.");
           }
-        }}
-      >
-        Share My Location
-      </button>
+        );
+      } else {
+        alert("❌ Geolocation not supported.");
+      }
+    }}
+  >
+    Verify Location
+  </button>
+)
+
     )}
   </td>
 )}

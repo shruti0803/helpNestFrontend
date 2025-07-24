@@ -119,7 +119,7 @@ const ManageSalary = () => {
 
   return (
     <Box p={3}>
-      <Typography variant="h4" gutterBottom fontWeight="bold" color="primary">
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#880e4f' }}>
         Manage Salaries
       </Typography>
 

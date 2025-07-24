@@ -37,7 +37,7 @@ const Past = () => {
 
   return (
     <div className=" bg-gradient-to-r from-fuchsia-50 to-purple-300 py-20 px-6 min-h-screen">
-      <h2 className="text-4xl font-bold text-center  mb-12">
+      <h2 className="text-4xl font-mont font-bold text-center  mb-12">
         Our Journey So Far
       </h2>
       <div className="flex flex-wrap  justify-center gap-6 max-w-6xl mx-auto">

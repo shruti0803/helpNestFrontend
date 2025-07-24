@@ -6,11 +6,13 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useGetHelperProfile from '../../hooks/useGetHelperProfile';
 import Loader from '../components/Loader';
-
-const QUESTIONS_PER_CATEGORY = 10;
+import question from '../assets/Untitled.mp4'
+const QUESTIONS_PER_CATEGORY = 4;
 const GEMINI_API_KEY = "AIzaSyCRymUERA_7lw-bUvsQTu0x4Gg4IP2NLR8";
 
 const Test = () => {
+  const [timer, setTimer] = useState(10);
+
   const { helper, loading, error } = useGetHelperProfile();
   const [questions, setQuestions] = useState([]);
   const [loadingQuestions, setLoadingQuestions] = useState(true);
@@ -22,6 +24,17 @@ const Test = () => {
   const [showPassPopup, setShowPassPopup] = useState(false);
 
   const navigate = useNavigate();
+useEffect(() => {
+  if (showResult || selectedOption !== null) return;
+
+  if (timer === 0) {
+    handleOptionClick(null); // Skip question if timer runs out
+    return;
+  }
+
+  const countdown = setTimeout(() => setTimer(prev => prev - 1), 1000);
+  return () => clearTimeout(countdown);
+}, [timer, selectedOption, showResult]);
 
   const fetchQuestions = () => {
     if (!helper || !helper.services) return;
@@ -115,33 +128,36 @@ const Test = () => {
 
   const currentQuestion = questions[currentIndex];
 
-  const handleOptionClick = (index) => {
-    if (selectedOption !== null) return;
-    setSelectedOption(index);
-    setShowFeedback(true);
+ const handleOptionClick = (index) => {
+  if (selectedOption !== null) return;
 
-    if (index === currentQuestion.correctAnswer) {
-      setScore(prev => prev + 1);
-    }
+  setSelectedOption(index);
+  setShowFeedback(true);
 
-    setTimeout(() => {
-      setSelectedOption(null);
-      setShowFeedback(false);
+  if (index !== null && index === currentQuestion.correctAnswer) {
+    setScore(prev => prev + 1);
+  }
 
-      if (currentIndex + 1 < questions.length) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        let finalRawScore = score + (index === currentQuestion.correctAnswer ? 1 : 0);
-        const percentageScore = (finalRawScore * 100) / questions.length;
-        setScore(finalRawScore);
-        setShowResult(true);
-        if (percentageScore >= 80) {
-          updateTestScore(percentageScore);
-          setTimeout(() => setShowPassPopup(true), 300);
-        }
+  setTimeout(() => {
+    setSelectedOption(null);
+    setShowFeedback(false);
+    setTimer(10);
+
+    if (currentIndex + 1 < questions.length) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      let finalRawScore = score + (index === currentQuestion.correctAnswer ? 1 : 0);
+      const percentageScore = (finalRawScore * 100) / questions.length;
+      setScore(finalRawScore);
+      setShowResult(true);
+      if (percentageScore >= 80) {
+        updateTestScore(percentageScore);
+        setTimeout(() => setShowPassPopup(true), 300);
       }
-    }, 1000);
-  };
+    }
+  }, 1000);
+};
+
 
   const updateTestScore = (finalScore) => {
     axios.post(
@@ -169,10 +185,25 @@ const Test = () => {
   };
 
   return (
-    <div className="min-h-screen bg-purple-50 flex items-center justify-center relative">
-      <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl p-10 text-center">
+    <div className="min-h-screen bg-purple-100 font-inter relative flex items-center justify-center">
+  {/* 🔹 Background Video */}
+  {/* <video
+    autoPlay
+    loop
+    muted
+    playsInline
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  >
+   <source src={question} type="video/mp4" />
+
+    Your browser does not support the video tag.
+  </video> */}
+
+       <div className="relative z-10 bg-white shadow-lg rounded-lg w-full max-w-2xl p-10 text-center">
         {!showResult ? (
           <>
+          <p className="text-lg mb-4 text-gray-700">⏳ Time Remaining: {timer}s</p>
+
             <h2 className="text-2xl font-semibold mb-6">{currentQuestion.question}</h2>
             <div className="space-y-4">
               {currentQuestion.options.map((option, index) => (
@@ -216,7 +247,7 @@ const Test = () => {
 
       {showPassPopup && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-          <div className="bg-white p-8 rounded-lg text-center shadow-xl">
+          <div className="bg-white w-[740px] p-8 rounded-lg text-center shadow-xl">
             <h2 className="text-3xl font-bold mb-4">Test Completed!</h2>
             <h2 className="text-2xl font-bold mb-4 text-green-600">🎉 You Passed the Test!</h2>
             <p className="text-xl mb-6">Your Score: {score} / {questions.length}</p>

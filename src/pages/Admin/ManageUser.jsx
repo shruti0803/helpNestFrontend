@@ -73,7 +73,7 @@ const columns = [
 
   return (
  <div className="w-full px-4">
-  <Typography variant="h4" gutterBottom>
+  <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#880e4f' }}>
     Manage Users
   </Typography>
 

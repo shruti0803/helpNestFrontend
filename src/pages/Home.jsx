@@ -6,6 +6,7 @@ import Past from '../components/Past';
 import Services from '../components/Services';
 import Footer from '../components/Footer';
 import Contact from '../components/contact';
+import TestimonialPage from '../components/TestimonalPage';
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
@@ -29,8 +30,8 @@ const Home = () => {
       <Hero />
       <Services />
       <Past />
-      <Contact />
       
+      <TestimonialPage/>
     </div>
   );
 };

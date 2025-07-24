@@ -10,6 +10,8 @@ import { FaRupeeSign, FaMoneyBillWave, FaClock, FaCheckCircle } from 'react-icon
 import { MdDescription, MdPayment, MdClose } from 'react-icons/md';
 import Swal from "sweetalert2";
 
+import withReactContent from 'sweetalert2-react-content';
+
 import {
   FiCheckCircle,
   FiClock,
@@ -31,12 +33,76 @@ const STATUS_FILTERS = [
 ];
 
 const Requests = () => {
+  const MySwal = withReactContent(Swal);
+
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+const [currentOtp, setCurrentOtp] = useState(null);
+
+
+const submitReport = async () => {
+  try {
+    await axios.post(
+      "http://localhost:5000/api/reports/create",
+      {
+        bookingId: reportDetails.bookingId,
+        reason: reportDetails.reason,
+        details: reportDetails.details,
+      },
+      { withCredentials: true }
+    );
+
+    setShowReportModal(false);
+    Swal.fire("Report Submitted", "Your report has been submitted.", "success");
+  } catch (err) {
+    console.error(err);
+    toast.error(err.response?.data?.message || "Failed to submit report");
+  }
+};
+
+  const [billsMap, setBillsMap] = useState({});
+const navigate = useNavigate();
+
+  const [selectedBill, setSelectedBill] = useState(null);
+const [billModalOpen, setBillModalOpen] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [bookings, setBookings] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const { data: profile, loading, error } = useGetProfile();
+const moodEmojis = ["😠", "😢", "😐", "🙂", "😄"];
+const [openActionMenu, setOpenActionMenu] = useState(null);
+
+const [showReportModal, setShowReportModal] = useState(false);
+const [reportDetails, setReportDetails] = useState({ reason: "", details: "", bookingId: null });
+
+const openReportModal = (booking) => {
+  const existingReport = reportedBookings.get(String(booking._id));
+  if (existingReport) {
+    // Set with existing values so modal shows correct content
+    setReportDetails({
+      reason: existingReport.reason,
+      details: existingReport.details,
+      bookingId: booking._id,
+    });
+  } else {
+    setReportDetails({
+      reason: "",
+      details: "",
+      bookingId: booking._id,
+    });
+  }
+  setShowReportModal(true);
+};
+
+
 const [existingRating, setExistingRating] = useState(false);
 const [showRatingModal, setShowRatingModal] = useState(false);
 const [selectedBookingId, setSelectedBookingId] = useState(null);
 const [rating, setRating] = useState(1);
 const [comment, setComment] = useState("");
 const [reviewedBookings, setReviewedBookings] = useState(new Map());
+const [reportedBookings, setReportedBookings] = useState(new Map());
+
 
 
 
@@ -57,24 +123,6 @@ const openRatingModal = (bookingId) => {
   setShowRatingModal(true);
 };
 
-
-  const [otpModalOpen, setOtpModalOpen] = useState(false);
-const [currentOtp, setCurrentOtp] = useState(null);
-
-
-
-
-  const [billsMap, setBillsMap] = useState({});
-const navigate = useNavigate();
-
-  const [selectedBill, setSelectedBill] = useState(null);
-const [billModalOpen, setBillModalOpen] = useState(false);
-
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [bookings, setBookings] = useState([]);
-  const [filter, setFilter] = useState("all");
-  const { data: profile, loading, error } = useGetProfile();
-
 const handleSubmitRating = async () => {
   try {
     console.log("Sending Review:", {
@@ -91,7 +139,12 @@ const handleSubmitRating = async () => {
       },
       { withCredentials: true }
     );
-    setReviewedBookings((prev) => new Set(prev).add(selectedBookingId));
+   setReviewedBookings((prev) => {
+  const updated = new Map(prev);
+  updated.set(selectedBookingId, { rating, comment });
+  return updated;
+});
+
     setShowRatingModal(false);
     await Swal.fire({
       icon: 'success',
@@ -103,6 +156,30 @@ const handleSubmitRating = async () => {
     toast.error(err.response?.data?.message || "Review submission failed");
   }
 };
+const fetchReportedBookings = async () => {
+  try {
+    const res = await axios.get("http://localhost:5000/api/reports/by-user", {
+      withCredentials: true,
+    });
+console.log(res);
+    const reportMap = new Map();
+    res.data.forEach((r) => {
+  console.log("bookingId in report:", r.booking, typeof r.booking);
+reportMap.set(String(r.booking), {
+  reason: r.reason,
+  details: r.details,
+  status: r.status,
+  adminNote: r.adminNote,
+});
+
+    });
+
+    setReportedBookings(reportMap); // store full report object instead of Set
+  } catch (err) {
+    console.error("Failed to fetch reported bookings", err);
+  }
+};
+
 
 
 const handleGetBill = async (bookingId) => {
@@ -138,6 +215,7 @@ setReviewedBookings(reviewMap);
   };
 
   fetchReviewedBookings();
+  fetchReportedBookings();
 }, []);
 
 
@@ -147,10 +225,9 @@ useEffect(() => {
       const res = await axios.get("http://localhost:5000/api/bookings/requests", {
         withCredentials: true,
       });
-     setBookings(
-  res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-);
-
+      setBookings(
+        res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      );
     } catch (err) {
       console.error("Error fetching bookings:", err);
     }
@@ -175,9 +252,20 @@ useEffect(() => {
     }
   };
 
+  // Initial fetch
   fetchBookings();
-  fetchBills(); // <- new call
+  fetchBills();
+
+  // Set interval to poll every 3 seconds
+  const interval = setInterval(() => {
+    fetchBookings();
+    fetchBills();
+  }, 3000);
+
+  // Clean up on unmount
+  return () => clearInterval(interval);
 }, []);
+
 
 
   const filteredBookings =
@@ -198,6 +286,7 @@ useEffect(() => {
         return "text-gray-700";
     }
   };
+const report = reportedBookings.get(String(reportDetails.bookingId));
 
   const handleMarkComplete = async (id) => {
     try {
@@ -216,7 +305,7 @@ useEffect(() => {
 
 
   return (
-    <div className="flex min-h-screen pt-16">
+    <div className="flex font-inter min-h-screen pt-16">
       {/* Sidebar */}
       <div
         className={`bg-gradient-to-r from-fuchsia-50 to-purple-300 transition-all duration-300 flex flex-col ${
@@ -224,12 +313,12 @@ useEffect(() => {
         }`}
       >
         <button
-          className="p-4 focus:outline-none hover:bg-orange-300"
+          className="p-4 focus:outline-none hover:bg-purple-300"
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-label="Toggle sidebar"
         >
           {sidebarOpen ? (
-            <FiX className="h-6 w-6 mx-auto text-orange-100" />
+            <FiX className="h-6 w-6 mx-auto text-purple-100" />
           ) : (
             <FiMenu className="h-6 w-6 mx-auto" />
           )}
@@ -265,9 +354,12 @@ useEffect(() => {
                   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
                     Person Name
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                    Helper Name
-                  </th>
+                 {filter !== "Pending" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Helper Name
+  </th>
+)}
+
                   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
                     Service
                   </th>
@@ -282,14 +374,27 @@ useEffect(() => {
                   </th>
                   {filter === "Scheduled" && (
                     <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-                      Mark Completed
+                      Actions
                     </th>
                     
                   )}
+                  {filter === "Pending" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Cancel
+  </th>
+)}
+
                   {filter === "Completed" && (
   <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
     Bill
   </th>
+  
+)}
+               {filter === "Completed" && (
+  <th className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+    Actions
+  </th>
+  
 )}
 
                 </tr>
@@ -314,24 +419,56 @@ useEffect(() => {
                       key={booking._id}
                       className="hover:bg-purple-50 transition-colors"
                     >
-                      <td className="px-4 py-2 whitespace-nowrap">{booking.personName}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        {typeof booking.helper === "object" && booking.helper !== null
-                          ? booking.helper.name || "N/A"
-                          : booking.helper || "N/A"}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap">{booking.service}</td>
-                      <td className={`px-4 py-2 whitespace-nowrap ${getStatusColor(booking.status)}`}>
+                    <td className="px-4 py-2 whitespace-nowrap ">
+{booking.personName}</td>
+                    {filter !== "Pending" && (
+  <td className="px-4 py-2 whitespace-nowrap">
+    {typeof booking.helper === "object" && booking.helper !== null
+      ? booking.helper.name || "N/A"
+      : booking.helper || "N/A"}
+  </td>
+)}
+
+                     <td className="px-4 py-2 whitespace-nowrap ">
+{booking.service}</td>
+                      <td className={`px-4 py-2 whitespace-nowrap  ${getStatusColor(booking.status)}`}>
                         {booking.status}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap">{booking.city}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">
+                      
+                      <td className="px-4 py-2 whitespace-nowrap  ">{booking.city}</td>
+                      <td className="px-4 py-2 whitespace-nowrap ">
                         {new Date(booking.date).toLocaleDateString()}
                       </td>
+                      {filter === "Pending" && (
+  <td className="px-2 py-2 whitespace-nowrap ">
+    <button
+        onClick={async () => {
+          try {
+            const confirmed = window.confirm("Are you sure you want to cancel this booking?");
+            if (!confirmed) return;
+
+            await axios.delete(`http://localhost:5000/api/bookings/${booking._id}`, {
+              withCredentials: true,
+            });
+
+            setBookings((prev) => prev.filter((b) => b._id !== booking._id));
+            toast.success("Booking cancelled successfully.");
+          } catch (err) {
+            console.error("Error cancelling booking", err);
+            toast.error("Failed to cancel booking");
+          }
+        }}
+        className="text-sm text-red-600 border border-red-600 hover:bg-red-100 px-3 py-1 rounded mx-auto block"
+      >
+        Cancel
+      </button>
+  </td>
+)}
+
 {filter === "Completed" && (
   <>
     {/* Bill column */}
-    <td className="px-4 py-2 whitespace-nowrap relative">
+    <td className="px-4 py-2 whitespace-nowrap text-center relative">
       {billsMap[booking._id]?.paymentStatus === "Paid" ? (
         <span className="text-green-600 font-semibold">Paid</span>
       ) : (
@@ -345,32 +482,62 @@ useEffect(() => {
     </td>
 
     {/* Three dots column */}
-    <td className="px-4 py-2 whitespace-nowrap text-center">
+    {/* Three dots column */}
+<td className="px-4 py-2 whitespace-nowrap text-center relative">
+  <button
+    onClick={() =>
+      setOpenActionMenu(openActionMenu === booking._id ? null : booking._id)
+    }
+    disabled={
+      booking.status !== "Completed" ||
+      billsMap[booking._id]?.paymentStatus !== "Paid"
+    }
+    className={`text-xl px-2 py-1 rounded-full ${
+      booking.status !== "Completed" ||
+      billsMap[booking._id]?.paymentStatus !== "Paid"
+        ? "text-gray-400 cursor-not-allowed"
+        : "text-gray-700 hover:text-purple-600"
+    }`}
+    title="More actions"
+  >
+    ⋮
+  </button>
+  
+
+ {openActionMenu === booking._id &&
+  booking.status === "Completed" &&
+  billsMap[booking._id]?.paymentStatus === "Paid" && (
+   <div className="absolute left-1/2 -translate-x-1/2 top-8 w-20 bg-white border rounded shadow z-50 flex flex-col">
+
       <button
-        onClick={() => openRatingModal(booking._id)}
-        disabled={
-          booking.status !== "Completed" ||
-          billsMap[booking._id]?.paymentStatus !== "Paid" 
-         
-        }
-        className={`text-xl px-2 py-1 rounded-full ${
-          booking.status !== "Completed" ||
-          billsMap[booking._id]?.paymentStatus !== "Paid" 
-        
-            ? "text-gray-400 cursor-not-allowed"
-            : "text-gray-700 hover:text-purple-600"
-        }`}
-        title={
-          reviewedBookings.has(booking._id)
-            ? "Already Rated"
-            : billsMap[booking._id]?.paymentStatus !== "Paid"
-            ? "Payment Pending"
-            : "Rate this service"
-        }
+        className="w-full px-4 py-2 text-left text-sm hover:bg-purple-100"
+        onClick={() => {
+          openRatingModal(booking._id);
+          setOpenActionMenu(null);
+        }}
       >
-        ⋮
+        Rate
       </button>
-    </td>
+    <button
+  className={`w-full px-4 py-2 text-left text-sm ${
+    reportedBookings.has(String(booking._id))
+      ? "text-gray-500 cursor-pointer hover:bg-gray-100"
+      : "hover:bg-red-100"
+  }`}
+  onClick={() => {
+    openReportModal(booking);
+    setOpenActionMenu(null);
+  }}
+>
+  {reportedBookings.has(String(booking._id)) ? "View Report" : "Report"}
+</button>
+
+
+    </div>
+)}
+
+</td>
+
   </>
 )}
 
@@ -378,62 +545,91 @@ useEffect(() => {
 
 
 
-                      {filter === "Scheduled" && (
-                        <td className="px-4 py-2 whitespace-nowrap text-center">
-                  {isEligibleToMarkComplete ? (
-  <button
-   onClick={async () => {
-  try {
-    const res = await axios.put(
-      "http://localhost:5000/api/bookings/mark-completed",
-      { bookingId: booking._id },
-      { withCredentials: true }
-    );
+                    {filter === "Scheduled" && (
+  <td className="px-4 py-2 whitespace-nowrap text-center">
+    {isEligibleToMarkComplete ? (
+      <button
+        onClick={async () => {
+          try {
+            const res = await axios.put(
+              "http://localhost:5000/api/bookings/mark-completed",
+              { bookingId: booking._id },
+              { withCredentials: true }
+            );
 
-    setCurrentOtp(res.data.otp); // <-- set actual OTP
-    setOtpModalOpen(true);
+            setCurrentOtp(res.data.otp);
+            setOtpModalOpen(true);
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b._id === booking._id ? { ...b, isCompleted: true } : b
-      )
-    );
-  } catch (error) {
-    console.error("Error marking booking complete:", error);
-    alert("Failed to mark as completed.");
-  }
-}}
-
-    className="bg-purple-500 hover:bg-purple-600 text-white text-sm px-3 py-1 rounded shadow"
-  >
-    Mark as Completed
-  </button>
-) : booking.isCompleted ? (
-  <div className="relative w-6 h-6 mx-auto">
-    <input
-      type="checkbox"
-      checked={true}
-      disabled
-      className="absolute w-6 h-6 opacity-0 cursor-default"
-    />
-    <div className="w-6 h-6 rounded border-2 border-green-500 flex items-center justify-center bg-green-100">
-      <svg
-        className="w-5 h-5 text-green-600 animate-ping-once"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={3}
-        viewBox="0 0 24 24"
+            setBookings((prev) =>
+              prev.map((b) =>
+                b._id === booking._id ? { ...b, isCompleted: true } : b
+              )
+            );
+          } catch (error) {
+            console.error("Error marking booking complete:", error);
+            alert("Failed to mark as completed.");
+          }
+        }}
+        className="text-sm bg-purple-100 border border-purple-600 hover:bg-purple-300 px-3 py-1 rounded mx-auto block"
       >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-      </svg>
-    </div>
-  </div>
-) : (
-  "-"
+        Mark as Completed
+      </button>
+    ) : booking.isCompleted ? (
+      <div className="relative w-6 h-6 mx-auto">
+        <input
+          type="checkbox"
+          checked={true}
+          disabled
+          className="absolute w-6 h-6 opacity-0 cursor-default"
+        />
+        <div className="w-6 h-6 rounded border-2 border-green-500 flex items-center justify-center bg-green-100">
+          <svg
+            className="w-5 h-5 text-green-600 animate-ping-once"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={3}
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      </div>
+    ) : (
+     <button
+  onClick={async () => {
+    const result = await MySwal.fire({
+      title: 'Are you sure?',
+      text: 'Do you want to cancel this booking? ₹100 will be added to your next booking.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, cancel it!',
+      cancelButtonText: 'No, keep it'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/bookings/${booking._id}`, {
+        withCredentials: true,
+      });
+
+      setBookings((prev) => prev.filter((b) => b._id !== booking._id));
+      toast.success('Booking cancelled successfully.');
+    } catch (err) {
+      console.error('Error cancelling booking', err);
+      toast.error('Failed to cancel booking');
+    }
+  }}
+  className="text-sm text-red-600 border border-red-600 hover:bg-red-100 px-3 py-1 rounded mx-auto block"
+>
+  Cancel 
+</button>
+    )}
+  </td>
 )}
 
-                        </td>
-                      )}
                     </tr>
                   );
                 })}
@@ -552,18 +748,27 @@ useEffect(() => {
         {existingRating ? "Your Review" : "Rate the Service"}
       </h2>
 
-      <div className="flex gap-1 text-yellow-400 mb-4">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            onClick={() => !existingRating && setRating(star)}
-            className={star <= rating ? "text-yellow-500" : "text-gray-300"}
-            disabled={existingRating}
-          >
-            <FaStar />
-          </button>
-        ))}
-      </div>
+    <div className="text-6xl text-center mb-4 transition-all">
+  {rating > 0 ? moodEmojis[rating - 1] : "🤔"}
+</div>
+
+<div className="flex justify-center gap-2 mb-4">
+  {[1, 2, 3, 4, 5].map((star) => (
+  <button
+  key={star}
+  onClick={() => !existingRating && setRating(star)}
+  onMouseEnter={() => !existingRating && setRating(star)}
+  disabled={existingRating}
+  className={`text-3xl transition-transform ${
+    rating >= star ? "text-yellow-500" : "text-gray-300"
+  } ${!existingRating ? "hover:scale-125" : ""}`}
+>
+  <FaStar />
+</button>
+
+  ))}
+</div>
+
 
       <textarea
         placeholder="Write your comment..."
@@ -589,7 +794,105 @@ useEffect(() => {
             Submit
           </button>
         )}
+
+
       </div>
+    </div>
+  </div>
+)}
+{showReportModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+      {reportedBookings.has(String(reportDetails.bookingId)) ? (
+       <>
+  <h2 className="text-xl font-semibold mb-4 flex items-center text-gray-800 gap-2">
+    <FiClipboard className="text-purple-600" /> Already Reported
+  </h2>
+
+  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 space-y-2 text-sm">
+    <p className="flex items-start gap-2">
+      <MdDescription className="text-gray-600 mt-1" />
+      <span><strong>Reason:</strong> {report.reason}</span>
+    </p>
+
+    <p className="flex items-start gap-2">
+      <MdDescription className="text-gray-600 mt-1" />
+      <span><strong>Details:</strong> {report.details || "No additional details"}</span>
+    </p>
+
+    <p className="flex items-start gap-2">
+      <FiClock className="text-gray-600 mt-1" />
+   <span className={`px-2 py-1 rounded-full text-xs font-medium
+  ${report.status === 'resolved' ? 'bg-green-100 text-green-700' :
+    report.status === 'rejected' ? 'bg-red-100 text-red-700' :
+    'bg-yellow-100 text-yellow-700'}
+`}>
+  {report.status?.charAt(0).toUpperCase() + report.status?.slice(1)}
+</span>
+
+
+    </p>
+
+    {report.status !== "pending" && (
+      <p className="flex items-start gap-2">
+        <FiCheckCircle className="text-green-600 mt-1" />
+        <span><strong>Admin Note:</strong> {report.adminNote || "No note provided"}</span>
+      </p>
+    )}
+  </div>
+
+  <div className="flex justify-end">
+    <button
+      onClick={() => setShowReportModal(false)}
+      className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+    >
+      Close
+    </button>
+  </div>
+</>
+
+      ) : (
+        <>
+          <h2 className="text-xl font-semibold mb-4 text-red-600">Report the Helper</h2>
+
+          <label className="block mb-2 text-sm font-medium">Reason</label>
+          <input
+            type="text"
+            className="w-full border border-gray-300 rounded p-2 mb-4"
+            placeholder="Short reason"
+            value={reportDetails.reason}
+            onChange={(e) =>
+              setReportDetails({ ...reportDetails, reason: e.target.value })
+            }
+          />
+
+          <label className="block mb-2 text-sm font-medium">Details</label>
+          <textarea
+            className="w-full border border-gray-300 rounded p-2 mb-4"
+            rows={4}
+            placeholder="Additional details (optional)"
+            value={reportDetails.details}
+            onChange={(e) =>
+              setReportDetails({ ...reportDetails, details: e.target.value })
+            }
+          />
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setShowReportModal(false)}
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={submitReport}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Submit Report
+            </button>
+          </div>
+        </>
+      )}
     </div>
   </div>
 )}

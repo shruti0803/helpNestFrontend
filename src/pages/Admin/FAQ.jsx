@@ -76,7 +76,7 @@ const FAQ = () => {
       {/* Gradient Header */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg,rgb(236, 115, 226),rgb(237, 105, 237))',
+          background: 'linear-gradient(135deg,rgba(202, 115, 236, 1),rgba(237, 79, 237, 1))',
           marginRight:'12px',
           color: 'black',
           padding: '2rem',

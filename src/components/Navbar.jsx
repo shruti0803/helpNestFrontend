@@ -15,7 +15,8 @@ import { FaHome, FaClipboardList, FaTasks } from 'react-icons/fa';
 import { useLocation } from 'react-router-dom';
 import NotificationPopup from './Notification';
 import { FaMapMarkedAlt } from "react-icons/fa"; 
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FiMenu, FiX } from 'react-icons/fi'; // Add this at the top
 import axios from 'axios';
 
 
@@ -327,60 +328,131 @@ useEffect(() => {
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden flex items-center">
-              <button
-                onClick={toggleMenu}
-                className="text-gray-700 hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500"
-                aria-label="Toggle menu"
-              >
-                {isOpen ? 'Close' : 'Menu'}
-              </button>
-            </div>
+          <div className="md:hidden flex items-center">
+  <button
+    onClick={toggleMenu}
+    className="text-gray-700 hover:text-purple-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 text-2xl"
+    aria-label="Toggle menu"
+  >
+    {isOpen ? <FiX /> : <FiMenu />}
+  </button>
+</div>
           </div>
         </div>
 
         {/* Mobile menu */}
-        {isOpen && (
-          <div className="md:hidden bg-white shadow-md">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link to="/" className="block px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100">Home</Link>
+       {isOpen && (
+  <div className="md:hidden bg-white shadow-md">
+    <div className="px-2 pt-2 pb-3 space-y-1 text-sm">
+      <Link
+        to="/"
+        className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-blue-50 transition"
+      >
+        <FaHome size={20} />
+        <span>Home</span>
+      </Link>
 
-              {user && (
-                <Link to="/requests" className="block px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100">Requests</Link>
-              )}
+      {user && (
+        <Link
+          to="/requests"
+          className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-blue-50 transition"
+        >
+          <FaClipboardList size={20} />
+          <span>Requests</span>
+        </Link>
+      )}
 
-              {helperData && (
-                <Link to="/tasks" className="block px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100">Tasks</Link>
-              )}
+      {helperData && (
+        <Link
+          to="/tasks"
+          className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-blue-50 transition"
+        >
+          <FaClipboardList size={20} />
+          <span>Tasks</span>
+        </Link>
+      )}
 
-              <a href="#" className="block px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100">Services</a>
+      {user && (
+        <Link
+          to="/community"
+          className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-blue-50 transition"
+          title="Community"
+        >
+          <FaMapMarkedAlt size={20} />
+          <span>Local Hub</span>
+        </Link>
+      )}
 
-              {(user || helperData) ? (
-                <>
-                  <div
-                    className="w-8 h-8 rounded-full bg-orange-600 text-white flex justify-center items-center font-bold"
-                    title={`Logged in as ${displayName}`}
-                  >
-                    {userInitial}
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={openLogin}
-                  className="block w-full text-left px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100"
-                >
-                  Login
-                </button>
+      {(user || helperData) && (
+        <div className="relative">
+          <div
+            className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-blue-50 transition cursor-pointer"
+            onClick={() => setShowNotifications((prev) => !prev)}
+          >
+            <div className="relative">
+              <FaBell size={20} className={hasUnreadNotification ? 'text-yellow-500' : ''} />
+              {hasUnreadNotification && unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow">
+                  {unreadCount}
+                </span>
               )}
             </div>
+            <span>Alerts</span>
           </div>
-        )}
+
+          {showNotifications && (
+            <div className="fixed inset-0 bg-white z-50 p-4 md:hidden flex flex-col">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-purple-700">Notifications</h2>
+                <button onClick={() => setShowNotifications(false)} className="text-2xl font-bold text-gray-600">
+                  &times;
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <NotificationPopup
+                  setHasUnread={(hasUnread, count) => {
+                    setHasUnreadNotification(hasUnread);
+                    setUnreadCount(count);
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(user || helperData) ? (
+        <>
+          <div className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-blue-50 transition">
+            <div
+              className="w-6 h-6 rounded-full bg-black text-white flex justify-center items-center font-bold"
+              title={`Logged in as ${displayName}`}
+            >
+              {userInitial}
+            </div>
+            <button onClick={handleProfile}>My Profile</button>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-700 hover:bg-red-100 transition"
+          >
+            <FaSignOutAlt size={18} className="text-black" />
+            <span>Logout</span>
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={openLogin}
+          className="flex items-center space-x-2 px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 transition"
+        >
+          <FaSignOutAlt size={18} className="text-black" />
+            <span>Login</span>
+        </button>
+      )}
+    </div>
+  </div>
+)}
+
       </nav>
 
       {/* Auth modal selection */}

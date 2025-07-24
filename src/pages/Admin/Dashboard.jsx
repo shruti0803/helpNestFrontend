@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Line, Pie } from 'react-chartjs-2';
+import { useRef } from 'react';
  import { FaClipboardList } from 'react-icons/fa'; // make sure this is imported at top
 import {
   Chart as ChartJS,
@@ -7,6 +8,7 @@ import {
   LineElement,
   PointElement,
   CategoryScale,
+   BarElement, 
   LinearScale,
   Tooltip,
   Legend
@@ -18,14 +20,62 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-ChartJS.register(ArcElement, LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+ChartJS.register(ArcElement, LineElement, PointElement, CategoryScale,  BarElement,  LinearScale, Tooltip, Legend);
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
+import { Bar } from 'react-chartjs-2';
+
+
+
 
 const AdminDashboard = () => {
+  const [totalProducts, setTotalProducts] = useState(0);
+useEffect(() => {
+  axios.get('http://localhost:5000/api/admin/product-count')
+    .then(res => setTotalProducts(res.data.count || 0))
+    .catch(err => console.error("Error fetching product count", err));
+}, []);
+
+const barChartRef = useRef(null);
+const barOptions = {
+  responsive: true,
+  animation: {
+    duration: 1500,
+    easing: 'easeOutBounce',
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Services',
+      },
+      grid: {
+        display: false, // no vertical lines
+      },
+    },
+    y: {
+      display: false, // ❌ remove Y-axis completely
+      grid: {
+        display: false, // no background lines
+      },
+      ticks: {
+        display: false, // remove numbers
+      },
+    },
+  },
+};
+
   //new
+
+  
+
+
 
   const [monthlyProfit, setMonthlyProfit] = useState(0);
 const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
@@ -37,7 +87,49 @@ const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth()); // 0 for January, 11 for December
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
  
-  
+const [orderPerWeekData, setOrderPerWeekData] = useState({
+  labels: [],
+  datasets: [],
+});
+
+
+useEffect(() => {
+  const fetchOrderPerWeek = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/admin/orders-per-week');
+      const data = res.data;
+console.log(res)
+      const labels = data.map(item => item.label);
+      const counts = data.map(item => item.count);
+
+      setOrderPerWeekData({
+        labels,
+        datasets: [
+          {
+            label: 'Orders per Week',
+            data: counts,
+            borderColor: '#9333ea',
+            backgroundColor: 'rgba(168, 85, 247, 0.2)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0,
+            pointBackgroundColor: '#7e22ce',
+            tooltip: { enabled: false },
+legend: { display: false },
+
+          },
+        ],
+      });
+    } catch (error) {
+      console.error('Error fetching orders per week', error);
+    }
+  };
+
+  fetchOrderPerWeek();
+}, []);
+
+
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June', 
@@ -61,6 +153,19 @@ const [monthlyProfitTrend, setMonthlyProfitTrend] = useState({
 
   
 
+const [ratingStats, setRatingStats] = useState(null);
+
+useEffect(() => {
+  const fetchRatingStats = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/admin/ratings-summary');
+      setRatingStats(res.data);
+    } catch (err) {
+      console.error("Failed to fetch rating stats", err);
+    }
+  };
+  fetchRatingStats();
+}, []);
 
  
 
@@ -272,16 +377,32 @@ const [servicesData, setServicesData] = useState({
   labels: serviceLabels,
   datasets: [
     {
-      data: new Array(serviceLabels.length).fill(0), // exactly 6 items
-      backgroundColor: [
-        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F'
-      ],
-      hoverBackgroundColor: [
-        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#C70039', '#900C3F'
-      ],
+      label: "Requests Booked",
+      data: new Array(serviceLabels.length).fill(0),
+      backgroundColor: '	#2e2e2e', // Light purple for all bars
+      hoverBackgroundColor: '#7e22ce', // Dark purple on hover
+      borderRadius: 14,               // More rounded bars
+      barThickness: 24,               // Slim but visible
+      borderSkipped: false,          // All corners rounded
     },
   ],
 });
+
+
+
+
+// useEffect(() => {
+//   const chart = barChartRef.current;
+//   if (!chart) return;
+
+//   const ctx = chart.ctx;
+//   const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+//   gradient.addColorStop(0, '#a855f7');
+//   gradient.addColorStop(1, '#9333ea');
+
+//   chart.data.datasets[0].backgroundColor = gradient;
+//   chart.update();
+// }, [servicesData]);
 
   
   useEffect(() => {
@@ -289,7 +410,7 @@ const [servicesData, setServicesData] = useState({
     try {
       const response = await axios.get('http://localhost:5000/api/admin/bookings-by-category');
       const apiData = response.data; // [{ Service_Name: "Tech Support", booking_count: 12 }, ...]
-console.log("booking by category", apiData);
+
       const updatedData = serviceLabels.map(label => {
         const match = apiData.find(item => item.Service_Name === label);
         return match ? match.booking_count : 0;
@@ -443,67 +564,136 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
   return (
     <div className=" w-full bg-gray-100 p-4">
       {/* Row with three equal-sized cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Sales Obtained */}
-        <div className="bg-purple-500 text-black p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Net Profit</h2>
-          <p>Total Profit for <strong>{monthNames[currentMonth - 1]}</strong></p>
-          <p className="text-3xl font-bold text-white mt-3">
-         ₹{monthlyProfit.toLocaleString()}
+     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-auto md:h-80">
+  {/* ✅ Requests Booked */}
+  <div className="bg-purple-300 p-4 rounded-xl shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Requests Booked</h2>
+    <div className="w-full px-2 h-[160px] sm:h-[180px] md:h-[200px] lg:h-[210px]">
+      <Bar
+        ref={barChartRef}
+        data={servicesData}
+        options={{
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return `${context.raw} bookings`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: "#4B5563",
+                font: { size: 10, weight: "400" },
+              },
+              grid: { display: false },
+            },
+            y: {
+              display: false,
+              grid: { display: false },
+              ticks: { display: false },
+            },
+          },
+        }}
+      />
+    </div>
+  </div>
 
-          </p>
-          {/* Line Chart with custom mountain-like curve */}
-          <div className="mt-4">
-            <div className="w-full text-white h-40">
-              <Line data={waveData} options={chartOptions} height={150} width={300} />
+  {/* ✅ Overall Ratings */}
+  <div className="bg-white p-4 rounded-xl shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl md:text-2xl font-semibold mb-4">Overall Ratings</h2>
+    {ratingStats ? (
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 mx-auto sm:mx-0">
+          <svg className="w-full h-full transform -rotate-90">
+            <circle
+              className="text-gray-300"
+              strokeWidth="10"
+              stroke="currentColor"
+              fill="transparent"
+              r="50"
+              cx="64"
+              cy="64"
+            />
+            <circle
+              className="text-purple-700"
+              strokeWidth="10"
+              strokeLinecap="round"
+              stroke="currentColor"
+              fill="transparent"
+              r="50"
+              cx="64"
+              cy="64"
+              strokeDasharray={`${ratingStats.averageRating * 62.8}, 314`}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-2xl sm:text-3xl font-bold text-purple-700">
+                {ratingStats.averageRating}
+              </div>
+              <div className="text-xs sm:text-sm text-gray-600">Avg Rating</div>
             </div>
           </div>
         </div>
 
-        {/* New Customers */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Users Analytics </h2>
-          <div className="mt-4 flex items-center justify-between">
-            {/* Pie Chart */}
-            <div className="w-40 h-40">
-              <Pie data={newCustomersData} options={{ responsive: true }} />
-            </div>
-            {/* Stats */}
-            <div className="ml-6">
-              <div className="mb-4">
-                <p className="font-semibold">New Users</p>
-                <p className="text-green-500 font-bold">{newCustomers}</p>
+        <div className="flex flex-col gap-2 w-full">
+          {[5, 4, 3, 2, 1].map((star) => {
+            const total = ratingStats.totalRatings || 1;
+            const count = ratingStats.ratingBreakdown[star] || 0;
+            const percent = ((count / total) * 100).toFixed(1);
+            return (
+              <div key={star} className="flex items-center gap-2 text-sm sm:text-base">
+                <span className="font-medium w-6">{star}★</span>
+                <div className="flex-1 bg-gray-200 h-3 rounded">
+                  <div
+                    className="bg-purple-700 h-full rounded"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
               </div>
-              <div>
-                <p className="font-semibold">Total Users</p>
-                <p className="text-blue-500 font-bold">{totalCustomers}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* New Service Providers */}
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-semibold">Helpers Analytics </h2>
-          <div className="mt-4 flex items-center justify-between">
-            {/* Pie Chart */}
-            <div className="w-40 h-40">
-              <Pie data={newHelpersData} options={{ responsive: true }} />
-            </div>
-            {/* Stats */}
-            <div className="ml-6">
-              <div className="mb-4">
-                <p className="font-semibold">New Helpers</p>
-                <p className="text-green-500 font-bold">{newHelpers}</p>
-              </div>
-              <div>
-                <p className="font-semibold">Total Helpers</p>
-                <p className="text-blue-500 font-bold">{totalHelpers}</p>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
+    ) : (
+      <p className="text-sm text-gray-500">Loading rating stats...</p>
+    )}
+  </div>
+
+  {/* ✅ Orders Per Week */}
+  <div className="bg-white text-black p-4 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl md:text-2xl font-semibold mb-4">Orders Per Week</h2>
+    <div className="flex-grow">
+      {orderPerWeekData.labels.length > 0 ? (
+        <Line
+          data={orderPerWeekData}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { display: false },
+              y: { display: false },
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false },
+            },
+          }}
+          height={160}
+        />
+      ) : (
+        <p className="text-sm text-gray-500">Loading...</p>
+      )}
+    </div>
+  </div>
+</div>
+
 
       {/* Revenue Generated Card with month and year selector */}
       <div className="p-6 rounded-lg shadow-lg mt-6">
@@ -537,46 +727,78 @@ console.log('Updated City Booking Markers:', updatedCityBookingsData);
         </div>
       </div>
       {/* Services Booked and geography graph  */}
-      <div className='flex flex-col md:flex-row'>
-  <div className="bg-white p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
-    <h2 className="text-2xl font-semibold">Requests Booked</h2>
-    <div className="mt-4 flex justify-center">
-      <div className="w-80 h-80">
-        <Pie data={servicesData} options={{ responsive: true }} />
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+  {/* Users Analytics */}
+  <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Users Analytics</h2>
+    <div className="flex flex-col sm:flex-row items-center justify-between">
+      <div className="w-32 h-32 sm:w-40 sm:h-40">
+        <Pie data={newCustomersData} options={{ responsive: true }} />
+      </div>
+      <div className="mt-4 sm:mt-0 sm:ml-6 text-sm">
+        <div className="mb-2">
+          <p className="font-semibold">New Users</p>
+          <p className="text-green-500 font-bold">{newCustomers}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Total Users</p>
+          <p className="text-blue-500 font-bold">{totalCustomers}</p>
+        </div>
       </div>
     </div>
   </div>
 
-  {/* Geography Chart (India map) with city markers */}
-  <div className="bg-white mx-4 p-6 rounded-lg shadow-lg mt-6 md:w-1/2">
-      <h2 className="text-2xl font-semibold">Bookings by City</h2>
-      <div className="mt-4" style={{ height: '400px' }}>
-        <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          {cityBookingsData.map((cityData, index) => (
-            <Marker
-              key={index}
-              position={cityData.coordinates}
-              icon={L.divIcon({
-                className: 'custom-icon',
-                html: `<div style="background-color: #3388ff; color: white; padding: 5px; border-radius: 5px;">${cityData.bookings}</div>`,
-                iconSize: [30, 30],
-                iconAnchor: [15, 15],
-              })}
-            >
-              <Popup>
-                <h3>{cityData.city}</h3>
-                <p>Bookings: {cityData.bookings}</p>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+  {/* Helpers Analytics */}
+  <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Helpers Analytics</h2>
+    <div className="flex flex-col sm:flex-row items-center justify-between">
+      <div className="w-32 h-32 sm:w-40 sm:h-40">
+        <Pie data={newHelpersData} options={{ responsive: true }} />
+      </div>
+      <div className="mt-4 sm:mt-0 sm:ml-6 text-sm">
+        <div className="mb-2">
+          <p className="font-semibold">New Helpers</p>
+          <p className="text-green-500 font-bold">{newHelpers}</p>
+        </div>
+        <div>
+          <p className="font-semibold">Total Helpers</p>
+          <p className="text-blue-500 font-bold">{totalHelpers}</p>
+        </div>
       </div>
     </div>
+  </div>
+
+  {/* City Map Analytics */}
+  <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col justify-center">
+    <h2 className="text-xl font-semibold mb-4">Bookings by City</h2>
+    <div className="w-full h-64">
+      <MapContainer center={[20.5937, 78.9629]} zoom={5} style={{ width: '100%', height: '100%' }}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        {cityBookingsData.map((cityData, index) => (
+          <Marker
+            key={index}
+            position={cityData.coordinates}
+            icon={L.divIcon({
+              className: 'custom-icon',
+              html: `<div style="background-color: #3388ff; color: white; padding: 5px; border-radius: 5px;">${cityData.bookings}</div>`,
+              iconSize: [30, 30],
+              iconAnchor: [15, 15],
+            })}
+          >
+            <Popup>
+              <h3>{cityData.city}</h3>
+              <p>Bookings: {cityData.bookings}</p>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+    </div>
+  </div>
 </div>
+
 
          
           
